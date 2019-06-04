@@ -16,4 +16,4 @@
 `# ./stop.sh`
 
 ## Documentation
-Visit the Wiki page of the repository for Documentation
+Visit the Wiki page of the repository
