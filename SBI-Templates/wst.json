@@ -1,0 +1,48 @@
+{
+  "wsd": {
+    "services-segment": [
+      {
+        "service_id": "<id>",
+        "ip": "<A.B.C.D>"
+      },
+      {
+        "service_id": "<id>",
+        "ip": "<A.B.C.D>"
+      }
+    ],
+    "topology": "ELAN",
+    "bidirectional": "<True/False>",
+    "link_params": {
+      "bw": "<N>",
+      "latency": "<N>"
+    },
+    "pop": [
+      {
+        "vim_id": "<id>",
+        "nap": [
+          {
+            "nap_id": "<nap_id>",
+            "ip_segment": "<A.B.C.D>"
+          },
+          {
+            "nap_id": "<nap_id>",
+            "ip_segment": "<A.B.C.D>"
+          }
+        ]
+      },
+      {
+        "vim_id": "<id>",
+        "nap": [
+          {
+            "nap_id": "<nap_id>",
+            "ip_segment": "<A.B.C.D>"
+          },
+          {
+            "nap_id": "<nap_id>",
+            "ip_segment": "<A.B.C.D>"
+          }
+        ]
+      }
+    ]
+  }
+}
