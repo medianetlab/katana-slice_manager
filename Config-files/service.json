@@ -1,0 +1,81 @@
+[
+  {
+    "name": "NCSRD_embb",
+    "type": "embb",
+    "ns": [
+      {
+        "name": "vepc",
+        "location": "core",
+        "naps": [
+          "ens1",
+          "ens2"
+        ]
+      },
+      {
+        "name": "firewall",
+        "location": "core",
+        "naps": [
+          "ens1"
+        ],
+        "ns_graph": [
+          [
+            {
+              "ns": "end_point",
+              "nap": 1
+            },
+            {
+              "ns": "firewall",
+              "nap": "ens1"
+            },
+            {
+              "ns": "vepc",
+              "nap": "ens1"
+            },
+            {
+              "ns": "vepc",
+              "nap": "ens2"
+            },
+            {
+              "ns": "end_point",
+              "nap": 2
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "name": "NCSRD_urllc",
+    "type": "urllc",
+    "ns": [
+      {
+        "name": "vepc",
+        "location": "minilab",
+        "naps": [
+          "ens1",
+          "ens2"
+        ]
+      }
+    ],
+    "ns_graph": [
+      [
+        {
+          "ns": "end_point",
+          "nap": 1
+        },
+        {
+          "ns": "vepc",
+          "nap": "ens1"
+        },
+        {
+          "ns": "vepc",
+          "nap": "ens2"
+        },
+        {
+          "ns": "end_point",
+          "nap": 2
+        }
+      ]
+    ]
+  }
+]

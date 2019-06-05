@@ -1,0 +1,16 @@
+{
+  "name": "nfvo-real-osm",
+  "nfvoip": "10.200.64.55",
+  "nfvousername": "*******",
+  "nfvopassword": "*******",
+  "tenantname": "admin",
+  "location": "rack-5, NCSRD",
+  "type": "OSM",
+  "version": "5",
+  "description": "This is a real NFVO to be added",
+  "config": {
+    "network": "flat",
+    "network-mode": "provider",
+    "wim-sap": "wim-name-1"
+  }
+}

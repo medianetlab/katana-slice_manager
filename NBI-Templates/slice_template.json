@@ -1,0 +1,42 @@
+{
+  "nsi": {
+    "id": "<nsi_id>",
+    "name": "<name_for_the_nst>",
+    "short-name": "<short_name_for_nst-optional>",
+    "description": "<nst_description>",
+    "nsd-ref": [
+      {
+        "id": "<ns1_id>",
+        "name": "<ns1_name>",
+        "short-name": "<ns1_short_name-optional>"
+      },
+      {
+        "id": "<ns2_id>",
+        "name": "<ns2_name>",
+        "short-name": "<ns2_short_name-optional>"
+      }
+    ],
+    "wim-ref": {
+      "services-segment": [
+        {
+          "service_id": "<id>",
+          "ip": "<A.B.C.D>"
+        },
+        {
+          "service_id": "<id>",
+          "ip": "<A.B.C.D>"
+        }
+      ],
+      "topology": "ELAN",
+      "bidirectional": "<True/False>",
+      "link_params": {
+        "bw": "<N>",
+        "latency": "<N>"
+      }
+    },
+    "radio-ref": {
+      "sst": "<..>",
+      "location": "<tac>"
+    }
+  }
+}
