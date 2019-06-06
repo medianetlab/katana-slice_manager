@@ -195,7 +195,6 @@ will be created\n')
                     for ivnfr_id in vnfr_id_list:
                         vnfr = osm.get_vnfr(ivnfr_id)
                         ip_list.append(osm.get_IPs(vnfr))
-            print(ip_list, flush=True)
 
             if (mongoUtils.count('ems') <= 0):
                 logging.warning('There is no registered EMS\n')
