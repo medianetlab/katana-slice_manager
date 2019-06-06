@@ -171,7 +171,8 @@ will be created\n')
             # *** STEP-3a: Cloud ***
             # Instantiate NS
             ns_id_dict = {}
-            for ins in new_ns_list:
+            for num, ins in enumerate(new_ns_list):
+                self.slice_json['nsi']['nsd-ref'][num]['deployment_time'] = time.time()
                 slice_vim_id = slice_vim_id_dict[placement_list[ins["name"]]["vim"]]
                 ns_id_dict[ins["name"]] = osm.instantiate_ns(
                     ins["name"],
@@ -180,14 +181,17 @@ will be created\n')
                 )
             # Get the nsr for each service and wait for the activation
             nsr_dict = {}
-            for ins in new_ns_list:
+            for num, ins in enumerate(new_ns_list):
                 nsr_dict[ins["name"]] = osm.get_nsr(ns_id_dict[ins["name"]])
                 while nsr_dict[ins["name"]]['operational-status'] != 'running':
                     time.sleep(10)
                     nsr_dict[ins["name"]] = osm.get_nsr(ns_id_dict[ins["name"]])
+                self.slice_json['nsi']['nsd-ref'][num]['deployment_time'] = time.time() - self.slice_json['nsi']['nsd-ref'][num]['deployment_time']
 
+            print(json.dumps(self.slice_json['nsi']['nsd-ref']), flush=True)
             # *** STEP-3b: Radio ***
             # Get the IPs for any radio delployed service
+            ip_list = []
             for ns_name, nsr in nsr_dict.items():
                 if ns_name == 'vepc':
                     vnfr_id_list = osm.get_vnfrId(nsr)
@@ -208,8 +212,12 @@ will be created\n')
                 emsUtils.conf_radio(emsd)
 
             logging.info("Status: Running")
+            self.slice_json['slice_deployment_time'] = time.time() - self.slice_json['created_at']  # unix epoch
+            #print(json.dumps(self.slice_json), flush=True)
+
         thread = Thread(target=do_work, kwargs={'request_json': self.slice_json})
         thread.start()
+
         return new_uuid
 
     def delete(self, uuid):
