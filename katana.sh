@@ -1,0 +1,31 @@
+#!/bin/bash
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+dock_copy=false
+
+case $key in
+    -f|--file)
+    FILE="$2"
+    POSITIONAL+=($1) # save it in an array for later
+    shift # past argument
+    shift # past value
+    dock_copy=true
+    ;;
+    *)    # unknown option
+    POSITIONAL+=($1) # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+if [ "$dock_copy" = true ]; then
+	docker cp $FILE katana-cli-container:/katana-cli/"$file_name"
+	file_name=${FILE##*/}
+	docker container exec -it katana-cli-container katana "${POSITIONAL[@]}" "$file_name"
+else
+	docker container exec -it katana-cli-container katana "${POSITIONAL[@]}"
+fi	
