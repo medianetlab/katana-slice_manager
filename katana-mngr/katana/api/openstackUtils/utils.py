@@ -48,22 +48,7 @@ def openstack_authorize(auth_url, project_name, username, password,
         # raise for logging purposes
         raise(e)
     else:
-        print(token)
-
-
-def openstack_connect(auth_url, project_name, username, password,
-                      user_domain_name='Default',
-                      project_domain_name='default'):
-    # we assume creds are correct
-    conn = openstack.connect(
-        auth_url=auth_url,
-        project_name=project_name,
-        username=username,
-        password=password,
-        user_domain_name=user_domain_name,
-        project_domain_name=project_domain_name,
-    )
-    return conn
+        print("Token: ", token, flush=True)
 
 
 def create_project(conn, name, description="Katana Slice Project"):
@@ -74,7 +59,8 @@ def create_project(conn, name, description="Katana Slice Project"):
     return project
 
 
-def create_user(conn, name, password="password", description="Katana Slice User"):
+def create_user(conn, name, password="password",
+                description="Katana Slice User"):
     user = conn.identity.create_user(
         name=name, password=password, description=description)
     return user
@@ -90,6 +76,16 @@ def combine_proj_user(conn, project, user):
     admin_user = conn.identity.find_user("admin", ignore_missing=False)
     conn.identity.assign_project_role_to_user(project, admin_user, adminrole)
     conn.identity.assign_project_role_to_user(project, admin_user, heatrole)
+
+
+def create_sec_group(conn, name, project):
+    """
+    Creates the security group to be assigned to the new tenant
+    """
+    sec_group = conn.create_security_group(
+        name=name, description="Katana Security Group", project_id=project.id)
+    conn.create_security_group_rule(sec_group)
+    return sec_group
 
 
 def delete_user(conn, name):
@@ -113,31 +109,39 @@ def delete_proj_user(conn, name):
         print("Failed. Project trying to delete, doesn't exist")
 
 
-def create_slice_prerequisites(tenant_project_name, tenant_project_description, tenant_project_user, tenant_project_password, selected_vim, slice_uuid):
-    
-    
-    # static for now
+def create_slice_prerequisites(tenant_project_name, tenant_project_description,
+                               tenant_project_user, tenant_project_password,
+                               selected_vim, slice_uuid):
+    """
+    Creates the tenant (project, user, security_group) on the specivied vim
+    """
+
     auth_url = selected_vim['auth_url']
     admin_project_name = selected_vim['admin_project_name']
     username = selected_vim['username']
     password = selected_vim['password']
 
-    conn = openstack.connect(
+    vim_auth = dict(
         auth_url=auth_url,
         project_name=admin_project_name,
         username=username,
         password=password,
         user_domain_name='Default',
-        project_domain_name='default'
-    )
+        project_domain_name='default')
+
+    conn = openstack.connection.Connection(auth=vim_auth)
 
     # creates the project in Openstack
-    project = create_project(conn, tenant_project_name, tenant_project_description)
-        
+    project = create_project(conn, tenant_project_name,
+                             tenant_project_description)
+
     # creates the user
     user = create_user(conn, tenant_project_user, "password")
-        
+
     # assigns some needed roles
     combine_proj_user(conn, project, user)
+
+    # creates the security group and rules
+    sec_group = create_sec_group(conn, tenant_project_name, project)
 
     return {"sliceProjectId": project.id, "sliceUserId": user.id}

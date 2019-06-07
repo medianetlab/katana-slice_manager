@@ -32,7 +32,6 @@ class VimView(FlaskView):
         Add a new vim. The request must provide the vim details.
         used by: `katana vim add -f [yaml file]`
         """
-        print(request.json, flush=True)
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
