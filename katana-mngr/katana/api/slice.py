@@ -77,7 +77,6 @@ class SliceView(FlaskView):
             slice_type = self.slice_json['nsi']['type']
             data = {"type": slice_type}
             registered_service = mongoUtils.find('service', data=data)
-            print(registered_service, flush=True)
             if registered_service is not None:
                 registered_ns_list = registered_service['ns']
                 for new_ns in new_ns_list:
@@ -105,7 +104,6 @@ will be created\n')
                 for new_ns in new_ns_list:
                     placement_list[new_ns["name"]] = {"vim": default_vim["_id"]}
                 vim_list.append(default_vim)
-            print (placement_list, flush=True)
 
             # TODO:Create the network graph
 
@@ -187,8 +185,8 @@ will be created\n')
                     time.sleep(10)
                     nsr_dict[ins["name"]] = osm.get_nsr(ns_id_dict[ins["name"]])
                 self.slice_json['nsi']['nsd-ref'][num]['deployment_time'] = time.time() - self.slice_json['nsi']['nsd-ref'][num]['deployment_time']
+            mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
 
-            print(json.dumps(self.slice_json['nsi']['nsd-ref']), flush=True)
             # *** STEP-3b: Radio ***
             # Get the IPs for any radio delployed service
             ip_list = []
@@ -212,8 +210,9 @@ will be created\n')
                 emsUtils.conf_radio(emsd)
 
             logging.info("Status: Running")
+            self.slice_json['status'] = 'Running'
             self.slice_json['slice_deployment_time'] = time.time() - self.slice_json['created_at']  # unix epoch
-            #print(json.dumps(self.slice_json), flush=True)
+            mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
 
         thread = Thread(target=do_work, kwargs={'request_json': self.slice_json})
         thread.start()
