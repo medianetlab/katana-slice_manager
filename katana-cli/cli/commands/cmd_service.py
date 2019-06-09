@@ -27,9 +27,12 @@ def ls():
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
         # click.echo(json.dumps(json_data, indent=2))
-        print(console_formatter("SERVICE_ID", "CREATED AT"))
+        print(console_formatter("SERVICE_ID", "TYPE", "CREATED AT"))
         for i in range(len(json_data)):
-            print(json_data[i]["_id"], datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime('%Y-%m-%d %H:%M:%S'))
+            print(console_formatter(
+                json_data[i]["_id"],
+                json_data[i]["type"],
+                datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime('%Y-%m-%d %H:%M:%S')))
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -99,8 +102,9 @@ cli.add_command(inspect)
 cli.add_command(add)
 
 
-def console_formatter(uuid,created_at):
-    return '{0: <40}{1: <25}'.format(
+def console_formatter(uuid, serv_type, created_at):
+    return '{0: <40}{1: <25}{2: <20}'.format(
         uuid,
+        serv_type,
         created_at
     )

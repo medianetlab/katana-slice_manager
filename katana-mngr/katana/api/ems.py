@@ -16,7 +16,12 @@ class EmsView(FlaskView):
         Returns a list of EMS and their details,
         used by: `katana ems ls`
         """
-        return dumps(mongoUtils.index("ems"))
+        ems_data = mongoUtils.index("ems")
+        return_data = []
+        for iems in ems_data:
+            return_data.append(dict(_id=iems['_id'],
+                               created_at=iems['created_at']))
+        return dumps(return_data)
 
     def get(self, uuid):
         """
@@ -27,8 +32,8 @@ class EmsView(FlaskView):
 
     def post(self):
         """
-        Add a new EMS. The request must provide the wim details.
-        used by: `katana wim add -f [yaml file]`
+        Add a new EMS. The request must provide the ems details.
+        used by: `katana ems add -f [yaml file]`
         """
         # TODO: Test connectivity with the EMS
         new_uuid = str(uuid.uuid4())

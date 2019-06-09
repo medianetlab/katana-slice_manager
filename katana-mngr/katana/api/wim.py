@@ -16,7 +16,12 @@ class WimView(FlaskView):
         Returns a list of wims and their details,
         used by: `katana wim ls`
         """
-        return dumps(mongoUtils.index("wim"))
+        wim_data = mongoUtils.index("wim")
+        return_data = []
+        for iwim in wim_data:
+            return_data.append(dict(_id=iwim['_id'],
+                               created_at=iwim['created_at']))
+        return dumps(return_data)
 
     def get(self, uuid):
         """

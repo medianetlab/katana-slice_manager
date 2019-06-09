@@ -27,7 +27,9 @@ def ls():
         json_data = json.loads(r.content)
         print(console_formatter("WIM_ID", "CREATED AT"))
         for i in range(len(json_data)):
-            print(json_data[i]["_id"], datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime('%Y-%m-%d %H:%M:%S'))
+            print(console_formatter(
+                json_data[i]["_id"],
+                datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime('%Y-%m-%d %H:%M:%S')))
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)

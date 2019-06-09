@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, request, abort
+from flask import request
 from flask_classful import FlaskView, route
 from katana.api.openstackUtils import utils as openstackUtils
 from katana.api.mongoUtils import mongoUtils
@@ -7,15 +7,12 @@ from katana.api.osmUtils import osmUtils
 from katana.api.wimUtils import wimUtils
 from katana.api.emsUtils import emsUtils
 
-import io
-import yaml
 import json
+import pickle
 import uuid
 from bson.json_util import dumps
-import threading
 from threading import Thread
 import time
-import requests
 import logging
 import urllib3
 
@@ -33,7 +30,13 @@ class SliceView(FlaskView):
         Returns a list of slices and their details,
         used by: `katana slice ls`
         """
-        return dumps(mongoUtils.index("slice"))
+        slice_data = mongoUtils.index("slice")
+        return_data = []
+        for islice in slice_data:
+            return_data.append(dict(_id=islice['_id'],
+                                    created_at=islice['created_at'],
+                                    status=islice['status']))
+        return dumps(return_data)
 
     def get(self, uuid):
         """
@@ -41,6 +44,14 @@ class SliceView(FlaskView):
         used by: `katana slice inspect [uuid]`
         """
         return dumps((mongoUtils.get("slice", uuid)))
+
+    @route('/<uuid>/time')
+    def show_time(self, uuid):
+        """
+        Returns deployment time of a slice
+        """
+        islice = mongoUtils.get("slice", uuid)
+        return dumps(islice["deployment_time"])
 
     def post(self):
         """
@@ -51,14 +62,19 @@ class SliceView(FlaskView):
         request.json['_id'] = new_uuid
         request.json['status'] = 'init'
         request.json['created_at'] = time.time()  # unix epoch
+        request.json['deployment_time'] = dict(
+            Slice_Deployment_Time='N/A',
+            Placement_Time='N/A',
+            Provisioning_Time='N/A',
+            NS_Deployment_Time='N/A',
+            WAN_Deployment_Time='N/A',
+            Radio_Configuration_Time='N/A')
         mongoUtils.add("slice", request.json)
         self.slice_json = request.json
-
         # background work
         # temp hack from:
         # https://stackoverflow.com/questions/48994440/execute-a-function-after-flask-returns-response
         # might be replaced with Celery...
-
         def do_work(request_json):
 
             # TODO !!!
@@ -68,6 +84,7 @@ class SliceView(FlaskView):
             self.slice_json['status'] = 'Placement'
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
             logging.info("Status: Placement")
+            placement_start_time = time.time()
 
             data = {"location": "core"}
             default_vim = mongoUtils.find('vim', data=data)
@@ -87,14 +104,18 @@ class SliceView(FlaskView):
                                                None)
                     if registered_ns_index is None:
                         logging.warning("Network Service {0} isn't registered.\
-                        Will be placed at the default core NFVI\n".format(new_ns["name"]))
+                        Will be placed at the default core NFVI\n".format(
+                            new_ns["name"]))
                         selected_vim = default_vim
-                        placement_list[new_ns["name"]] = {"vim": selected_vim["_id"]}
+                        placement_list[new_ns["name"]] =\
+                            {"vim": selected_vim["_id"]}
                     else:
-                        vim_location = registered_ns_list[registered_ns_index]['location']
+                        vim_location =\
+                            registered_ns_list[registered_ns_index]['location']
                         data = {"location": vim_location}
                         selected_vim = mongoUtils.find('vim', data=data)
-                        placement_list[new_ns["name"]] = {"vim": selected_vim["_id"]}
+                        placement_list[new_ns["name"]] =\
+                            {"vim": selected_vim["_id"]}
                     if selected_vim not in vim_list:
                         vim_list.append(selected_vim)
             else:
@@ -102,21 +123,24 @@ class SliceView(FlaskView):
 Network services will be placed on the default core NFVI and no network graph \
 will be created\n')
                 for new_ns in new_ns_list:
-                    placement_list[new_ns["name"]] = {"vim": default_vim["_id"]}
+                    placement_list[new_ns["name"]] =\
+                        {"vim": default_vim["_id"]}
                 vim_list.append(default_vim)
 
             # TODO:Create the network graph
+            self.slice_json['deployment_time']['Placement_Time'] = format(
+                time.time() - placement_start_time, '.4f')
 
             # **** STEP-2: Provisioning ****
             self.slice_json['status'] = 'Provisioning'
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
             logging.info("Status: Provisioning")
+            prov_start_time = time.time()
+
             # *** STEP-2a: Cloud ***
-            # Create the NFVO object
-            nfvo = osmUtils.select_OSM()
-            osm = osmUtils.osmAPI(nfvo["nfvoip"], nfvo["token_id"],
-                                  nfvo["nfvousername"],
-                                  nfvo["nfvopassword"])
+            # Select NFVO - Assume that there is only one registered
+            nfvo_list = list(mongoUtils.index('nfvo'))
+            nfvo = pickle.loads(nfvo_list[0]['nfvo'])
 
             # Create a new tenant/project on every VIM used in the placement
             slice_vim_id_dict = {}
@@ -138,19 +162,22 @@ will be created\n')
                     self.slice_json['_id']
                 )
 
-                # STEP-2a-ii: add VIM to OSM
-                slice_vim_id_dict[ivim["_id"]] = osm.addVim(tenant_project_name, ivim["password"], ivim['type'], ivim['auth_url'], ivim["username"])
+                # STEP-2a-ii: add VIM to NFVO
+                slice_vim_id_dict[ivim["_id"]] = nfvo.addVim(
+                    tenant_project_name, ivim["password"], ivim['type'],
+                    ivim['auth_url'], ivim["username"])
 
             # *** STEP-2b: WAN ***
             if (mongoUtils.count('wim') <= 0):
                 logging.warning('There is no registered WIM\n')
             else:
                 # Create the WAN Slice Descriptor
+                wan_start_time = time.time()
                 wsd = {}
                 wsd['services-segment'] = []
                 try:
                     services = self.slice_json["nsi"]["wim-ref"]["services-segment"]
-                except:
+                except Exception:
                     logging.warning("There are no services on the slice descriptor")
                 else:
                     for service in services:
@@ -161,6 +188,10 @@ will be created\n')
                 # TODO Add the intermediate VIMs
                 # Create the WAN Slice
                 wimUtils.create_slice(wsd)
+                self.slice_json['deployment_time']['WAN_Deployment_Time'] =\
+                    format(time.time() - wan_start_time, '.4f')
+            self.slice_json['deployment_time']['Provisioning_Time'] =\
+                format(time.time() - prov_start_time, '.4f')
 
             # **** STEP-3: Activation ****
             self.slice_json['status'] = 'Activation'
@@ -168,11 +199,12 @@ will be created\n')
             logging.info("Status: Activation")
             # *** STEP-3a: Cloud ***
             # Instantiate NS
+            self.slice_json['deployment_time']['NS_Deployment_Time'] = {}
             ns_id_dict = {}
             for num, ins in enumerate(new_ns_list):
-                self.slice_json['nsi']['nsd-ref'][num]['deployment_time'] = time.time()
+                ns_start_time = time.time()
                 slice_vim_id = slice_vim_id_dict[placement_list[ins["name"]]["vim"]]
-                ns_id_dict[ins["name"]] = osm.instantiate_ns(
+                ns_id_dict[ins["name"]] = nfvo.instantiate_ns(
                     ins["name"],
                     ins["id"],
                     slice_vim_id
@@ -180,11 +212,12 @@ will be created\n')
             # Get the nsr for each service and wait for the activation
             nsr_dict = {}
             for num, ins in enumerate(new_ns_list):
-                nsr_dict[ins["name"]] = osm.get_nsr(ns_id_dict[ins["name"]])
+                nsr_dict[ins["name"]] = nfvo.get_nsr(ns_id_dict[ins["name"]])
                 while nsr_dict[ins["name"]]['operational-status'] != 'running':
                     time.sleep(10)
-                    nsr_dict[ins["name"]] = osm.get_nsr(ns_id_dict[ins["name"]])
-                self.slice_json['nsi']['nsd-ref'][num]['deployment_time'] = time.time() - self.slice_json['nsi']['nsd-ref'][num]['deployment_time']
+                    nsr_dict[ins["name"]] = nfvo.get_nsr(ns_id_dict[ins["name"]])
+                self.slice_json['deployment_time']['NS_Deployment_Time'][ins['name']] =\
+                    format(time.time() - ns_start_time, '.4f')
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
 
             # *** STEP-3b: Radio ***
@@ -192,15 +225,16 @@ will be created\n')
             ip_list = []
             for ns_name, nsr in nsr_dict.items():
                 if ns_name == 'vepc':
-                    vnfr_id_list = osm.get_vnfrId(nsr)
+                    vnfr_id_list = nfvo.get_vnfrId(nsr)
                     ip_list = []
                     for ivnfr_id in vnfr_id_list:
-                        vnfr = osm.get_vnfr(ivnfr_id)
-                        ip_list.append(osm.get_IPs(vnfr))
+                        vnfr = nfvo.get_vnfr(ivnfr_id)
+                        ip_list.append(nfvo.get_IPs(vnfr))
 
             if (mongoUtils.count('ems') <= 0):
                 logging.warning('There is no registered EMS\n')
             else:
+                radio_start_time = time.time()
                 emsd = {
                     "sst": self.slice_json["nsi"]["type"],
                     "location": self.slice_json["nsi"]["radio-ref"]["location"],
@@ -208,10 +242,13 @@ will be created\n')
                     "ipservices": ip_list[0][0]
                 }
                 emsUtils.conf_radio(emsd)
+                self.slice_json['deployment_time']['Radio_Configuration_Time']\
+                    = format(time.time() - radio_start_time, '.4f')
 
             logging.info("Status: Running")
             self.slice_json['status'] = 'Running'
-            self.slice_json['slice_deployment_time'] = time.time() - self.slice_json['created_at']  # unix epoch
+            self.slice_json['deployment_time']['Slice_Deployment_Time'] =\
+                format(time.time() - self.slice_json['created_at'], '.4f')
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
 
         thread = Thread(target=do_work, kwargs={'request_json': self.slice_json})

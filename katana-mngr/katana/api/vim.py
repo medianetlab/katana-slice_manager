@@ -18,7 +18,13 @@ class VimView(FlaskView):
         Returns a list of vims and their details,
         used by: `katana vim ls`
         """
-        return dumps(mongoUtils.index("vim"))
+        vim_data = mongoUtils.index("vim")
+        return_data = []
+        for ivim in vim_data:
+            return_data.append(dict(_id=ivim['_id'],
+                               created_at=ivim['created_at'],
+                               type=ivim['type']))
+        return dumps(return_data)
 
     def get(self, uuid):
         """

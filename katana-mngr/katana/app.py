@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, request
-import io
-import yaml
-import json
-import uuid
+from flask import Flask
 from katana.api.db import DBView
 from katana.api.vim import VimView
 from katana.api.wim import WimView

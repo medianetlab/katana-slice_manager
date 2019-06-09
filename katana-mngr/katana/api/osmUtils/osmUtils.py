@@ -14,40 +14,40 @@ def select_OSM(id=None):
         return nfvo
 
 
-def get_token(ip, username, password, project_id='admin', timeout=5):
-    """
-    Returns a valid Token for OSM
-    """
-    headers = {
-        'Content-Type': 'application/yaml',
-        'Accept': 'application/json',
-    }
-
-    data = "{username: '" + username + "', password: '" + \
-        password + "', project_id: '" + project_id + "'}"
-    url = f"https://{ip}:9999/osm/admin/v1/tokens"
-    # https://ip_adress:9999/osm/admin/v1/tokens
-    response = requests.post(url,
-                             headers=headers, data=data,
-                             verify=False, timeout=timeout)
-    token = response.json()
-    # return token
-    return(token['id'])
-
-
-class osmAPI():
+class Osm():
     """
     Class implementing the communication API with OSM
     """
 
-    def __init__(self, ip, token, username, password, project_id="admin", timeout=5):
+    def __init__(self, ip, username, password, project_id="admin", timeout=5):
         """
         Initialize an object of the class
         """
         self.ip = ip
-        self.osm_username = username
-        self.osm_password = password
-        self.token = token
+        self.username = username
+        self.password = password
+        self.project_id = project_id
+        self.token = ""
+        self.timeout = timeout
+
+    def get_token(self):
+        """
+        Returns a valid Token for OSM
+        """
+        headers = {
+            'Content-Type': 'application/yaml',
+            'Accept': 'application/json',
+        }
+
+        data = "{username: '" + self.username + "', password: '" + \
+            self.password + "', project_id: '" + self.project_id + "'}"
+        url = f"https://{self.ip}:9999/osm/admin/v1/tokens"
+        response = requests.post(url,
+                                 headers=headers, data=data,
+                                 verify=False, timeout=self.timeout)
+        self.token = response.json()['id']
+        # return token id
+        return(self.token)
 
     def addVim(self, vimName, vimPassword, vimType, vimUrl, vimUser):
         """
@@ -55,15 +55,21 @@ class osmAPI():
         Returns VIM id
         """
         osm_url = f"https://{self.ip}:9999/osm/admin/v1/vim_accounts"
-        headers = {
-            'Content-Type': 'application/yaml',
-            'Accept': 'application/yaml',
-            'Authorization': f'Bearer {self.token}',
-        }
-        data = '{{ name: "{0}", vim_password: "{1}", vim_tenant_name: "{2}", vim_type: "{3}", vim_url: "{4}", vim_user: "{5}" }}'.format(
+        data = '{{ name: "{0}", vim_password: "{1}", vim_tenant_name: "{2}",\
+            vim_type: "{3}", vim_url: "{4}", vim_user: "{5}" }}'.format(
             vimName, vimPassword, vimName, vimType, vimUrl, vimUser)
-        response = requests.post(osm_url, headers=headers, data=data, verify=False)
-        vim_id = response.text.split(": ")[1]
+        while True:
+            headers = {
+                'Content-Type': 'application/yaml',
+                'Accept': 'application/yaml',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.post(osm_url, headers=headers, data=data, verify=False)
+            if (response.status_code != 401):
+                vim_id = response.text.split(": ")[1]
+                break
+            else:
+                self.get_token()
         return vim_id
 
     def instantiate_ns(self, nsName, nsdId, vimAccountId):
@@ -72,16 +78,21 @@ class osmAPI():
         Returns the NS ID
         """
         osm_url = f"https://{self.ip}:9999/osm/nslcm/v1/ns_instances_content"
-        headers = {
-            'Content-Type': 'application/yaml',
-            'Accept': 'application/json',
-            'Authorization': f'Bearer {self.token}',
-        }
 
         data = "{{ nsName: {0}, nsdId: {1}, vimAccountId: {2} }}".format(
             nsName, nsdId, vimAccountId)
-        response = requests.post(osm_url, headers=headers, data=data, verify=False)
-        nsId = response.json()
+        while True:
+            headers = {
+                'Content-Type': 'application/yaml',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.post(osm_url, headers=headers, data=data, verify=False)
+            if (response.status_code != 401):
+                nsId = response.json()
+                break
+            else:
+                self.get_token()
         return (nsId['id'])
 
     def get_nsr(self, nsId):
@@ -89,14 +100,19 @@ class osmAPI():
         Returns the NSR for a given NS ID
         """
         osm_url = f"https://{self.ip}:9999/osm/nslcm/v1/ns_instances/{nsId}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': f'Bearer {self.token}',
-        }
         # Get the NSR from NS ID in json format
-        response = requests.get(osm_url, headers=headers, verify=False)
-        nsr = response.json()
+        while True:
+            headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.get(osm_url, headers=headers, verify=False)
+            if (response.status_code != 401):
+                nsr = response.json()
+                break
+            else:
+                self.get_token()
         return (nsr)
 
     def get_vnfrId(self, nsr):
@@ -111,14 +127,19 @@ class osmAPI():
         Retrieve VNFR from VNFRID
         """
         osm_url = f"https://{self.ip}:9999/osm/nslcm/v1/vnf_instances/{vnfrId}"
-        headers = {
-            'Content-Type': 'application/yaml',
-            'Accept': 'application/json',
-            'Authorization': f'Bearer {self.token}',
-        }
-        # Get the NSR from NS ID in json format
-        response = requests.get(osm_url, headers=headers, verify=False)
-        vnfr = response.json()
+        # Get the VNFR from VNF ID in json format
+        while True:
+            headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.get(osm_url, headers=headers, verify=False)
+            if (response.status_code != 401):
+                vnfr = response.json()
+                break
+            else:
+                self.get_token()
         return (vnfr)
 
     def get_IPs(self, vnfr):

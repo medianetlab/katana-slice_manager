@@ -16,7 +16,13 @@ class ServiceView(FlaskView):
         Returns a list of service and their details,
         used by: `katana service ls`
         """
-        return dumps(mongoUtils.index("service"))
+        service_data = mongoUtils.index("service")
+        return_data = []
+        for iservice in service_data:
+            return_data.append(dict(_id=iservice['_id'],
+                               created_at=iservice['created_at'],
+                               type=iservice['type']))
+        return dumps(return_data)
 
     def get(self, uuid):
         """
