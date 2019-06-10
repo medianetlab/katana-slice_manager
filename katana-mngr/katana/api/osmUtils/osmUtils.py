@@ -49,15 +49,18 @@ class Osm():
         # return token id
         return(self.token)
 
-    def addVim(self, vimName, vimPassword, vimType, vimUrl, vimUser):
+    def addVim(self, vimName, vimPassword, vimType, vimUrl, vimUser, secGroup):
         """
         Registers a VIM to the OSM VIM account list
         Returns VIM id
         """
         osm_url = f"https://{self.ip}:9999/osm/admin/v1/vim_accounts"
+        config = {
+            "security_groups": secGroup
+        }
         data = '{{ name: "{0}", vim_password: "{1}", vim_tenant_name: "{2}",\
-            vim_type: "{3}", vim_url: "{4}", vim_user: "{5}" }}'.format(
-            vimName, vimPassword, vimName, vimType, vimUrl, vimUser)
+            vim_type: "{3}", vim_url: "{4}", vim_user: "{5}" , config: {6}}}'.format(
+            vimName, vimPassword, vimName, vimType, vimUrl, vimUser, config)
         while True:
             headers = {
                 'Content-Type': 'application/yaml',

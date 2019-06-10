@@ -87,7 +87,8 @@ class SliceView(FlaskView):
             placement_start_time = time.time()
 
             data = {"location": "core"}
-            default_vim = mongoUtils.find('vim', data=data)
+            get_vim = mongoUtils.find('vim', data=data)
+            default_vim = get_vim
             vim_list = []
             placement_list = {}
             new_ns_list = self.slice_json['nsi']['nsd-ref']
@@ -113,7 +114,8 @@ class SliceView(FlaskView):
                         vim_location =\
                             registered_ns_list[registered_ns_index]['location']
                         data = {"location": vim_location}
-                        selected_vim = mongoUtils.find('vim', data=data)
+                        get_vim = mongoUtils.find('vim', data=data)
+                        selected_vim = get_vim
                         placement_list[new_ns["name"]] =\
                             {"vim": selected_vim["_id"]}
                     if selected_vim not in vim_list:
@@ -153,26 +155,33 @@ will be created\n')
                 tenant_project_password = 'password'
 
                 # Create the project on the NFVi
-                ids = openstackUtils.create_slice_prerequisites(
+                ivim_obj = pickle.loads(ivim["vim"])
+                ids = ivim_obj.create_slice_prerequisites(
                     tenant_project_name,
                     tenant_project_description,
                     tenant_project_user,
                     tenant_project_password,
-                    ivim,
                     self.slice_json['_id']
                 )
+                # Add the new tenant to the database
+                ivim['tenants'].append(ids)
+                mongoUtils.update("vim", ivim['_id'], ivim)
 
                 # STEP-2a-ii: add VIM to NFVO
                 slice_vim_id_dict[ivim["_id"]] = nfvo.addVim(
                     tenant_project_name, ivim["password"], ivim['type'],
-                    ivim['auth_url'], ivim["username"])
+                    ivim['auth_url'], ivim["username"], ids["secGroupName"])
 
             # *** STEP-2b: WAN ***
             if (mongoUtils.count('wim') <= 0):
                 logging.warning('There is no registered WIM\n')
             else:
-                # Create the WAN Slice Descriptor
                 wan_start_time = time.time()
+                # Select WIM - Assume that there is only one registered
+                wim_list = list(mongoUtils.index('wim'))
+                wim = pickle.loads(wim_list[0]['wim'])
+
+                # Create the WAN Slice Descriptor
                 wsd = {}
                 wsd['services-segment'] = []
                 try:
@@ -187,7 +196,7 @@ will be created\n')
                 wsd['link_params'] = self.slice_json['nsi']['wim-ref']['link_params']
                 # TODO Add the intermediate VIMs
                 # Create the WAN Slice
-                wimUtils.create_slice(wsd)
+                wim.create_slice(wsd)
                 self.slice_json['deployment_time']['WAN_Deployment_Time'] =\
                     format(time.time() - wan_start_time, '.4f')
             self.slice_json['deployment_time']['Provisioning_Time'] =\
@@ -234,6 +243,9 @@ will be created\n')
             if (mongoUtils.count('ems') <= 0):
                 logging.warning('There is no registered EMS\n')
             else:
+                # Select NFVO - Assume that there is only one registered
+                ems_list = list(mongoUtils.index('ems'))
+                ems = pickle.loads(ems_list[0]['ems'])
                 radio_start_time = time.time()
                 emsd = {
                     "sst": self.slice_json["nsi"]["type"],
@@ -241,7 +253,8 @@ will be created\n')
                     "ipsdn": ip_list[0][1],
                     "ipservices": ip_list[0][0]
                 }
-                emsUtils.conf_radio(emsd)
+                print("DEBUG: EMS = ", ems.ip, flush=True)
+                ems.conf_radio(emsd)
                 self.slice_json['deployment_time']['Radio_Configuration_Time']\
                     = format(time.time() - radio_start_time, '.4f')
 

@@ -2,10 +2,11 @@
 from flask import request
 from flask_classful import FlaskView
 from katana.api.openstackUtils import utils as openstackUtils
-from katana.api.wimUtils import wimUtils
 import uuid
 from katana.api.mongoUtils import mongoUtils
 from bson.json_util import dumps
+from bson.binary import Binary
+import pickle
 import time
 import logging
 
@@ -41,6 +42,7 @@ class VimView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
+        request.json['tenants'] = []
 
         # TODO implement authorizing VIM connection
         if request.json['type'] == "openstack":
@@ -49,19 +51,25 @@ class VimView(FlaskView):
             auth_url = request.json['auth_url']
             project_name = request.json['admin_project_name']
             try:
-                openstackUtils.openstack_authorize(
-                    auth_url=auth_url,
-                    project_name=project_name,
-                    username=username,
-                    password=password)
+                new_vim = openstackUtils.Openstack(uuid=new_uuid,
+                                                   auth_url=auth_url,
+                                                   project_name=project_name,
+                                                   username=username,
+                                                   password=password)
+                # new_vim.openstack_authorize()
             except AttributeError as e:
                 response = dumps({'error': 'Openstack authorization failed.'})
                 return response, 400
             else:
                 if (mongoUtils.count("wim") > 0):
-                    wimUtils.register_vim(request.json)
+                    # Select WIM - Assume that there is only one registered
+                    wim_list = list(mongoUtils.index('wim'))
+                    wim = pickle.loads(wim_list[0]['wim'])
+                    wim.register_vim(request.json)
                 else:
                     logging.warning('There is no registered WIM\n')
+                thebytes = pickle.dumps(new_vim)
+                request.json['vim'] = Binary(thebytes)
                 return mongoUtils.add("vim", request.json)
         else:
             response = dumps({'error': 'This type VIM is not supported'})

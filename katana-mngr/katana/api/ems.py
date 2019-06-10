@@ -3,9 +3,12 @@ from flask import request
 from flask_classful import FlaskView
 import uuid
 from bson.json_util import dumps
+from bson.binary import Binary
+import pickle
 import time
 
 from katana.api.mongoUtils import mongoUtils
+from katana.api.emsUtils import emsUtils
 
 
 class EmsView(FlaskView):
@@ -39,4 +42,8 @@ class EmsView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
+        ems = emsUtils.Ems(request.json['url'])
+        thebytes = pickle.dumps(ems)
+        request.json['ems'] = Binary(thebytes)
+        print("DEBUG: EMS CREWTED", flush=True)
         return mongoUtils.add('ems', request.json)

@@ -3,9 +3,12 @@ from flask import request
 from flask_classful import FlaskView
 import uuid
 from bson.json_util import dumps
+from bson.binary import Binary
+import pickle
 import time
 
 from katana.api.mongoUtils import mongoUtils
+from katana.api.wimUtils import wimUtils
 
 
 class WimView(FlaskView):
@@ -39,4 +42,8 @@ class WimView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
+        wim = wimUtils.Wim(request.json['url'])
+        thebytes = pickle.dumps(wim)
+        request.json['wim'] = Binary(thebytes)
+        print("DEBUG: WIM CREWTED", flush=True)
         return mongoUtils.add('wim', request.json)
