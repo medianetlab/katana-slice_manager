@@ -1,4 +1,17 @@
-# katana Slice Manager version 0.1.0
+# katana Slice Manager version 0.1.1
+
+## New in version 0.1.1
+### New Features
+- Deployment time measurement per domain and task
+- New API and CLI command for deployment time exposure
+
+### Changes
+- Create object for each MANO component instance (NFVO, VIM, WIM, EMS)
+- New print format on index API
+
+### Bugs Fixed
+- Openstack security group
+- OSM expired token
 
 ## Quick Start
 
