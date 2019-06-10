@@ -2,8 +2,8 @@
 from flask import request
 from flask_classful import FlaskView
 from katana.api.openstackUtils import utils as openstackUtils
-import uuid
 from katana.api.mongoUtils import mongoUtils
+import uuid
 from bson.json_util import dumps
 from bson.binary import Binary
 import pickle

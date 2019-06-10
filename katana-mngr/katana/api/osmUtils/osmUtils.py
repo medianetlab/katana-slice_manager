@@ -55,12 +55,9 @@ class Osm():
         Returns VIM id
         """
         osm_url = f"https://{self.ip}:9999/osm/admin/v1/vim_accounts"
-        config = {
-            "security_groups": secGroup
-        }
         data = '{{ name: "{0}", vim_password: "{1}", vim_tenant_name: "{2}",\
             vim_type: "{3}", vim_url: "{4}", vim_user: "{5}" , config: {6}}}'.format(
-            vimName, vimPassword, vimName, vimType, vimUrl, vimUser, config)
+            vimName, vimPassword, vimName, vimType, vimUrl, vimUser, secGroup)
         while True:
             headers = {
                 'Content-Type': 'application/yaml',

@@ -148,29 +148,33 @@ will be created\n')
             slice_vim_id_dict = {}
             for ivim in vim_list:
                 # STEP-2a-i: openstack prerequisites
-                # Define project parameters
-                tenant_project_name = 'katana_{0}'.format(self.slice_json['_id'])
-                tenant_project_description = 'katana_{0}'.format(self.slice_json['_id'])
-                tenant_project_user = 'katana_{0}'.format(self.slice_json['_id'])
-                tenant_project_password = 'password'
+                if ivim["type"] == "openstack":
+                    # Define project parameters
+                    tenant_project_name = 'katana_{0}'.format(self.slice_json['_id'])
+                    tenant_project_description = 'katana_{0}'.format(self.slice_json['_id'])
+                    tenant_project_user = 'katana_{0}'.format(self.slice_json['_id'])
+                    tenant_project_password = 'password'
 
-                # Create the project on the NFVi
-                ivim_obj = pickle.loads(ivim["vim"])
-                ids = ivim_obj.create_slice_prerequisites(
-                    tenant_project_name,
-                    tenant_project_description,
-                    tenant_project_user,
-                    tenant_project_password,
-                    self.slice_json['_id']
-                )
-                # Add the new tenant to the database
-                ivim['tenants'].append(ids)
-                mongoUtils.update("vim", ivim['_id'], ivim)
+                    # Create the project on the NFVi
+                    ivim_obj = pickle.loads(ivim["vim"])
+                    ids = ivim_obj.create_slice_prerequisites(
+                        tenant_project_name,
+                        tenant_project_description,
+                        tenant_project_user,
+                        tenant_project_password,
+                        self.slice_json['_id']
+                    )
+                    # Add the new tenant to the database
+                    ivim['tenants'].append(ids)
+                    mongoUtils.update("vim", ivim['_id'], ivim)
 
-                # STEP-2a-ii: add VIM to NFVO
-                slice_vim_id_dict[ivim["_id"]] = nfvo.addVim(
-                    tenant_project_name, ivim["password"], ivim['type'],
-                    ivim['auth_url'], ivim["username"], ids["secGroupName"])
+                    # Update the config parameter for the tenant
+                    ivim['config']['security_groups'] = ids["secGroupName"]
+
+                    # STEP-2a-ii: add VIM to NFVO
+                    slice_vim_id_dict[ivim["_id"]] = nfvo.addVim(
+                        tenant_project_name, ivim["password"], ivim['type'],
+                        ivim['auth_url'], ivim["username"], ivim['config'])
 
             # *** STEP-2b: WAN ***
             if (mongoUtils.count('wim') <= 0):
