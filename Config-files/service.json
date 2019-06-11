@@ -4,7 +4,7 @@
     "type": "embb",
     "ns": [
       {
-        "name": "vepc",
+        "name": "MCPTT_ci",
         "location": "core",
         "naps": [
           "ens1",
@@ -12,8 +12,8 @@
         ]
       },
       {
-        "name": "firewall",
-        "location": "core",
+        "name": "test",
+        "location": "edge",
         "naps": [
           "ens1"
         ],
