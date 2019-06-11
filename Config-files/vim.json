@@ -10,5 +10,5 @@
   "description": "This is a real VIM to be added",
   "config": {
     "security_groups": "TBD"
-  },
+  }
 }
