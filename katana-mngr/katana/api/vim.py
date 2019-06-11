@@ -46,11 +46,11 @@ class VimView(FlaskView):
         request.json['tenants'] = []
 
         # TODO implement authorizing VIM connection
+        username = request.json['username']
+        password = request.json['password']
+        auth_url = request.json['auth_url']
+        project_name = request.json['admin_project_name']
         if request.json['type'] == "openstack":
-            username = request.json['username']
-            password = request.json['password']
-            auth_url = request.json['auth_url']
-            project_name = request.json['admin_project_name']
             try:
                 new_vim = openstackUtils.Openstack(uuid=new_uuid,
                                                    auth_url=auth_url,
@@ -73,16 +73,12 @@ class VimView(FlaskView):
                 request.json['vim'] = Binary(thebytes)
                 return mongoUtils.add("vim", request.json)
         elif request.json['type'] == "opennebula":
-            username = request.json['username']
-            password = request.json['password']
-            auth_url = request.json['auth_url']
-            project_name = request.json['admin_project_name']
             try:
                 new_vim = opennebulaUtils.Opennebula(uuid=new_uuid,
-                                                   auth_url=auth_url,
-                                                   project_name=project_name,
-                                                   username=username,
-                                                   password=password)
+                                                     auth_url=auth_url,
+                                                     project_name=project_name,
+                                                     username=username,
+                                                     password=password)
             except AttributeError as e:
                 response = dumps({'error': 'OpenNebula authorization failed.'})
                 return response, 400
