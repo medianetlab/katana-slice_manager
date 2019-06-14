@@ -1,11 +1,6 @@
 from flask import request
 from flask_classful import FlaskView, route
-from katana.api.openstackUtils import utils as openstackUtils
-from katana.api.opennebulaUtils import utils as opennebulaUtils
 from katana.api.mongoUtils import mongoUtils
-from katana.api.osmUtils import osmUtils
-from katana.api.wimUtils import wimUtils
-from katana.api.emsUtils import emsUtils
 
 import json
 import pickle
@@ -15,6 +10,20 @@ from threading import Thread
 import time
 import logging
 import urllib3
+
+# Logging Parameters
+logger = logging.getLogger(__name__)
+file_handler = logging.handlers.RotatingFileHandler(
+    'katana.log', maxBytes=10000, backupCount=5)
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+stream_formatter = logging.Formatter(
+    '%(asctime)s %(name)s %(levelname)s %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 class SliceView(FlaskView):
@@ -83,7 +92,7 @@ class SliceView(FlaskView):
             # **** STEP-1: Placement ****
             self.slice_json['status'] = 'Placement'
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
-            logging.info("Status: Placement")
+            logger.info("Status: Placement")
             placement_start_time = time.time()
 
             data = {"location": "core"}
@@ -104,8 +113,8 @@ class SliceView(FlaskView):
                                                d["name"] == new_ns["name"]),
                                                None)
                     if registered_ns_index is None:
-                        logging.warning("Network Service {0} isn't registered.\
-                        Will be placed at the default core NFVI\n".format(
+                        logger.warning("Network Service {0} isn't registered.\
+                        Will be placed at the default core NFVI".format(
                             new_ns["name"]))
                         selected_vim = default_vim
                         placement_list[new_ns["name"]] =\
@@ -121,9 +130,9 @@ class SliceView(FlaskView):
                     if selected_vim not in vim_list:
                         vim_list.append(selected_vim)
             else:
-                logging.warning('There are no registered slice services. All \
+                logger.warning('There are no registered slice services. All \
 Network services will be placed on the default core NFVI and no network graph \
-will be created\n')
+will be created')
                 for new_ns in new_ns_list:
                     placement_list[new_ns["name"]] =\
                         {"vim": default_vim["_id"]}
@@ -136,7 +145,7 @@ will be created\n')
             # **** STEP-2: Provisioning ****
             self.slice_json['status'] = 'Provisioning'
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
-            logging.info("Status: Provisioning")
+            logger.info("Status: Provisioning")
             prov_start_time = time.time()
 
             # *** STEP-2a: Cloud ***
@@ -178,7 +187,7 @@ will be created\n')
 
             # *** STEP-2b: WAN ***
             if (mongoUtils.count('wim') <= 0):
-                logging.warning('There is no registered WIM\n')
+                logger.warning('There is no registered WIM')
             else:
                 wan_start_time = time.time()
                 # Select WIM - Assume that there is only one registered
@@ -191,7 +200,7 @@ will be created\n')
                 try:
                     services = self.slice_json["nsi"]["wim-ref"]["services-segment"]
                 except Exception:
-                    logging.warning("There are no services on the slice descriptor")
+                    logger.warning("There are no services on the slice descriptor")
                 else:
                     for service in services:
                         wsd["services-segment"].append(service)
@@ -209,7 +218,7 @@ will be created\n')
             # **** STEP-3: Activation ****
             self.slice_json['status'] = 'Activation'
             mongoUtils.update("slice", self.slice_json['_id'], self.slice_json)
-            logging.info("Status: Activation")
+            logger.info("Status: Activation")
             # *** STEP-3a: Cloud ***
             # Instantiate NS
             self.slice_json['deployment_time']['NS_Deployment_Time'] = {}
@@ -245,7 +254,7 @@ will be created\n')
                         ip_list.append(nfvo.get_IPs(vnfr))
 
             if (mongoUtils.count('ems') <= 0):
-                logging.warning('There is no registered EMS\n')
+                logger.warning('There is no registered EMS')
             else:
                 # Select NFVO - Assume that there is only one registered
                 ems_list = list(mongoUtils.index('ems'))
@@ -257,12 +266,11 @@ will be created\n')
                     "ipsdn": ip_list[0][1],
                     "ipservices": ip_list[0][0]
                 }
-                print("DEBUG: EMS = ", ems.ip, flush=True)
                 ems.conf_radio(emsd)
                 self.slice_json['deployment_time']['Radio_Configuration_Time']\
                     = format(time.time() - radio_start_time, '.4f')
 
-            logging.info("Status: Running")
+            logger.info("Status: Running")
             self.slice_json['status'] = 'Running'
             self.slice_json['deployment_time']['Slice_Deployment_Time'] =\
                 format(time.time() - self.slice_json['created_at'], '.4f')

@@ -1,6 +1,22 @@
 import requests
 import json
+import json
+import logging
 from katana.api.mongoUtils import mongoUtils
+
+# Logging Parameters
+logger = logging.getLogger(__name__)
+file_handler = logging.handlers.RotatingFileHandler(
+    'katana.log', maxBytes=10000, backupCount=5)
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+stream_formatter = logging.Formatter(
+    '%(asctime)s %(name)s %(levelname)s %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 def select_OSM(id=None):

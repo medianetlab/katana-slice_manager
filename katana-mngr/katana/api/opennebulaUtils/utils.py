@@ -1,6 +1,21 @@
 import pyone
 import functools
 from multiprocessing import Process
+import logging
+
+# Logging Parameters
+logger = logging.getLogger(__name__)
+file_handler = logging.handlers.RotatingFileHandler(
+    'katana.log', maxBytes=10000, backupCount=5)
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+stream_formatter = logging.Formatter(
+    '%(asctime)s %(name)s %(levelname)s %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 def timeout(func):
@@ -46,7 +61,6 @@ class Opennebula():
             session="{0}:{1}".format(username, password)
             )
 
-
     def create_project(self, conn, name, description="Katana Slice Project"):
         """
         Creates a new OpenNebula group
@@ -55,15 +69,12 @@ class Opennebula():
         # returns Project object
         return group
 
-
     def create_user(self, conn, name, password, group):
         """
         Creates a new openstack project
         """
         user = conn.user.allocate(name, password, "", [group])
         return user
-
-
 
     def create_sec_group(self, conn, name, project):
         """
@@ -79,42 +90,40 @@ class Opennebula():
         """
         Deletes the user
         """
-        try: 
+        try:
             return conn.user.delete(user_id)
         except pyone.OneNoExistsException as e:
-            print("Failed. Trying to delete user: doesn't exist - ", user_id)
+            logger.exception("Failed. Trying to delete user: doesn't exist - ", user_id)
         except Exception as e:
-            print("Failed. Trying to delete user: ", user_id)
+            logger.exception("Failed. Trying to delete user: ", user_id)
 
     def delete_user_by_name(self, conn, name):
         """
         Deletes the user
         """
-        userpool = conn.userpool.info(-1,-1,-1)
+        userpool = conn.userpool.info(-1, -1, -1)
         for user in userpool.USER:
-            if user.get_NAME() ==  name:
+            if user.get_NAME() == name:
                 return conn.user.delete(user.get_ID())
-
 
     def delete_project(self, conn, group_id):
         """
         Deletes the group
         """
-        try: 
+        try:
             return conn.group.delete(group_id)
         except pyone.OneNoExistsException as e:
-            print("Failed. Trying to delete group: doesn't exist - ", group_id)
+            logger.exception("Failed. Trying to delete group: doesn't exist - ", group_id)
         except Exception as e:
-            print("Failed. Trying to delete group: ", group_id)
-
+            logger.exception("Failed. Trying to delete group: ", group_id)
 
     def delete_project_by_name(self, conn, name):
         """
         Deletes the group
         """
-        grouppool = conn.grouppool.info(-1,-1,-1)
+        grouppool = conn.grouppool.info(-1, -1, -1)
         for group in grouppool.GROUP:
-            if group.get_NAME() ==  name:
+            if group.get_NAME() == name:
                 return conn.group.delete(group.get_ID())
 
     def delete_proj_user(self, user_id):
@@ -128,16 +137,15 @@ class Opennebula():
         try:
             user = conn.user.info(user_id)
             group = user.get_GROUPS().ID[0]
-            #delete group
+            # delete group
             conn.group.delete(group)
-            #delete user
+            # delete user
             return conn.user.delete(user.get_ID())
         except pyone.OneNoExistsException as e:
-            print("Failed. User trying to delete, doesn't exist: ", user_id)
+            logger.exception("Failed. User trying to delete, doesn't exist: ", user_id)
         except Exception as e:
-            print("Failed. User trying to delete, group doesn't exist: ", user_id)
+            logger.exception("Failed. User trying to delete, group doesn't exist: ", user_id)
 
-                
     def delete_proj_user_by_name(self, name):
         """
         Deletes user and project
@@ -150,11 +158,11 @@ class Opennebula():
         for user in userpool.USER:
             if user.get_NAME() ==  name:
                 group = user.get_GROUPS()[0]
-                #delete group
+                # delete group
                 conn.group.delete(group)
-                #delete user
+                # delete user
                 return conn.user.delete(user.get_ID())
-        print("Delete user ONE: user does not exist: ", name)
+        logger.warning("Delete user ONE: user does not exist: ", name)
 
     def create_slice_prerequisites(self, tenant_project_name,
                                    tenant_project_description,
@@ -176,7 +184,7 @@ class Opennebula():
         user = self.create_user(conn, tenant_project_user, "password", project)
 
         # creates the security group and rules
-        #sec_group = self.create_sec_group(conn, tenant_project_name, project)
+        # sec_group = self.create_sec_group(conn, tenant_project_name, project)
         sec_group = "dummy"
 
         return {"sliceProjectName": project, "sliceUserName": user,

@@ -11,6 +11,20 @@ import pickle
 import time
 import logging
 
+# Logging Parameters
+logger = logging.getLogger(__name__)
+file_handler = logging.handlers.RotatingFileHandler(
+    'katana.log', maxBytes=10000, backupCount=5)
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+stream_formatter = logging.Formatter(
+    '%(asctime)s %(name)s %(levelname)s %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
 
 class VimView(FlaskView):
     route_prefix = '/api/'
@@ -57,7 +71,8 @@ class VimView(FlaskView):
                                                    project_name=project_name,
                                                    username=username,
                                                    password=password)
-                # new_vim.openstack_authorize()
+                if new_vim.auth_error:
+                    raise(AttributeError)
             except AttributeError as e:
                 response = dumps({'error': 'Openstack authorization failed.'})
                 return response, 400
@@ -68,7 +83,7 @@ class VimView(FlaskView):
                     wim = pickle.loads(wim_list[0]['wim'])
                     wim.register_vim(request.json)
                 else:
-                    logging.warning('There is no registered WIM\n')
+                    logger.warning('There is no registered WIM')
                 thebytes = pickle.dumps(new_vim)
                 request.json['vim'] = Binary(thebytes)
                 return mongoUtils.add("vim", request.json)

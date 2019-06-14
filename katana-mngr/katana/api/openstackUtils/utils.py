@@ -2,6 +2,21 @@ import openstack
 import functools
 from multiprocessing import Process
 # openstack.enable_logging(debug=True)
+import logging
+
+# Logging Parameters
+logger = logging.getLogger(__name__)
+file_handler = logging.handlers.RotatingFileHandler(
+    'katana.log', maxBytes=10000, backupCount=5)
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+stream_formatter = logging.Formatter(
+    '%(asctime)s %(name)s %(levelname)s %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 def timeout(func):
@@ -54,7 +69,17 @@ class Openstack():
             user_domain_name=self.user_domain_name,
             project_domain_name=self.project_domain_name,
             )
-        self.openstack_authorize(conn)
+        try:
+            conn.authorize()
+        except AttributeError as e:
+            logger.exception("AttributeError baby")
+            self.auth_error = True
+        except Exception as e:
+            # raise for logging purposes
+            logger.exception("Something went wrong")
+            self.auth_error = True
+        else:
+            self.auth_error = False
 
     @timeout
     def openstack_authorize(self, conn):
@@ -64,11 +89,14 @@ class Openstack():
         try:
             token = conn.authorize()
         except AttributeError as e:
-            print("AttributeError baby")
-            print(e, flush=True)
+            logger.exception("AttributeError baby")
+            return True
         except Exception as e:
             # raise for logging purposes
-            print(e, flush=True)
+            logger.exception("Something went wrong")
+            return True
+        else:
+            return False
 
     def create_project(self, conn, name, description="Katana Slice Project"):
         """
@@ -142,11 +170,11 @@ class Openstack():
         try:
             self.delete_user(conn, name)
         except openstack.exceptions.ResourceNotFound as e:
-            print("Failed. User trying to delete, doesn't exist")
+            logger.exception("Failed. User trying to delete, doesn't exist")
         try:
             self.delete_project(conn, name)
         except openstack.exceptions.ResourceNotFound as e:
-            print("Failed. Project trying to delete, doesn't exist")
+            logger.exception("Failed. Project trying to delete, doesn't exist")
 
     def create_slice_prerequisites(self, tenant_project_name,
                                    tenant_project_description,

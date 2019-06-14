@@ -10,6 +10,21 @@ from bson.json_util import dumps
 from bson.binary import Binary
 import pickle
 import time
+import logging
+
+# Logging Parameters
+logger = logging.getLogger(__name__)
+file_handler = logging.handlers.RotatingFileHandler(
+    'katana.log', maxBytes=10000, backupCount=5)
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+stream_formatter = logging.Formatter(
+    '%(asctime)s %(name)s %(levelname)s %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 class NFVOView(FlaskView):
@@ -55,11 +70,11 @@ class NFVOView(FlaskView):
             try:
                 osm.get_token()
             except ConnectTimeout as e:
-                print("It is time for ... Time out")
+                logger.exception("It is time for ... Time out")
                 response = dumps({'error': 'Unable to connect to NFVO'})
                 return (response, 400)
             except ConnectionError as e:
-                print("Unable to connect")
+                logger.exception("Unable to connect")
                 response = dumps({'error': 'Unable to connect to NFVO'})
                 return (response, 400)
             else:
@@ -72,7 +87,7 @@ class NFVOView(FlaskView):
                 url = request.json['nfvoip']
                 tango5gUtils.register_sp(url)
             except ConnectionError as e:
-                print("There was a connection error")
+                logger.exception("There was a connection error")
                 response = dumps({'error': 'Unable to connect to NFVO'})
                 return (response, 400)
             else:
