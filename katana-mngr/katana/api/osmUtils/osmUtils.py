@@ -77,12 +77,13 @@ class Osm():
         while True:
             headers = {
                 'Content-Type': 'application/yaml',
-                'Accept': 'application/yaml',
+                'Accept': 'application/json',
                 'Authorization': f'Bearer {self.token}',
             }
             response = requests.post(osm_url, headers=headers, data=data, verify=False)
             if (response.status_code != 401):
-                vim_id = response.text.split(": ")[1]
+                vim_id = response.json()["id"]
+                logger.debug(vim_id)
                 break
             else:
                 self.get_token()
@@ -167,3 +168,43 @@ class Osm():
             for ip in i['interfaces']:
                 ips.append(ip['ip-address'])
         return (ips)
+
+    def deleteNs(self, nsId):
+        """
+        Terminates and deletes the given ns
+        """
+        osm_url = f"https://{self.ip}:9999/osm/nslcm/v1/ns_instances_content/"\
+            + nsId
+        while True:
+            headers = {
+                'Content-Type': 'application/yaml',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.delete(osm_url, headers=headers, verify=False)
+            if (response.status_code != 401):
+                return
+            else:
+                self.get_token()
+
+    def deleteVim(self, vimID):
+        """
+        Deletes the tenant account from the osm
+        """
+        osm_url = f"https://{self.ip}:9999/osm/admin/v1/vim_accounts/{vimID}"
+        headers = {
+            'Content-Type': 'application/yaml',
+            'Accept': 'application/json',
+            'Authorization': f'Bearer {self.token}',
+        }
+        while True:
+            headers = {
+                'Content-Type': 'application/yaml',
+                'Accept': 'application/yaml',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.delete(osm_url, headers=headers, verify=False)
+            if (response.status_code != 401):
+                return
+            else:
+                self.get_token()

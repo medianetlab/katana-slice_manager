@@ -17,4 +17,6 @@ services:
     # logging:
     #   driver: syslog
     #   options:
-    #     syslog-address: "udp://localhost:514"
+    #     syslog-address: "udp://10.30.0.245:5140"
+    #     tag: "SliceManager"
+    #     syslog-format: "rfc5424"

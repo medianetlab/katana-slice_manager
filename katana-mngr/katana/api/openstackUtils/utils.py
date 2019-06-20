@@ -76,7 +76,7 @@ class Openstack():
             self.auth_error = True
         except Exception as e:
             # raise for logging purposes
-            logger.exception("Something went wrong")
+            logger.exception("Something went wrong", e)
             self.auth_error = True
         else:
             self.auth_error = False
@@ -87,13 +87,13 @@ class Openstack():
         Returns a token for the OpenStack instance
         """
         try:
-            token = conn.authorize()
+            _ = conn.authorize()
         except AttributeError as e:
             logger.exception("AttributeError baby")
             return True
         except Exception as e:
             # raise for logging purposes
-            logger.exception("Something went wrong")
+            logger.exception("Something went wrong", e)
             return True
         else:
             return False
@@ -127,8 +127,10 @@ class Openstack():
         # Add admin user to the project, in order to create the MAC Addresses
         adminrole = conn.identity.find_role("admin")
         admin_user = conn.identity.find_user("admin", ignore_missing=False)
-        conn.identity.assign_project_role_to_user(project, admin_user, adminrole)
-        conn.identity.assign_project_role_to_user(project, admin_user, heatrole)
+        conn.identity.assign_project_role_to_user(project, admin_user,
+                                                  adminrole)
+        conn.identity.assign_project_role_to_user(project, admin_user,
+                                                  heatrole)
 
     def create_sec_group(self, conn, name, project):
         """
@@ -154,7 +156,13 @@ class Openstack():
         project = conn.identity.find_project(name, ignore_missing=False)
         conn.identity.delete_project(project, ignore_missing=False)
 
-    def delete_proj_user(self, name):
+    def delete_sec_group(self, conn, name):
+        """
+        Deletes the security group
+        """
+        conn.delete_security_group(name)
+
+    def delete_proj_user(self, tenant):
         """
         Deletes user and project
         """
@@ -167,14 +175,22 @@ class Openstack():
             project_domain_name=self.project_domain_name,
             )
         self.openstack_authorize(conn)
+        user_name = tenant["sliceUserName"]
+        project_name = tenant["sliceProjectName"]
+        sec_group_name = tenant["secGroupName"]
         try:
-            self.delete_user(conn, name)
+            self.delete_user(conn, user_name)
         except openstack.exceptions.ResourceNotFound as e:
             logger.exception("Failed. User trying to delete, doesn't exist")
         try:
-            self.delete_project(conn, name)
+            self.delete_project(conn, project_name)
         except openstack.exceptions.ResourceNotFound as e:
             logger.exception("Failed. Project trying to delete, doesn't exist")
+        try:
+            self.delete_sec_group(conn, sec_group_name)
+        except openstack.exceptions.ResourceNotFound as e:
+            logger.exception("Failed. Security group trying to delete, doesn't\
+                exist", e)
 
     def create_slice_prerequisites(self, tenant_project_name,
                                    tenant_project_description,

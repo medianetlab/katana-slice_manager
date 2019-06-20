@@ -2,7 +2,7 @@
 from flask import request
 from flask_classful import FlaskView
 from katana.api.osmUtils import osmUtils
-from katana.api.tango5gUtils import tango5gUtils
+# from katana.api.tango5gUtils import tango5gUtils
 from requests import ConnectionError, ConnectTimeout
 import uuid
 from katana.api.mongoUtils import mongoUtils
@@ -81,16 +81,6 @@ class NFVOView(FlaskView):
                 # Store the osm object to the mongo db
                 thebytes = pickle.dumps(osm)
                 request.json['nfvo'] = Binary(thebytes)
-                return mongoUtils.add("nfvo", request.json)
-        elif request.json['type'] == "5GTango":
-            try:
-                url = request.json['nfvoip']
-                tango5gUtils.register_sp(url)
-            except ConnectionError as e:
-                logger.exception("There was a connection error")
-                response = dumps({'error': 'Unable to connect to NFVO'})
-                return (response, 400)
-            else:
                 return mongoUtils.add("nfvo", request.json)
         else:
             response = dumps({'error': 'This type nfvo is not supported'})
