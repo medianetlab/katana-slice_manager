@@ -83,7 +83,6 @@ class Osm():
             response = requests.post(osm_url, headers=headers, data=data, verify=False)
             if (response.status_code != 401):
                 vim_id = response.json()["id"]
-                logger.debug(vim_id)
                 break
             else:
                 self.get_token()
