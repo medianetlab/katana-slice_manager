@@ -14,7 +14,6 @@ if [[ -L "$file" ]]; then
 fi
 
 # Remove the katana-log file
-file=katana-mngr/katana.log
-if [[ -f "$file" ]]; then
+file=katana-mngr/katana.log*
     rm -f $file
-fi
+ 

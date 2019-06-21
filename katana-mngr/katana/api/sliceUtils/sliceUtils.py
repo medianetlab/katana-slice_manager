@@ -231,6 +231,11 @@ def delete_slice(slice_json):
     Deletes the given network slice
     """
 
+    # Update the slice status in mongo db
+    slice_json["status"] = "Terminating"
+    mongoUtils.update("slice", slice_json['_id'], slice_json)
+    logger.info("Status: Terminating")
+
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
     nfvo = pickle.loads(nfvo_list[0]['nfvo'])
@@ -246,7 +251,13 @@ def delete_slice(slice_json):
         nfvo_vim_id = slice_json["nfvo_vim_id"][ivim['vim_id']]
         nfvo.deleteVim(nfvo_vim_id)
         # Delete VIM Project, user and Security group
-        logger.debug("Delete vim tenant")
         selected_vim = mongoUtils.get("vim", ivim["vim_id"])
         ivim_obj = pickle.loads(selected_vim["vim"])
         ivim_obj.delete_proj_user(ivim["tenant"])
+
+    result = mongoUtils.delete("slice", slice_json["_id"])
+    if result == 1:
+        return slice_json["_id"]
+    elif result == 0:
+        return 'Error: Slice with slice_json["_id"]: {} could not be deleted'.\
+            format(slice_json["_id"])

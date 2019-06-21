@@ -176,21 +176,29 @@ class Openstack():
             )
         self.openstack_authorize(conn)
         user_name = tenant["sliceUserName"]
-        project_name = tenant["sliceProjectName"]
-        sec_group_name = tenant["secGroupName"]
+        proj_name = tenant["sliceProjectName"]
+
+        # Find Project and User
+        project = conn.identity.find_project(proj_name, ignore_missing=False)
+        user = conn.identity.find_user(user_name, ignore_missing=False)
+        sec_group_list = []
+        for sec_group in conn.network.security_groups():
+            if sec_group.project_id == project.id:
+                sec_group_list.append(sec_group)
         try:
-            self.delete_user(conn, user_name)
+            conn.identity.delete_user(user, ignore_missing=False)
         except openstack.exceptions.ResourceNotFound as e:
             logger.exception("Failed. User trying to delete, doesn't exist")
         try:
-            self.delete_project(conn, project_name)
+            conn.identity.delete_project(project, ignore_missing=False)
         except openstack.exceptions.ResourceNotFound as e:
             logger.exception("Failed. Project trying to delete, doesn't exist")
-        try:
-            self.delete_sec_group(conn, sec_group_name)
-        except openstack.exceptions.ResourceNotFound as e:
-            logger.exception("Failed. Security group trying to delete, doesn't\
-                exist", e)
+        for sec_group in sec_group_list:
+            try:
+                conn.delete_security_group(sec_group.id)
+            except openstack.exceptions.ResourceNotFound as e:
+                logger.exception("Failed. Security group trying to delete, doesn't\
+                    exist", e)
 
     def create_slice_prerequisites(self, tenant_project_name,
                                    tenant_project_description,
@@ -221,6 +229,5 @@ class Openstack():
 
         # creates the security group and rules
         sec_group = self.create_sec_group(conn, tenant_project_name, project)
-
         return {"sliceProjectName": project.name, "sliceUserName": user.name,
                 "secGroupName": sec_group.name}

@@ -111,15 +111,6 @@ class SliceView(FlaskView):
             delete_thread.start()
             return "Deleting {0}".format(uuid)
 
-            # TODO:
-            # - openstack: remove Project/User
-
-            # result = mongoUtils.delete("slice", uuid)
-            # if result == 1:
-            #     return uuid
-            # elif result == 0:
-            #     return "Error: Slice with uuid: {} could not be deleted".format(uuid)
-
     # def put(self, uuid):
     #     """
     #     Update the details of a specific slice.

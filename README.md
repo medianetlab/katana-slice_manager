@@ -1,17 +1,18 @@
-# katana Slice Manager version 0.1.1
+# katana Slice Manager version 0.2.0
 
-## New in version 0.1.1
+## New in version 0.2.0
 ### New Features
-- Deployment time measurement per domain and task
-- New API and CLI command for deployment time exposure
+- Integration with OpenNebula VIM
+- Service Deployment Time Measurements
+- Logging System for local and remote log server
+- Slice Deletion Function
 
 ### Changes
-- Create object for each MANO component instance (NFVO, VIM, WIM, EMS)
-- New print format on index API
+- sliceUtils file with slice functions
+- Removed tango MANO
 
 ### Bugs Fixed
-- Openstack security group
-- OSM expired token
+- Openstack credentials bug fixed
 
 ## Quick Start
 
