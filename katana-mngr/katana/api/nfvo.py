@@ -81,6 +81,7 @@ class NFVOView(FlaskView):
                 # Store the osm object to the mongo db
                 thebytes = pickle.dumps(osm)
                 request.json['nfvo'] = Binary(thebytes)
+                osmUtils.bootstrapNfvo(osm)
                 return mongoUtils.add("nfvo", request.json)
         else:
             response = dumps({'error': 'This type nfvo is not supported'})

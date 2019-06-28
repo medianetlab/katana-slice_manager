@@ -30,14 +30,13 @@ def do_work(request_json):
     request_json['status'] = 'Placement'
     mongoUtils.update("slice", request_json['_id'], request_json)
     logger.info("Status: Placement")
-    placement_start_time = time.time()
+    placement_start_time = time.time() 
 
     data = {"location": "core"}
     get_vim = mongoUtils.find('vim', data=data)
     default_vim = get_vim
     vim_list = []
     placement_list = {}
-    new_ns_list = request_json['nsi']['nsd-ref']
     slice_type = request_json['nsi']['type']
     data = {"type": slice_type}
     registered_service = mongoUtils.find('service', data=data)

@@ -19,6 +19,13 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
+def bootstrapNfvo(nfvo_obj):
+    """
+    Reads info from NSDs/VNFDs in the NFVO and stores them in mongodb
+    """
+    nfvo_obj.read_vnfd()
+    # nfvo_obj.read_nsd()
+
 def select_OSM(id=None):
     """
     Selects a registered OSM instance from the DB and returns it
@@ -168,6 +175,13 @@ class Osm():
                 ips.append(ip['ip-address'])
         return (ips)
 
+    def getMgmtIP(self, vnfr):
+        """
+        Retrieves and returns the management IP of a VNF
+        """
+        # TODO: FILL IT *******************
+        pass
+
     def deleteNs(self, nsId):
         """
         Terminates and deletes the given ns
@@ -205,5 +219,81 @@ class Osm():
             response = requests.delete(osm_url, headers=headers, verify=False)
             if (response.status_code != 401):
                 return
+            else:
+                self.get_token()
+
+    def readVnfd(self):
+        """
+        Reads and returns required information from nsd/vnfd
+        """
+        url = f"https://{self.ip}:9999/osm/vnfpkgm/v1/vnf_packages/"
+        while True:
+            headers = {
+                'Content-Type': 'application/yaml',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.get(url, headers=headers, verify=False)
+            if (response.status_code != 401):
+                osm_vnfd_list = response.json()
+                new_vnfd = {}
+                for osm_vnfd in osm_vnfd_list:
+                    new_vnfd["name"] = osm_vnfd["_id"]
+                    new_vnfd["flavor"] = {"memory-mb": 0,
+                                          "vcpu-count": 0,
+                                          "storage-gb": 0}
+                    for vdu in osm_vnfd["vdu"]:
+                        new_vnfd["flavor"]["memory-mb"] += int(vdu["vm-flavor"]["memory-mb"])
+                        new_vnfd["flavor"]["vcpu-count"] += int(vdu["vm-flavor"]["vcpu-count"])
+                        new_vnfd["flavor"]["storage-gb"] += int(vdu["vm-flavor"]["storage-gb"])
+                    new_vnfd["mgmt"] = vnfd["mgmt-interface"]["cp"]
+                    mongoUtils.add("vnfd", new_vnfd)
+                    new_vnfd = {}
+                    logger.debug(new_vnfd)
+            else:
+                self.get_token()
+
+    def readNsd(self):
+        """
+        Reads and returns required information from nsd/vnfd
+        """
+        url = f"https://{self.ip}:9999/osm/nsd/v1/ns_descriptors"
+        while True:
+            headers = {
+                'Content-Type': 'application/yaml',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {self.token}',
+            }
+            response = requests.get(url, headers=headers, verify=False)
+            if (response.status_code != 401):
+                osm_nsd_list = response.json()
+                new_nsd = {}
+                for osm_nsd in osm_nsd_list:
+                    new_nsd["id"] = osm_nsd["_id"]
+                    nsd_networks = osm_nsd["vld"]
+                    new_nsd["vim_networks"] = []
+                    for vld in nsd_networks:
+                        try:
+                            new_nsd["vim_networks"].append(vld["vim-network-name"])
+                        except KeyError:
+                            print(f"No vim networks for {vld['id']}")
+                        except e:
+                            print(e)
+                    new_nsd["vnfd_list"] = []
+                    new_nsd["flavor"] = {"memory-mb": 0,
+                                         "vcpu-count": 0,
+                                         "storage-gb": 0}
+                    for osm_vnfd in osm_nsd['constituent-vnfd']:
+                        data = {name: osm_vnfd["vnfd-id-ref"]}
+                        reg_vnfd = mongoUtils.find(vnfd, data)
+                        if not vnfd:
+                            logger.warning("There is a vnfd missing from the NFVO repository")
+                        else:
+                            new_nsd["vnfd_list"].append(reg_vnfd["name"])
+                            new_nsd["flavor"]["memory-mb"] += reg_vnfd["flavor"]["memory-mb"]
+                            new_nsd["flavor"]["vcpu-count"] += reg_vnfd["flavor"]["vcpu-count"]
+                            new_nsd["flavor"]["storage-gb"] += reg_vnfd["flavor"]["storage-gb"]
+                    logger.debug(new_nsd)
+                    new_nsd = {}
             else:
                 self.get_token()
