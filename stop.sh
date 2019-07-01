@@ -8,7 +8,7 @@ docker container stop katana-cli-container
 docker container rm katana-cli-container
 
 # Remove the katana-container-log file
-file=katana-logs
+file=katana-container-logs
 if [[ -L "$file" ]]; then
     rm -f $file
 fi

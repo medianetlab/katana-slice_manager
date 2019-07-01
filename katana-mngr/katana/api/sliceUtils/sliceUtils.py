@@ -1,4 +1,5 @@
 from katana.api.mongoUtils import mongoUtils
+from katana.api.osmUtils import osmUtils
 import pickle
 import time
 import logging
@@ -30,19 +31,36 @@ def do_work(request_json):
     request_json['status'] = 'Placement'
     mongoUtils.update("slice", request_json['_id'], request_json)
     logger.info("Status: Placement")
-    placement_start_time = time.time() 
+    placement_start_time = time.time()
+
+    # Select NFVO - Assume that there is only one registered
+    nfvo_list = list(mongoUtils.index('nfvo'))
+    nfvo = pickle.loads(nfvo_list[0]['nfvo'])
 
     data = {"location": "core"}
     get_vim = mongoUtils.find('vim', data=data)
     default_vim = get_vim
     vim_list = []
     placement_list = {}
+    new_ns_list = request_json['nsi']['nsd-ref']
     slice_type = request_json['nsi']['type']
     data = {"type": slice_type}
     registered_service = mongoUtils.find('service', data=data)
     if registered_service is not None:
         registered_ns_list = registered_service['ns']
         for new_ns in new_ns_list:
+            # Find the NS in the NFVO NSs
+            data = {"id": new_ns["id"]}
+            nsd = mongoUtils.find("nsd", data)
+            if not nsd:
+                osmUtils.bootstrapNfvo(nfvo)
+                nsd = mongoUtils.find("nsd", data)
+                if not nsd:
+                    logger.error(f"NSd {new_ns['id']} was not found in the\
+                        NFVO. Deleting slice")
+                    return
+            placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
+                                              "vim_net": nsd["vim_networks"]}
             # Find the NS in the registered NSs
             registered_ns_index = next((index for (index, d) in
                                        enumerate(registered_ns_list) if
@@ -53,16 +71,14 @@ def do_work(request_json):
                 Will be placed at the default core NFVI".format(
                     new_ns["name"]))
                 selected_vim = default_vim
-                placement_list[new_ns["name"]] =\
-                    {"vim": selected_vim["_id"]}
+                placement_list[new_ns["name"]]["vim"] = selected_vim["_id"]
             else:
                 vim_location =\
                     registered_ns_list[registered_ns_index]['location']
                 data = {"location": vim_location}
                 get_vim = mongoUtils.find('vim', data=data)
                 selected_vim = get_vim
-                placement_list[new_ns["name"]] =\
-                    {"vim": selected_vim["_id"]}
+                placement_list[new_ns["name"]]["vim"] = selected_vim["_id"]
             if selected_vim not in vim_list:
                 vim_list.append({"vim_id": selected_vim["_id"],
                                  "type": selected_vim["type"]})
@@ -71,8 +87,19 @@ def do_work(request_json):
 Network services will be placed on the default core NFVI and no network graph \
 will be created')
         for new_ns in new_ns_list:
-            placement_list[new_ns["name"]] =\
-                {"vim": default_vim["_id"]}
+            # Find the NS in the NFVO NSs
+            data = {"id": new_ns["id"]}
+            nsd = mongoUtils.find("nsd", data)
+            if not nsd:
+                osmUtils.bootstrapNfvo(nfvo)
+                nsd = mongoUtils.find("nsd", data)
+                if not nsd:
+                    logger.error(f"NSd {new_ns['id']} was not found in the\
+                        NFVO. Deleting slice")
+                    return
+            placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
+                                              "vim_net": nsd["vim_networks"]}
+            placement_list[new_ns["name"]]["vim"] = default_vim["_id"]
         vim_list.append({"vim_id": default_vim["_id"],
                          "type": default_vim["type"]})
 
@@ -89,10 +116,6 @@ will be created')
     prov_start_time = time.time()
 
     # *** STEP-2a: Cloud ***
-    # Select NFVO - Assume that there is only one registered
-    nfvo_list = list(mongoUtils.index('nfvo'))
-    nfvo = pickle.loads(nfvo_list[0]['nfvo'])
-
     # Create a new tenant/project on every VIM used in the placement
     nfvo_vim_id_dict = {}
     for num, ivim in enumerate(vim_list):
@@ -188,19 +211,20 @@ will be created')
             nsr_dict[ins["name"]] = nfvo.get_nsr(ns_id_dict[ins["name"]])
         request_json['deployment_time']['NS_Deployment_Time'][ins['name']] =\
             format(time.time() - ns_start_time, '.4f')
+
+    # Get the IPs for any radio delployed service
+    for ns_name, nsr in nsr_dict.items():
+        vnfr_id_list = nfvo.get_vnfrId(nsr)
+        vnfr_list = []
+        for ivnfr_id in vnfr_id_list:
+            vnfr = nfvo.get_vnfr(ivnfr_id)
+            vnf_name = vnfr["vnfd-ref"]
+            vnfr_list.append({vnf_name: nfvo.getIPs(vnfr)})
+            placement_list[ns_name]["vnfr"] = vnfr_list
     mongoUtils.update("slice", request_json['_id'], request_json)
+    logger.debug(f"****** placement_list: {placement_list}")
 
     # *** STEP-3b: Radio ***
-    # Get the IPs for any radio delployed service
-    ip_list = []
-    for ns_name, nsr in nsr_dict.items():
-        if ns_name == 'vepc':
-            vnfr_id_list = nfvo.get_vnfrId(nsr)
-            ip_list = []
-            for ivnfr_id in vnfr_id_list:
-                vnfr = nfvo.get_vnfr(ivnfr_id)
-                ip_list.append(nfvo.get_IPs(vnfr))
-
     if (mongoUtils.count('ems') <= 0):
         logger.warning('There is no registered EMS')
     else:

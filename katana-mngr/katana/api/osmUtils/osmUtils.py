@@ -23,8 +23,9 @@ def bootstrapNfvo(nfvo_obj):
     """
     Reads info from NSDs/VNFDs in the NFVO and stores them in mongodb
     """
-    nfvo_obj.read_vnfd()
-    # nfvo_obj.read_nsd()
+    nfvo_obj.readVnfd()
+    nfvo_obj.readNsd()
+
 
 def select_OSM(id=None):
     """
@@ -165,22 +166,23 @@ class Osm():
                 self.get_token()
         return (vnfr)
 
-    def get_IPs(self, vnfr):
+    def getIPs(self, vnfr):
         """
         Retrieve a list of IPs from a VNFR
         """
         ips = []
+        mgmt_ip = "None"
+        vm_name = "None"
+        vnf_info = []
         for i in vnfr['vdur']:
             for ip in i['interfaces']:
                 ips.append(ip['ip-address'])
-        return (ips)
-
-    def getMgmtIP(self, vnfr):
-        """
-        Retrieves and returns the management IP of a VNF
-        """
-        # TODO: FILL IT *******************
-        pass
+            vnf_info.append(dict(vm_name=i["vdu-id-ref"], ips=ips,
+                                 mgmt_ip=i["ip-address"]))
+            ips = []
+            mgmt_ip = "None"
+            vm_name = "None"
+        return vnf_info
 
     def deleteNs(self, nsId):
         """
@@ -238,7 +240,8 @@ class Osm():
                 osm_vnfd_list = response.json()
                 new_vnfd = {}
                 for osm_vnfd in osm_vnfd_list:
-                    new_vnfd["name"] = osm_vnfd["_id"]
+                    # logger.debug(f"vnfd response = {osm_vnfd}")
+                    new_vnfd["name"] = osm_vnfd["id"]
                     new_vnfd["flavor"] = {"memory-mb": 0,
                                           "vcpu-count": 0,
                                           "storage-gb": 0}
@@ -246,10 +249,10 @@ class Osm():
                         new_vnfd["flavor"]["memory-mb"] += int(vdu["vm-flavor"]["memory-mb"])
                         new_vnfd["flavor"]["vcpu-count"] += int(vdu["vm-flavor"]["vcpu-count"])
                         new_vnfd["flavor"]["storage-gb"] += int(vdu["vm-flavor"]["storage-gb"])
-                    new_vnfd["mgmt"] = vnfd["mgmt-interface"]["cp"]
+                    new_vnfd["mgmt"] = osm_vnfd["mgmt-interface"]["cp"]
                     mongoUtils.add("vnfd", new_vnfd)
                     new_vnfd = {}
-                    logger.debug(new_vnfd)
+                break
             else:
                 self.get_token()
 
@@ -284,16 +287,18 @@ class Osm():
                                          "vcpu-count": 0,
                                          "storage-gb": 0}
                     for osm_vnfd in osm_nsd['constituent-vnfd']:
-                        data = {name: osm_vnfd["vnfd-id-ref"]}
-                        reg_vnfd = mongoUtils.find(vnfd, data)
-                        if not vnfd:
+                        data = {"name": osm_vnfd["vnfd-id-ref"]}
+                        reg_vnfd = mongoUtils.find("vnfd", data)
+                        if not reg_vnfd:
                             logger.warning("There is a vnfd missing from the NFVO repository")
                         else:
                             new_nsd["vnfd_list"].append(reg_vnfd["name"])
                             new_nsd["flavor"]["memory-mb"] += reg_vnfd["flavor"]["memory-mb"]
                             new_nsd["flavor"]["vcpu-count"] += reg_vnfd["flavor"]["vcpu-count"]
                             new_nsd["flavor"]["storage-gb"] += reg_vnfd["flavor"]["storage-gb"]
-                    logger.debug(new_nsd)
+                    logger.debug(f"Registered nsd: {new_nsd}")
+                    mongoUtils.add("nsd", new_nsd)
                     new_nsd = {}
+                break
             else:
                 self.get_token()
