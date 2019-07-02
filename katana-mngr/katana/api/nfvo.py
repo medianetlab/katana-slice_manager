@@ -68,7 +68,7 @@ class NFVOView(FlaskView):
             osm = osmUtils.Osm(osm_ip, osm_username,
                                osm_password, osm_project_name)
             try:
-                osm.get_token()
+                osm.getToken()
             except ConnectTimeout as e:
                 logger.exception("It is time for ... Time out")
                 response = dumps({'error': 'Unable to connect to NFVO'})
