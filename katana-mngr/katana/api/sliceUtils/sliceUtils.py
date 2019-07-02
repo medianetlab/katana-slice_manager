@@ -42,6 +42,7 @@ def do_work(request_json):
     default_vim = get_vim
     vim_list = []
     placement_list = {}
+    radio_nsd_list = []
     new_ns_list = request_json['nsi']['nsd-ref']
     slice_name = request_json['nsi']['name']
     data = {"name": slice_name}
@@ -60,6 +61,11 @@ def do_work(request_json):
 NFVO. Deleting slice")
                     delete_slice(request_json)
                     return "Error: NSD was not found int the NFVO"
+            try:
+                if new_ns["radio-conf"]:
+                    radio_nsd_list.append(new_ns["name"])
+            except KeyError:
+                pass
             placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
                                               "vim_net": nsd["vim_networks"]}
             # Find the NS in the registered NSs
@@ -98,6 +104,11 @@ will be created')
                         NFVO. Deleting slice")
                     delete_slice(request_json)
                     return "Error: NSD was not found int the NFVO"
+            try:
+                if new_ns["radio-conf"]:
+                    radio_nsd_list.append(new_ns["name"])
+            except KeyError:
+                pass
             placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
                                               "vim_net": nsd["vim_networks"]}
             placement_list[new_ns["name"]]["vim"] = default_vim["_id"]
@@ -230,6 +241,10 @@ will be created')
         logger.debug(f"{mynsd} --> {nsd_value}")
 
     # *** STEP-3b: Radio ***
+    radio_component_list = []
+    for radio_ns in radio_nsd_list:
+        radio_component_list.append(placement_list[radio_ns]["vnfr"])
+    logger.debug(radio_component_list)
     if (mongoUtils.count('ems') <= 0):
         logger.warning('There is no registered EMS')
     else:
@@ -283,7 +298,8 @@ def delete_slice(slice_json):
             selected_vim = mongoUtils.get("vim", ivim)
             ivim_obj = pickle.loads(selected_vim["vim"])
             slice_id = slice_json["_id"]
-            ivim_obj.delete_proj_user(selected_vim["tenants"][slice_json["_id"]])
+            ivim_obj.delete_proj_user(selected_vim["tenants"]
+                                      [slice_json["_id"]])
             # Remove the tenant from the registered vim
             selected_vim["tenants"].pop(slice_json["_id"])
             mongoUtils.update("vim", ivim, selected_vim)
