@@ -62,10 +62,11 @@ NFVO. Deleting slice")
                     delete_slice(request_json)
                     return "Error: NSD was not found int the NFVO"
             try:
-                if new_ns["radio-conf"]:
+                logger.debug(new_ns["radio"])
+                if new_ns["radio"]:
                     radio_nsd_list.append(new_ns["name"])
             except KeyError:
-                pass
+                logger.debug("No radio for this NS")
             placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
                                               "vim_net": nsd["vim_networks"]}
             # Find the NS in the registered NSs
@@ -105,7 +106,7 @@ will be created')
                     delete_slice(request_json)
                     return "Error: NSD was not found int the NFVO"
             try:
-                if new_ns["radio-conf"]:
+                if new_ns["radio"]:
                     radio_nsd_list.append(new_ns["name"])
             except KeyError:
                 pass
@@ -244,7 +245,6 @@ will be created')
     radio_component_list = []
     for radio_ns in radio_nsd_list:
         radio_component_list.append(placement_list[radio_ns]["vnfr"])
-    logger.debug(radio_component_list)
     if (mongoUtils.count('ems') <= 0):
         logger.warning('There is no registered EMS')
     else:
@@ -255,8 +255,7 @@ will be created')
         emsd = {
             "sst": request_json["nsi"]["type"],
             "location": request_json["nsi"]["radio-ref"]["location"],
-            "ipsdn": ip_list[0][1],
-            "ipservices": ip_list[0][0]
+            "vnfr": radio_component_list
         }
         ems.conf_radio(emsd)
         request_json['deployment_time']['Radio_Configuration_Time']\
