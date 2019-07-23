@@ -230,12 +230,12 @@ will be created')
     # Get the IPs for any radio delployed service
     for ns_name, nsr in nsr_dict.items():
         vnfr_id_list = nfvo.getVnfrId(nsr)
-        vnfr_list = []
+        nsr = {}
         for ivnfr_id in vnfr_id_list:
             vnfr = nfvo.getVnfr(ivnfr_id)
             vnf_name = vnfr["vnfd-ref"]
-            vnfr_list.append({vnf_name: nfvo.getIPs(vnfr)})
-            placement_list[ns_name]["vnfr"] = vnfr_list
+            nsr[vnf_name] = nfvo.getIPs(vnfr)
+        placement_list[ns_name]["vnfr"] = nsr
     mongoUtils.update("slice", request_json['_id'], request_json)
     logger.debug(f"****** placement_list ******")
     for mynsd, nsd_value in placement_list.items():
@@ -255,8 +255,10 @@ will be created')
         emsd = {
             "sst": request_json["nsi"]["type"],
             "location": request_json["nsi"]["radio-ref"]["location"],
-            "vnfr": radio_component_list
+            "nsr_list": radio_component_list
         }
+        logger.debug("**** EMS *****")
+        logger.debug(emsd)
         ems.conf_radio(emsd)
         request_json['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
