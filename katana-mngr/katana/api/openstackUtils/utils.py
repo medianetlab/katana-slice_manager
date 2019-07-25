@@ -210,6 +210,9 @@ class Openstack():
         except (openstack.exceptions.BadRequestException, TypeError) as e:
             logger.exception(
                 "Bad set quota request was made. Quotas didn't change", e)
+        # example of quotas_list 
+        # quotas_list = {'injected_file_content_bytes': 10240, 'metadata_items': 128, 'server_group_members': 10, 'server_groups': 10, 'ram': 51200, 'floating_ips': 13, 'key_pairs': 100,
+        #       'instances': 18, 'security_group_rules': 20, 'cores': 25, 'fixed_ips': -1, 'injected_file_path_bytes': 255, 'security_groups': 10}
         # new_quotas = conn.get_compute_quotas(name_or_id='test3')
         # logger.debug(new_quotas)
         # return (new_quotas)
