@@ -68,7 +68,7 @@ class Openstack():
             password=self.password,
             user_domain_name=self.user_domain_name,
             project_domain_name=self.project_domain_name,
-            )
+        )
         try:
             conn.authorize()
         except AttributeError as e:
@@ -151,7 +151,7 @@ class Openstack():
 
     def delete_project(self, conn, name):
         """
-        Deletes the user
+        Deletes the project
         """
         project = conn.identity.find_project(name, ignore_missing=False)
         conn.identity.delete_project(project, ignore_missing=False)
@@ -173,7 +173,7 @@ class Openstack():
             password=self.password,
             user_domain_name=self.user_domain_name,
             project_domain_name=self.project_domain_name,
-            )
+        )
         self.openstack_authorize(conn)
         user_name = tenant["sliceUserName"]
         proj_name = tenant["sliceProjectName"]
@@ -200,6 +200,20 @@ class Openstack():
                 logger.exception("Failed. Security group trying to delete, doesn't\
                     exist", e)
 
+    def set_quotas(self, conn, name, **kwargs):
+        """
+        Sets the quotas of the user
+        """
+        try:
+            conn.set_compute_quotas(
+                name_or_id=name, **kwargs)
+        except (openstack.exceptions.BadRequestException, TypeError) as e:
+            logger.exception(
+                "Bad set quota request was made. Quotas didn't change", e)
+        # new_quotas = conn.get_compute_quotas(name_or_id='test3')
+        # logger.debug(new_quotas)
+        # return (new_quotas)
+
     def create_slice_prerequisites(self, tenant_project_name,
                                    tenant_project_description,
                                    tenant_project_user,
@@ -215,7 +229,7 @@ class Openstack():
             password=self.password,
             user_domain_name=self.user_domain_name,
             project_domain_name=self.project_domain_name,
-            )
+        )
         self.openstack_authorize(conn)
         # creates the project in Openstack
         project = self.create_project(conn, tenant_project_name,
