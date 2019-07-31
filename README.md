@@ -30,4 +30,4 @@
 `# ./stop.sh`
 
 ## Documentation
-Visit the [Wiki page](https://gitlab.fokus.fraunhofer.de/5genesis/slice-manager/wikis/home) of the repository
+Visit the Wiki page of the repository
