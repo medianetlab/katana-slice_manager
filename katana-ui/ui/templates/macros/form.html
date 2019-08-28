@@ -1,0 +1,7 @@
+{%- macro form_tag(url, fid='', css_class='', method='post') -%}
+  <form action="{{ url_for(url, **kwargs) }}" method="{{ method }}"
+        id="{{ fid }}" class="{{ css_class }}" role="form">
+    <p id="form_error" class="alert alert-danger"></p>
+    {{ caller () }}
+  </form>
+{%- endmacro -%}
