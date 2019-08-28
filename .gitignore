@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
@@ -22,9 +22,9 @@ var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
-*.egg-info/
+# *.egg-info/
 .installed.cfg
-*.egg
+# *.egg
 MANIFEST
 
 # PyInstaller
