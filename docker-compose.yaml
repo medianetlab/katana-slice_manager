@@ -4,7 +4,10 @@ services:
   mongo:
     image: 'mongo:4.0.5'
     container_name: katana-mongo
-    restart: always          
+    restart: always
+    volumes:
+      - "mongo-datadb:/data/db"
+      - "mongo-configdb:/data/configdb"
 
   katana-mngr:
     build: ./katana-mngr
@@ -64,4 +67,6 @@ services:
   #     - 443:443
 
 volumes:
+  mongo-datadb: {}
+  mongo-configdb: {}
   postgres: {}
