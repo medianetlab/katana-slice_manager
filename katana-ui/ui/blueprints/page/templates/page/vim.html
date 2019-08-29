@@ -1,0 +1,47 @@
+{% extends 'layouts/base_coreui_dashboard.html' %}
+
+{% block title %}Vim{% endblock %}
+
+{% block body %}
+
+<br>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="card">
+		  <div class="card-header">
+		    <i class="fa fa-align-justify"></i> Vim</div>
+		  <div class="card-body">
+		    <table class="table table-responsive-sm table-striped">
+		      <thead>
+		        <tr>
+		          <th>uuid</th>
+		          <th>created at</th>
+		          <th>type</th>
+		        </tr>
+		      </thead>
+		      <tbody class="vim-table-tpl">
+		       
+	        	<script id="vim-table" type="text/x-handlebars-template">
+	        	{% raw %}
+        		{{#each this}}
+    			<tr>
+    				<td>{{_id}}</td>
+    				<td>{{created_at}}</td>
+    				<td>{{type}}</td>
+        		</tr>
+    			{{/each}}
+    			{% endraw %}
+	           </script>
+
+		      </tbody>
+		    </table>
+		  </div>
+		</div>
+	</div>
+</div>
+<!-- /.row-->
+
+
+
+
+{% endblock %}

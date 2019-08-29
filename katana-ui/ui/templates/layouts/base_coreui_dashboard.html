@@ -64,14 +64,14 @@
                 <span class="badge badge-primary">NEW</span>
               </a>
             </li>
-            <li class="nav-title">Theme</li>
+            <li class="nav-title">Infrastructure</li>
             <li class="nav-item">
-              <a class="nav-link" href="colors.html">
-                <i class="nav-icon icon-drop"></i> Colors</a>
+              <a class="nav-link" href="/vim">
+                <i class="nav-icon icon-drop"></i> Vim</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="typography.html">
-                <i class="nav-icon icon-pencil"></i> Typography</a>
+              <a class="nav-link" href="/wim">
+                <i class="nav-icon icon-pencil"></i> Wim</a>
             </li>
             <li class="nav-title">Components</li>
             <li class="nav-item nav-dropdown">
@@ -271,8 +271,7 @@
         </ol> -->
         <div class="container-fluid">
           <div class="animated fadeIn">
-            <div class="row"></div>
-            <!-- /.row-->
+            {% block body %}{% endblock %}
           </div>
         </div>
       </main>
@@ -296,6 +295,9 @@
     <script src="{{ url_for('static', filename='node_modules/pace-progress/pace.min.js') }}"></script>
     <script src="{{ url_for('static', filename='node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ url_for('static', filename='node_modules/@coreui/coreui/dist/js/coreui.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='scripts/handlebars-v4.1.2.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/pages/vim.js') }}"></script>
   </body>
 </html>

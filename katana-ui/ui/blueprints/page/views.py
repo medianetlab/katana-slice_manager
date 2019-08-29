@@ -27,3 +27,8 @@ def index():
 def home():
     return render_template('page/home2.html')
 
+
+@page.route('/vim')
+@jwt_required
+def vim():
+    return render_template('page/vim.html')
