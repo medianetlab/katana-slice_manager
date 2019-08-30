@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import request
-from flask_classful import FlaskView
+from flask_classful import FlaskView, route
 from katana.api.openstackUtils import utils as openstackUtils
 from katana.api.opennebulaUtils import utils as opennebulaUtils
 from katana.api.mongoUtils import mongoUtils
@@ -41,6 +41,14 @@ class VimView(FlaskView):
                                created_at=ivim['created_at'],
                                type=ivim['type']))
         return dumps(return_data)
+
+    # @route('/all/') #/vim/all
+    def all(self):
+        """
+        Same with index(self) above, but returns all vim details
+        """
+        return dumps(mongoUtils.index("vim"))
+
 
     def get(self, uuid):
         """

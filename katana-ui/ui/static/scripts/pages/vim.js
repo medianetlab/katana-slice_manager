@@ -4,7 +4,7 @@ $(document).ready(function(){
 
 	$.ajax({
         type: 'GET',
-        url: '/api/vim',
+        url: '/api/vim/all',
         timeout: 15000,
 
         error: function(err)
@@ -13,7 +13,7 @@ $(document).ready(function(){
         },
         dataType: 'json',
         success: function(data) {
-            console.log(data);
+            // console.log(data);
             var html    = template(data);
             $('.vim-table-tpl').html(html);
 
