@@ -17,13 +17,13 @@ function render_vim_table() {
     // try to fetch the json with vim data
     $.ajax({
         type: 'GET',
-        url: '/api/vim/all',
+        url: '/mngr/api/vim/all',
         timeout: 15000,
 
         error: function(err)
         {
             console.log(err);
-            toastr.error(err.status + " " + err.statusText,"GET /api/vim/all error");
+            toastr.error(err.status + " " + err.statusText,"GET /mngr/api/vim/all error");
         },
         dataType: 'json',
         success: function(data) {
@@ -49,20 +49,16 @@ function add_vim_button_group_listeners() {
 
 function rm_vim(uuid) {
     $.ajax({
+        url: '/mngr/api/vim/'+uuid,
         type: 'DELETE',
-        url: '/api/vim/'+uuid,
-        timeout: 15000,
-
-        error: function(err)
-        {
-            console.log(err);
-            toastr.error(err.status + " " + err.statusText,"DELETE /api/vim/<uuid> error");
-        },
-        dataType: 'json',
-        success: function(data) {
-            console.log(data);
-            toastr.success("Vim has been removed successfully");
-            $('.vim-trow-'+uuid).remove();
-        }
+        dataType: 'text',
+        timeout: 15000
+    }).done(function(data) {
+        // console.log(data);
+        toastr.success("Vim has been removed successfully");
+        $('.vim-trow-'+uuid).remove();
+    }).fail(function() {
+        console.log(err);
+        toastr.error(err.status + " " + err.statusText,"DELETE /mngr/api/vim/{id} error");
     });
 }
