@@ -27,17 +27,17 @@
 	        	<script id="vim-table" type="text/x-handlebars-template">
 	        	{% raw %}
         		{{#each this}}
-    			<tr>
+    			<tr class="vim-trow-{{_id}}">
     				<td>{{name}}</td>
     				<td>{{_id}}</td>
     				<td>{{auth_url}}</td>
     				<td>{{created_at}}</td>
     				<td>{{type}}</td>
     				<td>
-    					<div class="btn-group mr-2" role="group" aria-label="First group">
-							<button class="btn btn-secondary" type="button"><i class="icons font-lg d-block cui-code"></i></button>
-							<button class="btn btn-secondary" type="button"><i class="icons font-lg d-block cui-pencil"></i></button>
-							<button class="btn btn-secondary" type="button"><i class="icons font-lg d-block cui-trash"></i></button>
+    					<div class="btn-group mr-2" role="group" aria-label="First group" data-uuid="{{_id}}">
+							<button class="btn btn-secondary btn-show" type="button"><i class="icons font-lg d-block cui-code"></i></button>
+							<button class="btn btn-secondary btn-edit" type="button"><i class="icons font-lg d-block cui-pencil"></i></button>
+							<button class="btn btn-secondary btn-rm" type="button"><i class="icons font-lg d-block cui-trash"></i></button>
 						</div>
     				</td>
         		</tr>
