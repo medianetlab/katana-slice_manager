@@ -14,9 +14,12 @@
 		    <table class="table table-responsive-sm table-striped">
 		      <thead>
 		        <tr>
+		          <th>name</th>
 		          <th>uuid</th>
+		          <th>auth url</th>
 		          <th>created at</th>
 		          <th>type</th>
+		          <th>actions</th>
 		        </tr>
 		      </thead>
 		      <tbody class="vim-table-tpl">
@@ -25,9 +28,18 @@
 	        	{% raw %}
         		{{#each this}}
     			<tr>
+    				<td>{{name}}</td>
     				<td>{{_id}}</td>
+    				<td>{{auth_url}}</td>
     				<td>{{created_at}}</td>
     				<td>{{type}}</td>
+    				<td>
+    					<div class="btn-group mr-2" role="group" aria-label="First group">
+							<button class="btn btn-secondary" type="button"><i class="icons font-lg d-block cui-code"></i></button>
+							<button class="btn btn-secondary" type="button"><i class="icons font-lg d-block cui-pencil"></i></button>
+							<button class="btn btn-secondary" type="button"><i class="icons font-lg d-block cui-trash"></i></button>
+						</div>
+    				</td>
         		</tr>
     			{{/each}}
     			{% endraw %}
