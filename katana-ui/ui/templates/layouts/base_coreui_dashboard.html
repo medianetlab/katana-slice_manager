@@ -24,6 +24,8 @@
 
     <!-- css file for toastr js -->
     <link href="{{ url_for('static', filename='scripts/toastr/toastr.min.css') }}" rel="stylesheet">
+    <!-- css file for codemirror js -->
+    <link href="{{ url_for('static', filename='scripts/codemirror/codemirror.css') }}" rel="stylesheet">
   </head>
   <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show" data-username="{{ current_user.username }}">
     <header class="app-header navbar">
@@ -301,6 +303,9 @@
 
     <script src="{{ url_for('static', filename='scripts/handlebars-v4.1.2.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/toastr/toastr.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/codemirror/codemirror.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/codemirror/javascript.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/codemirror/autorefresh.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/pages/vim.js') }}"></script>
   </body>
