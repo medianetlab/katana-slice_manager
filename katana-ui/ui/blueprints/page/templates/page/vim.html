@@ -36,7 +36,7 @@
     				<td>
     					<div class="btn-group mr-2" role="group" aria-label="First group" data-uuid="{{_id}}" data-name="{{name}}">
 							<button class="btn btn-secondary btn-inspect" type="button" data-toggle="modal" data-target="#inspect-modal"><i class="icons font-lg d-block cui-code"></i></button>
-							<button class="btn btn-secondary btn-edit" type="button"><i class="icons font-lg d-block cui-pencil"></i></button>
+							<button class="btn btn-secondary btn-edit" type="button" data-toggle="modal" data-target="#edit-modal"><i class="icons font-lg d-block cui-pencil"></i></button>
 							<button class="btn btn-secondary btn-rm" type="button" data-toggle="modal" data-target="#delete-modal"><i class="icons font-lg d-block cui-trash"></i></button>
 						</div>
     				</td>
@@ -56,7 +56,7 @@
 
 <!-- Inspect Modal -->
 <div class="modal fade" id="inspect-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalCenterTitle">Modal title</h5>
@@ -94,6 +94,55 @@
 			<div class="modal-footer">
 				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
 				<button class="btn btn-warning btn-rm-proceed" data-vim-uuid="" type="button">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<!-- Edit Vim -->
+<div class="modal fade show" id="edit-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"></h4>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="card">
+					<div class="card-header">
+						<strong>Editable fields</strong>
+					</div>
+					<div class="card-body">
+						<div class="form-group">
+							<label for="edit-name">name</label>
+							<input class="form-control" id="edit-name" type="text" placeholder="name">
+						</div>
+						<div class="form-group">
+							<label for="edit-description">description</label>
+							<input class="form-control" id="edit-description" type="text" placeholder="description">
+						</div>
+						<div class="form-group">
+							<label for="edit-location">location</label>
+							<input class="form-control" id="edit-location" type="text" placeholder="location">
+						</div>
+						<div class="form-group">
+							<label for="edit-type">type</label>
+							<input class="form-control" id="edit-type" type="text" placeholder="type">
+						</div>
+						<div class="form-group">
+							<label for="edit-version">version</label>
+							<input class="form-control" id="edit-version" type="text" placeholder="version">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<button class="btn btn-primary btn-edit-proceed" data-vim-uuid="" type="button">Save</button>
 			</div>
 		</div>
 	</div>

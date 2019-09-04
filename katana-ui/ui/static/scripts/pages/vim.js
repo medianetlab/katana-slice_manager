@@ -1,3 +1,5 @@
+//=======================================  Global vars, initialization  ====================================//
+
 // json object with all vim details
 var vim_all = null;
 
@@ -8,10 +10,14 @@ var cm = CodeMirror(document.getElementById('modal-textarea'),{
     autoRefresh: true
 });
 
+// json object with data from vim opened for editing
+vim_being_edited = null;
+
 
 
 
 //=======================================  Document ready  ====================================//
+
 
 $(document).ready(function(){
 
@@ -30,16 +36,21 @@ $(document).ready(function(){
     add_delete_modal_event_handling();
     add_delete_button_listener();
 
-    
+    // handle what happens when the "edit modal" is shown/hidden
+    // and the save button is pressed
+    add_edit_modal_event_handling();
+    add_save_edit_button_listener();
 });
 
 
 
 
+//=======================================  handlebars.js  ====================================//
 
 
-//=======================================  helper functions  ====================================//
-
+// requests vim data from katana-mngr
+// and generates the vim table template with handlebars.js
+//
 function render_vim_table() {
     // template for vim-table
     var source   = $("#vim-table").html();
@@ -60,22 +71,13 @@ function render_vim_table() {
 
         var html    = template(data);
         $('.vim-table-tpl').html(html);
-
-        // if the template is rendered and the table is added to the page
-        // add listeners
-        add_vim_button_group_listeners();
     });
 }
 
 
 
-function add_vim_button_group_listeners() {
-    // remove button
-    // $('.btn-rm').on('click', function(){
-    //    rm_vim(($(this).parent().attr('data-uuid')))        
-    // });
-}
 
+//=======================================  modal windows handling  ====================================//
 
 
 // Handling of codemirror when the "inspect modal" is shown/hidden.
@@ -119,10 +121,10 @@ function add_inpect_modal_event_handling() {
 
 function add_delete_modal_event_handling() {
     $('#delete-modal').on('shown.bs.modal', function (event) {
-        var button = $(event.relatedTarget)
-        var uuid = button.parent().data('uuid')
-        var name = button.parent().data('name')
-        var modal = $(this)
+        var button = $(event.relatedTarget);
+        var uuid = button.parent().data('uuid');
+        var name = button.parent().data('name');
+        var modal = $(this);
 
         // add the name to the title/question
         modal.find('.modal-title').text('Delete ' + name);
@@ -130,16 +132,63 @@ function add_delete_modal_event_handling() {
         modal.find('.btn-rm-proceed').attr('data-vim-uuid',uuid);      
     })
 }
-
-
-
 function add_delete_button_listener() {
     $('.btn-rm-proceed').on('click',function(){
-        $('#delete-modal').modal('hide')
+        $('#delete-modal').modal('hide');
         rm_vim($(this).attr('data-vim-uuid'));
     });
 }
 
+
+
+function add_edit_modal_event_handling() {
+    $('#edit-modal').on('shown.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var uuid = button.parent().data('uuid');
+        var name = button.parent().data('name');
+        var modal = $(this);
+
+        // add the name to the title
+        modal.find('.modal-title').text('Edit ' + name);
+        modal.find('#edit-name').val(name);
+
+        // load vim details from the api
+        $.ajax({
+            url: '/mngr/api/vim/'+uuid,
+            type: 'GET',
+            dataType: 'json',
+            timeout: 15000
+        }).done(function(data) {
+            vim_being_edited = data;
+            modal.find('#edit-description').val(data.description);
+            modal.find('#edit-type').val(data.type);
+            modal.find('#edit-location').val(data.location);
+            modal.find('#edit-version').val(data.version);
+        }).fail(function(err) {
+            toastr.error("Failed to load Vim details from katana-mngr.", "Error");
+        });       
+
+        modal.find('.btn-edit-proceed').attr('data-vim-uuid',uuid);      
+    })
+}
+function add_save_edit_button_listener() {
+    $('.btn-edit-proceed').on('click',function(){
+        // collect edited data
+        vim_being_edited.name        = $('#edit-name').val();
+        vim_being_edited.description = $('#edit-description').val();
+        vim_being_edited.type        = $('#edit-type').val();
+        vim_being_edited.location    = $('#edit-location').val();
+        vim_being_edited.version     = $('#edit-version').val();
+        $('#edit-modal').modal('hide');
+        
+        update_vim(vim_being_edited._id, vim_being_edited);
+    });
+}
+
+
+
+
+//=======================================  helper functions  ====================================//
 
 
 // sends a DELETE request to the .../vim/<id> endpoint
@@ -156,6 +205,23 @@ function rm_vim(uuid) {
         $('.vim-trow-'+uuid).remove();
     }).fail(function(err) {
         toastr.error("Failed to remove Vim from katana-mngr.", "Error");
+    });
+}
+
+
+// sends a PUT request to the .../vim/<id> endpoint
+// to update the vim specified by the <id>
+function update_vim(uuid, data) {
+    $.ajax({
+        url: '/mngr/api/vim/'+uuid,
+        type: 'PUT',
+        contentType : 'application/json',
+        timeout: 15000,
+        data: JSON.stringify(data),
+    }).done(function(data) {
+        toastr.success("Vim has been updated successfully");
+    }).fail(function(err) {
+        toastr.error("Failed to update Vim from katana-mngr.", "Error");
     });
 }
 

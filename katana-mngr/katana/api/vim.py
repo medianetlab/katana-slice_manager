@@ -137,6 +137,7 @@ class VimView(FlaskView):
         Update the details of a specific vim.
         used by: `katana vim update -f [yaml file] [uuid]`
         """
+        print(request.json)
         request.json['_id'] = uuid
         result = mongoUtils.update("vim", uuid, request.json)
 
