@@ -25,6 +25,11 @@ $(document).ready(function(){
     // handle what happens when the "inspect modal" is shown/hidden
     add_inpect_modal_event_handling();
 
+    // handle what happens when the "delete modal" is shown/hidden
+    // and the delete button is pressed
+    add_delete_modal_event_handling();
+    add_delete_button_listener();
+
     
 });
 
@@ -45,24 +50,19 @@ function render_vim_table() {
         type: 'GET',
         url: '/mngr/api/vim/all',
         timeout: 15000,
+        dataType: 'json'
+    }).fail(function(err) {
+        console.log(err);
+        toastr.error("Failed to load Vim data from katana-mngr.", "Error");
+    }).done(function(data) {
+        // console.log(data);
+        vim_all = data;
+        var html    = template(data);
+        $('.vim-table-tpl').html(html);
 
-        error: function(err)
-        {
-            console.log(err);
-            toastr.error(err.status + " " + err.statusText,"GET /mngr/api/vim/all error");
-        },
-        dataType: 'json',
-        success: function(data) {
-            // console.log(data);
-            vim_all = data;
-            var html    = template(data);
-            $('.vim-table-tpl').html(html);
-
-            // if the template is rendered and the table is added to the page
-            // add listeners
-            add_vim_button_group_listeners();
-
-        }
+        // if the template is rendered and the table is added to the page
+        // add listeners
+        add_vim_button_group_listeners();
     });
 }
 
@@ -70,29 +70,9 @@ function render_vim_table() {
 
 function add_vim_button_group_listeners() {
     // remove button
-    $('.btn-rm').on('click', function(){
-       rm_vim(($(this).parent().attr('data-uuid')))        
-    });
-}
-
-
-
-// sends a DELETE request to the .../vim/<id> endpoint
-// to remove the vim specified by the <id>
-function rm_vim(uuid) {
-    $.ajax({
-        url: '/mngr/api/vim/'+uuid,
-        type: 'DELETE',
-        dataType: 'text',
-        timeout: 15000
-    }).done(function(data) {
-        // console.log(data);
-        toastr.success("Vim has been removed successfully");
-        $('.vim-trow-'+uuid).remove();
-    }).fail(function() {
-        console.log(err);
-        toastr.error(err.status + " " + err.statusText,"DELETE /mngr/api/vim/{id} error");
-    });
+    // $('.btn-rm').on('click', function(){
+    //    rm_vim(($(this).parent().attr('data-uuid')))        
+    // });
 }
 
 
@@ -122,9 +102,8 @@ function add_inpect_modal_event_handling() {
             // add vim details to codemirror
             cm.getDoc().setValue(JSON.stringify(data, null, 4));
             cm.getDoc().setCursor({line:0,ch: 0});
-        }).fail(function() {
-            console.log(err);
-            toastr.error(err.status + " " + err.statusText,"DELETE /mngr/api/vim/{id} error");
+        }).fail(function(err) {
+            toastr.error("Failed to load Vim details from katana-mngr.", "Error");
         });
       
     })
@@ -132,5 +111,49 @@ function add_inpect_modal_event_handling() {
     $('#inspect-modal').on('hidden.bs.modal', function (event) {
         // delete previous codemirror content/history
         cm.getDoc().setValue("");
+    });
+}
+
+
+
+function add_delete_modal_event_handling() {
+    $('#delete-modal').on('shown.bs.modal', function (event) {
+        var button = $(event.relatedTarget)
+        var uuid = button.parent().data('uuid')
+        var name = button.parent().data('name')
+        var modal = $(this)
+
+        // add the name to the title/question
+        modal.find('.modal-title').text('Delete ' + name);
+        modal.find('.modal-text').text('Are you sure you want to delete '+ name + '?');
+        modal.find('.btn-rm-proceed').attr('data-vim-uuid',uuid);      
+    })
+}
+
+
+
+function add_delete_button_listener() {
+    $('.btn-rm-proceed').on('click',function(){
+        $('#delete-modal').modal('hide')
+        rm_vim($(this).attr('data-vim-uuid'));
+    });
+}
+
+
+
+// sends a DELETE request to the .../vim/<id> endpoint
+// to remove the vim specified by the <id>
+function rm_vim(uuid) {
+    $.ajax({
+        url: '/mngr/api/vim/'+uuid,
+        type: 'DELETE',
+        dataType: 'text',
+        timeout: 15000
+    }).done(function(data) {
+        // console.log(data);
+        toastr.success("Vim has been removed successfully");
+        $('.vim-trow-'+uuid).remove();
+    }).fail(function(err) {
+        toastr.error("Failed to remove Vim from katana-mngr.", "Error");
     });
 }

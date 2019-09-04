@@ -37,7 +37,7 @@
     					<div class="btn-group mr-2" role="group" aria-label="First group" data-uuid="{{_id}}" data-name="{{name}}">
 							<button class="btn btn-secondary btn-inspect" type="button" data-toggle="modal" data-target="#inspect-modal"><i class="icons font-lg d-block cui-code"></i></button>
 							<button class="btn btn-secondary btn-edit" type="button"><i class="icons font-lg d-block cui-pencil"></i></button>
-							<button class="btn btn-secondary btn-rm" type="button"><i class="icons font-lg d-block cui-trash"></i></button>
+							<button class="btn btn-secondary btn-rm" type="button" data-toggle="modal" data-target="#delete-modal"><i class="icons font-lg d-block cui-trash"></i></button>
 						</div>
     				</td>
         		</tr>
@@ -77,6 +77,27 @@
   </div>
 </div>
 
+
+<!-- Delete Vim -->
+<div class="modal fade show" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog modal-warning" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"></h4>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+			<p class="modal-text"></p>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<button class="btn btn-warning btn-rm-proceed" data-vim-uuid="" type="button">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>
 
 
 
