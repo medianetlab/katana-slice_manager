@@ -55,8 +55,9 @@ function render_vim_table() {
         console.log(err);
         toastr.error("Failed to load Vim data from katana-mngr.", "Error");
     }).done(function(data) {
-        // console.log(data);
-        vim_all = data;
+        // generate human-readable "created at" dates from unix epoch values
+        vim_all = generate_UTC_dates(data);
+
         var html    = template(data);
         $('.vim-table-tpl').html(html);
 
@@ -156,4 +157,15 @@ function rm_vim(uuid) {
     }).fail(function(err) {
         toastr.error("Failed to remove Vim from katana-mngr.", "Error");
     });
+}
+
+
+// "created_at" values are floating point numbers generated from Python time.time()
+// this function generates "created_at_UTC", a human readable version of the above
+function generate_UTC_dates(data) {
+    data.forEach(function(entry) {
+        date = new Date(entry.created_at*1000);
+        entry.created_at_UTC = date.toUTCString();
+    });
+    return data;
 }
