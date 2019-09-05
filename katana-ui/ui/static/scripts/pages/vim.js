@@ -1,5 +1,9 @@
 //=======================================  Global vars, initialization  ====================================//
 
+// handlebars template for vim-table
+var source   = $("#vim-table").html();
+var template = Handlebars.compile(source);
+
 // json object with all vim details
 var vim_all = null;
 
@@ -52,9 +56,6 @@ $(document).ready(function(){
 // and generates the vim table template with handlebars.js
 //
 function render_vim_table() {
-    // template for vim-table
-    var source   = $("#vim-table").html();
-    var template = Handlebars.compile(source);
 
     // try to fetch the json with vim data
     $.ajax({
@@ -219,7 +220,9 @@ function update_vim(uuid, data) {
         timeout: 15000,
         data: JSON.stringify(data),
     }).done(function(data) {
+        console.log(data);
         toastr.success("Vim has been updated successfully");
+        render_vim_table();
     }).fail(function(err) {
         toastr.error("Failed to update Vim from katana-mngr.", "Error");
     });
