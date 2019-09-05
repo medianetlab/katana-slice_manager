@@ -57,6 +57,8 @@ $(document).ready(function(){
 //
 function render_vim_table() {
 
+    $('.lds-vim-table').css('display', 'inline-block');
+
     // try to fetch the json with vim data
     $.ajax({
         type: 'GET',
@@ -72,6 +74,7 @@ function render_vim_table() {
 
         var html    = template(data);
         $('.vim-table-tpl').html(html);
+        $('.lds-vim-table').css('display', 'none');
     });
 }
 
