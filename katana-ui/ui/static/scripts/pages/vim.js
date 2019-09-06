@@ -1,3 +1,13 @@
+// Code structure:
+//   - Global vars, initialization
+//   - Document ready           (jQuery)
+//   - handlebars.js            (html templating)
+//   - modal windows handling   (pop-up windows)
+//   - VIM CRUD functions       (ajax)
+//   - helper functions         (validation,time, etc...)
+
+
+
 //=======================================  Global vars, initialization  ====================================//
 
 // handlebars template for vim-table
@@ -19,6 +29,10 @@ vim_being_edited = null;
 // json object with data from vim that is about to be added
 vim_being_added = null;
 
+// global settings for toastr js (plugin for popup messages)
+toastr.options.closeButton = true;
+toastr.options.progressBar = true;
+
 
 
 
@@ -26,10 +40,6 @@ vim_being_added = null;
 
 
 $(document).ready(function(){
-
-    // global settings for toastr js (plugin for popup messages)
-    toastr.options.closeButton = true;
-    toastr.options.progressBar = true;
 
     // load data and add table with vim details
     render_vim_table();
@@ -325,7 +335,7 @@ function tryParseJSON (jsonString){
 
         // Handle non-exception-throwing cases:
         // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
-        // but... JSON.parse(null) returns null, and typeof null === "object", 
+        // but... JSON.parse(null) returns null, and typeof null === "object",
         // so we must check for that, too. Thankfully, null is falsey, so this suffices:
         if (o && typeof o === "object") {
             return o;
