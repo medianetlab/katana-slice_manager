@@ -16,6 +16,8 @@ var cm = CodeMirror(document.getElementById('modal-textarea'),{
 
 // json object with data from vim opened for editing
 vim_being_edited = null;
+// json object with data from vim that is about to be added
+vim_being_added = null;
 
 
 
@@ -44,6 +46,11 @@ $(document).ready(function(){
     // and the save button is pressed
     add_edit_modal_event_handling();
     add_save_edit_button_listener();
+
+    // handle what happens when the "add modal" is shown/hidden
+    // and the submit button is pressed
+    add_add_modal_event_handling();
+    add_submit_button_listener();
 });
 
 
@@ -123,6 +130,8 @@ function add_inpect_modal_event_handling() {
 
 
 
+// Handling of delete modal show/hide and delete button click
+//
 function add_delete_modal_event_handling() {
     $('#delete-modal').on('shown.bs.modal', function (event) {
         var button = $(event.relatedTarget);
@@ -145,6 +154,8 @@ function add_delete_button_listener() {
 
 
 
+// Handling of edit modal show/hide and save button click
+//
 function add_edit_modal_event_handling() {
     $('#edit-modal').on('shown.bs.modal', function (event) {
         var button = $(event.relatedTarget);
@@ -192,7 +203,22 @@ function add_save_edit_button_listener() {
 
 
 
-//=======================================  helper functions  ====================================//
+// Handling of add modal show/hide and submit button click
+//
+function add_add_modal_event_handling() {
+    $('#add-modal').on('shown.bs.modal', function (event) {
+        //
+    })
+}
+function add_submit_button_listener() {
+    $('.btn-add-proceed').on('click',function(){
+        $('#add-modal').modal('hide');
+        add_vim(vim_being_added);
+    });
+}
+
+
+//=======================================  VIM CRUD functions  ====================================//
 
 
 // sends a DELETE request to the .../vim/<id> endpoint
@@ -208,7 +234,7 @@ function rm_vim(uuid) {
         toastr.success("Vim has been removed successfully");
         $('.vim-trow-'+uuid).remove();
     }).fail(function(err) {
-        toastr.error("Failed to remove Vim from katana-mngr.", "Error");
+        toastr.error("Failed to remove Vim from katana-mngr", "Error");
     });
 }
 
@@ -227,9 +253,35 @@ function update_vim(uuid, data) {
         toastr.success("Vim has been updated successfully");
         render_vim_table();
     }).fail(function(err) {
-        toastr.error("Failed to update Vim from katana-mngr.", "Error");
+        toastr.error("Failed to update Vim from katana-mngr", "Error");
     });
 }
+
+
+
+// sends a POST request to the .../vim/ endpoint
+// to add a new vim with the specs (data) provided
+function add_vim(data) {
+    $.ajax({
+        url: '/mngr/api/vim',
+        type: 'POST',
+        contentType : 'application/json',
+        timeout: 15000,
+        data: JSON.stringify(data),
+    }).done(function(data) {
+        console.log(data);
+        toastr.success("Vim has been added successfully");
+        render_vim_table();
+    }).fail(function(err) {
+        toastr.error("Failed to add Vim to katana-mngr", "Error");
+    });
+}
+
+
+
+
+
+//=======================================  helper functions  ====================================//
 
 
 // "created_at" values are floating point numbers generated from Python time.time()
@@ -241,3 +293,45 @@ function generate_UTC_dates(data) {
     });
     return data;
 }
+
+
+// reads text content from file selected by user
+// stores it to "vim_being_added"
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    vim_being_added = tryParseJSON(e.target.result);
+    if (!vim_being_added) {
+        $('.btn-add-proceed').attr('disabled',true);
+        toastr.error("No valid json, failed to parse file content", "Error");
+    } else {
+        $('.btn-add-proceed').attr('disabled',false);
+    }
+  };
+  reader.readAsText(file);
+}
+// when a user selects or changes the selected file...
+document.getElementById('file-input').addEventListener('change', readSingleFile, false);
+
+
+// from: https://stackoverflow.com/questions/3710204
+function tryParseJSON (jsonString){
+    try {
+        var o = JSON.parse(jsonString);
+
+        // Handle non-exception-throwing cases:
+        // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
+        // but... JSON.parse(null) returns null, and typeof null === "object", 
+        // so we must check for that, too. Thankfully, null is falsey, so this suffices:
+        if (o && typeof o === "object") {
+            return o;
+        }
+    }
+    catch (e) { }
+
+    return false;
+};

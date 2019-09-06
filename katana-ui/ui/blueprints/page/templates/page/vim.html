@@ -170,10 +170,20 @@
 			</div>
 			<div class="modal-body">
 			<p class="modal-text"></p>
+			<div class="card-body">
+				<form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
+					<div class="form-group row">
+						<label class="col-md-3 col-form-label" for="file-input">File input</label>
+						<div class="col-md-9">
+							<input id="file-input" type="file" name="file-input">
+						</div>
+					</div>
+				</form>
+			</div>
 			</div>
 			<div class="modal-footer">
 				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-				<button class="btn btn-primary btn-add-proceed" data-vim-uuid="" type="button">Add</button>
+				<button class="btn btn-primary btn-add-proceed" type="button" disabled="">Add</button>
 			</div>
 		</div>
 	</div>
