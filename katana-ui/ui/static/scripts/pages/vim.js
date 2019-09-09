@@ -58,8 +58,10 @@ $(document).ready(function(){
     add_save_edit_button_listener();
 
     // handle what happens when the "add modal" is shown/hidden
+    // a file is selected
     // and the submit button is pressed
     add_add_modal_event_handling();
+    add_file_input_event_handling();
     add_submit_button_listener();
 });
 
@@ -220,11 +222,64 @@ function add_add_modal_event_handling() {
         //
     })
 }
+function add_file_input_event_handling() {
+    $('#file-input').on('change',function(event){
+
+        var file = event.target.files[0];
+                  
+        if (!file) {
+            $('.file-name').text('Drop your file here or click in this area');
+            $('.btn-add-proceed').attr('disabled',true);
+            return;
+        }
+        $('.file-name').text(file.name);
+
+        // read the file without uploading it to the server
+        var reader = new FileReader();
+        reader.onload = function(e) {
+        // try to parse it as JSON
+        vim_being_added = tryParseJSON(e.target.result);
+        if (!vim_being_added) {
+            // if it is not JSON, try to parse it as YAML
+            vim_being_added = tryParseYAML(e.target.result);
+            // if it is not YAML
+            if (!vim_being_added) {
+                $('.btn-add-proceed').attr('disabled',true);
+                toastr.error("No valid json or yaml data, failed to parse file content", "Error");
+                document.getElementById("file-input").value = "";
+                $('.file-name').text('Drop your file here or click in this area');
+            } else {
+                $('.btn-add-proceed').attr('disabled',false);
+            }
+        } else {
+            $('.btn-add-proceed').attr('disabled',false);
+        }
+        };
+        reader.readAsText(file);
+    });
+
+    // add "dragging" class when needed
+    $('#file-input').on("dragover", function(event) {
+        event.preventDefault();  
+        event.stopPropagation();
+        $(this).parent().addClass('dragging');
+    });
+    $('#file-input').on("dragleave", function(event) {
+        event.preventDefault();  
+        event.stopPropagation();
+        $(this).parent().removeClass('dragging');
+    });
+    $('#file-input').on("drop", function(event) {
+        $(this).parent().removeClass('dragging');
+    });
+}
 function add_submit_button_listener() {
     $('.btn-add-proceed').on('click',function(){
         $('#add-modal').modal('hide');
         add_vim(vim_being_added);
         document.getElementById("file-input").value = "";
+        $('.file-name').text('Drop your file here or click in this area');
+        $('.btn-add-proceed').attr('disabled',true);
     });
 }
 
@@ -304,38 +359,6 @@ function generate_UTC_dates(data) {
     });
     return data;
 }
-
-
-// reads text content from file selected by user
-// stores it to "vim_being_added"
-function readSingleFile(e) {
-  var file = e.target.files[0];
-  if (!file) {
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    // try to parse it as JSON
-    vim_being_added = tryParseJSON(e.target.result);
-    if (!vim_being_added) {
-        // if it is not JSON, try to parse it as YAML
-        vim_being_added = tryParseYAML(e.target.result);
-        // if it is not YAML
-        if (!vim_being_added) {
-            $('.btn-add-proceed').attr('disabled',true);
-            toastr.error("No valid json or yaml data, failed to parse file content", "Error");
-            document.getElementById("file-input").value = "";
-        } else {
-            $('.btn-add-proceed').attr('disabled',false);
-        }
-    } else {
-        $('.btn-add-proceed').attr('disabled',false);
-    }
-  };
-  reader.readAsText(file);
-}
-// when a user selects or changes the selected file...
-document.getElementById('file-input').addEventListener('change', readSingleFile, false);
 
 
 // from: https://stackoverflow.com/questions/3710204
