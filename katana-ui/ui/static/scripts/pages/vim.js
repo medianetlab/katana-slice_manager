@@ -224,6 +224,7 @@ function add_submit_button_listener() {
     $('.btn-add-proceed').on('click',function(){
         $('#add-modal').modal('hide');
         add_vim(vim_being_added);
+        document.getElementById("file-input").value = "";
     });
 }
 
@@ -314,10 +315,19 @@ function readSingleFile(e) {
   }
   var reader = new FileReader();
   reader.onload = function(e) {
+    // try to parse it as JSON
     vim_being_added = tryParseJSON(e.target.result);
     if (!vim_being_added) {
-        $('.btn-add-proceed').attr('disabled',true);
-        toastr.error("No valid json, failed to parse file content", "Error");
+        // if it is not JSON, try to parse it as YAML
+        vim_being_added = tryParseYAML(e.target.result);
+        // if it is not YAML
+        if (!vim_being_added) {
+            $('.btn-add-proceed').attr('disabled',true);
+            toastr.error("No valid json or yaml data, failed to parse file content", "Error");
+            document.getElementById("file-input").value = "";
+        } else {
+            $('.btn-add-proceed').attr('disabled',false);
+        }
     } else {
         $('.btn-add-proceed').attr('disabled',false);
     }
@@ -345,3 +355,16 @@ function tryParseJSON (jsonString){
 
     return false;
 };
+
+function tryParseYAML(yamlString) {
+    try {
+        var o = jsyaml.load(yamlString);
+
+        if (o && typeof o === "object") {
+            return o;
+        }
+    }
+    catch (e) { }
+    
+    return false;
+}
