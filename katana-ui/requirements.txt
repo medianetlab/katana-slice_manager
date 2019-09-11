@@ -20,7 +20,7 @@ Click==6.4
 # API.
 flask-classful==0.14.2
 flask-marshmallow==0.10.1
-flask-jwt-extended==3.3
+flask-jwt-extended==3.22.0
 requests==2.22.0
 
 # Extensions and libraries.

@@ -1,15 +1,9 @@
 from flask import Flask, jsonify, request, Response
-from flask_classful import route
+from flask_classful import FlaskView
 import requests
-
+from flask_jwt_extended import jwt_required
 from ui.api.mngr import MngrFlaskView
 
-from flask_jwt_extended import (
-    jwt_optional,
-    jwt_required,
-    get_jwt_identity,
-    current_user
-)
 
 
 
@@ -53,7 +47,7 @@ class VimView(MngrFlaskView):
         response = Response(resp.content, resp.status_code, headers)
         return response
 
-    # @jwt_required
+    @jwt_required
     def delete(self, uuid):
         resp = requests.request(
             method=request.method,
@@ -70,7 +64,7 @@ class VimView(MngrFlaskView):
         response = Response(resp.content, resp.status_code, headers)
         return response
 
-    # @jwt_required
+    @jwt_required
     def put(self, uuid):
         resp = requests.request(
             method=request.method,
@@ -87,7 +81,7 @@ class VimView(MngrFlaskView):
         response = Response(resp.content, resp.status_code, headers)
         return response
 
-    # @jwt_required
+    @jwt_required
     def post(self):
         resp = requests.request(
             method=request.method,

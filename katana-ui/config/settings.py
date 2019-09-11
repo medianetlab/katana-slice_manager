@@ -26,7 +26,7 @@ JWT_TOKEN_LOCATION = ['cookies', 'headers']
 JWT_COOKIE_SECURE = False
 
 # When set to False, cookies will persist even after the browser is closed.
-JWT_SESSION_COOKIE = False
+JWT_SESSION_COOKIE = True
 
 # Expire tokens in 1 year (this is unrelated to the cookie's duration).
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(weeks=52)

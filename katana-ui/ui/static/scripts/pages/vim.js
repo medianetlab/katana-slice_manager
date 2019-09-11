@@ -294,7 +294,10 @@ function rm_vim(uuid) {
         url: '/mngr/api/vim/'+uuid,
         type: 'DELETE',
         dataType: 'text',
-        timeout: 15000
+        timeout: 15000,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRF-TOKEN', $.cookie('csrf_access_token'));
+        }
     }).done(function(data) {
         // console.log(data);
         toastr.success("Vim has been removed successfully");
@@ -314,6 +317,9 @@ function update_vim(uuid, data) {
         contentType : 'application/json',
         timeout: 15000,
         data: JSON.stringify(data),
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRF-TOKEN', $.cookie('csrf_access_token'));
+        }
     }).done(function(data) {
         console.log(data);
         toastr.success("Vim has been updated successfully");
@@ -334,8 +340,10 @@ function add_vim(data) {
         contentType : 'application/json',
         timeout: 15000,
         data: JSON.stringify(data),
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRF-TOKEN', $.cookie('csrf_access_token'));
+        }
     }).done(function(data) {
-        console.log(data);
         toastr.success("Vim has been added successfully");
         render_vim_table();
     }).fail(function(err) {
