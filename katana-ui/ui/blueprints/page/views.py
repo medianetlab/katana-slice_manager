@@ -33,3 +33,12 @@ def vim():
     if current_user is None:
         return redirect(url_for('user.login'))
     return render_template('page/vim.html')
+
+
+@page.route('/wim')
+@jwt_optional
+def wim():
+    current_user = get_jwt_identity()
+    if current_user is None:
+        return redirect(url_for('user.login'))
+    return render_template('page/wim.html')

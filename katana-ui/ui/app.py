@@ -7,8 +7,8 @@ from ui.blueprints.user import user
 from ui.blueprints.user.models import User
 from ui.api.auth import AuthView
 from ui.api.v1.user import UserView
-# from ui.api.mngr.api_endpoints import ApiView
 from ui.api.mngr.vim_view import VimView
+from ui.api.mngr.wim_view import WimView
 
 from ui.extensions import (
     debug_toolbar,
@@ -39,8 +39,8 @@ def create_app(settings_override=None):
 
     AuthView.register(app)
     UserView.register(app)
-    # ApiView.register(app)
     VimView.register(app)
+    WimView.register(app)
 
     extensions(app)
     jwt_callbacks()
