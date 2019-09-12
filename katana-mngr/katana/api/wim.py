@@ -41,6 +41,13 @@ class WimView(FlaskView):
                                created_at=iwim['created_at']))
         return dumps(return_data)
 
+    # @route('/all/') #/wim/all
+    def all(self):
+        """
+        Same with index(self) above, but returns all vim details
+        """
+        return dumps(mongoUtils.index("wim"))
+
     def get(self, uuid):
         """
         Returns the details of specific wim,
