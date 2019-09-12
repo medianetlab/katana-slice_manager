@@ -191,3 +191,15 @@
 </div>
 
 {% endblock %}
+
+
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='scripts/handlebars-v4.1.2.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/toastr/toastr.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/codemirror/codemirror.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/codemirror/javascript.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/codemirror/autorefresh.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/js-yaml/js-yaml.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/pages/vim.js') }}"></script>
+{% endblock %}
