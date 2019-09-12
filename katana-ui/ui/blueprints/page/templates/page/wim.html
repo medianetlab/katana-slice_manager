@@ -9,7 +9,7 @@
 	<div class="col-lg-12">
 		<div class="card">
 		  <div class="card-header">
-		    <i class="cui-cloud"></i> WIM list
+		    <i class="fa fa-wifi"></i> WIM list
 			<div class="lds-ring lds-wim-table"><div></div><div></div><div></div><div></div></div>
 		</div>
 		  <div class="card-body">
@@ -23,9 +23,9 @@
 		        <tr>
 		          <th>name</th>
 		          <th>uuid</th>
-		          <th>auth url</th>
+		          <th>url</th>
 		          <th>created at</th>
-		          <th>type</th>
+		          <th>description</th>
 		          <th class="text-center">actions</th>
 		        </tr>
 		      </thead>
@@ -37,9 +37,9 @@
     			<tr class="wim-trow-{{_id}}">
     				<td>{{name}}</td>
     				<td>{{_id}}</td>
-    				<td>{{auth_url}}</td>
+    				<td>{{url}}</td>
     				<td>{{created_at_UTC}}</td>
-    				<td>{{type}}</td>
+    				<td>{{description}}</td>
     				<td class="text-center">
     					<div class="btn-group mr-2" role="group" aria-label="First group" data-uuid="{{_id}}" data-name="{{name}}">
 							<button class="btn btn-secondary btn-inspect" type="button" data-toggle="modal" data-target="#inspect-modal"><i class="icons font-lg d-block cui-code"></i></button>
@@ -131,18 +131,6 @@
 						<div class="form-group">
 							<label for="edit-description">description</label>
 							<input class="form-control" id="edit-description" type="text" placeholder="description">
-						</div>
-						<div class="form-group">
-							<label for="edit-location">location</label>
-							<input class="form-control" id="edit-location" type="text" placeholder="location">
-						</div>
-						<div class="form-group">
-							<label for="edit-type">type</label>
-							<input class="form-control" id="edit-type" type="text" placeholder="type">
-						</div>
-						<div class="form-group">
-							<label for="edit-version">version</label>
-							<input class="form-control" id="edit-version" type="text" placeholder="version">
 						</div>
 					</div>
 				</div>

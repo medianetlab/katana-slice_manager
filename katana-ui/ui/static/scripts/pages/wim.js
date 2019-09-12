@@ -203,9 +203,6 @@ function add_save_edit_button_listener() {
         // collect edited data
         wim_being_edited.name        = $('#edit-name').val();
         wim_being_edited.description = $('#edit-description').val();
-        wim_being_edited.type        = $('#edit-type').val();
-        wim_being_edited.location    = $('#edit-location').val();
-        wim_being_edited.version     = $('#edit-version').val();
         $('#edit-modal').modal('hide');
         
         update_wim(wim_being_edited._id, wim_being_edited);
