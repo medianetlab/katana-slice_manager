@@ -37,7 +37,7 @@ Flask application to provide a UI for `katana-mngr`.
 
 ### Deletion
 - data are stored to a named docker `volume`. This means that even if you `docker-compose up` / `docker-compose down`, the data will be there.
-- in case that you need a fresh start, `docker-compose down` and then find and the delete the relative `volume`. Ddepending on your folder names/configuration, it will be something like:
+- in case that you need a fresh start, first `docker-compose down` and then find and delete the relative `volume`. Depending on your folder names/configuration, it will be something like:
 
         docker volume rm katanaslicemanager_postgres
 
