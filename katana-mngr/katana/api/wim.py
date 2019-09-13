@@ -46,7 +46,7 @@ class WimView(FlaskView):
     # @route('/all/') #/wim/all
     def all(self):
         """
-        Same with index(self) above, but returns all vim details
+        Same with index(self) above, but returns all wim details
         """
         return dumps(mongoUtils.index("wim"))
 
