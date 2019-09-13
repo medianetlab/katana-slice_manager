@@ -22,6 +22,7 @@ Flask application to provide a UI for `katana-mngr`.
     2. `ui db init`
     3. `ui db seed`
 
+> ⚠️ **Warning**: Not using `init` and `seed` after the first time you run the app makes it crash!
 
 ## Database Configuration
  - can be modified at the [.env](./.env) file:
