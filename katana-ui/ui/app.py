@@ -9,6 +9,7 @@ from ui.api.auth import AuthView
 from ui.api.v1.user import UserView
 from ui.api.mngr.vim_view import VimView
 from ui.api.mngr.wim_view import WimView
+from ui.api.mngr.nfvo_view import NfvoView
 
 from ui.extensions import (
     debug_toolbar,
@@ -41,6 +42,7 @@ def create_app(settings_override=None):
     UserView.register(app)
     VimView.register(app)
     WimView.register(app)
+    NfvoView.register(app)
 
     extensions(app)
     jwt_callbacks()
