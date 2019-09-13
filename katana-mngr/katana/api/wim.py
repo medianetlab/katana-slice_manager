@@ -92,9 +92,9 @@ class WimView(FlaskView):
 
         """
         Make binary data acceptable by Mongo
-          - REST api sends: 'vim': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
+          - REST api sends: 'wim': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
         By decoding the base64 string and then using Binary() it works
-          - Inside Mongo  : "vim" : BinData(0,"gANja2F0YW5h....a base64 string...")
+          - Inside Mongo  : "wim" : BinData(0,"gANja2F0YW5h....a base64 string...")
         """
         request.json['wim'] = Binary(base64.b64decode(request.json['wim']['$binary']))
         result = mongoUtils.update("wim", uuid, request.json)

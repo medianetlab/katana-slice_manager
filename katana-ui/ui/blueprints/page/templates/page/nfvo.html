@@ -9,7 +9,7 @@
 	<div class="col-lg-12">
 		<div class="card">
 		  <div class="card-header">
-		    <i class="cui-cloud"></i> NFVO list
+		    <i class="fa fa-server"></i> NFVO list
 			<div class="lds-ring lds-nfvo-table"><div></div><div></div><div></div><div></div></div>
 		</div>
 		  <div class="card-body">
@@ -23,7 +23,7 @@
 		        <tr>
 		          <th>name</th>
 		          <th>uuid</th>
-		          <th>auth url</th>
+		          <th>ip</th>
 		          <th>created at</th>
 		          <th>type</th>
 		          <th class="text-center">actions</th>
@@ -37,7 +37,7 @@
     			<tr class="nfvo-trow-{{_id}}">
     				<td>{{name}}</td>
     				<td>{{_id}}</td>
-    				<td>{{auth_url}}</td>
+    				<td>{{nfvoip}}</td>
     				<td>{{created_at_UTC}}</td>
     				<td>{{type}}</td>
     				<td class="text-center">
