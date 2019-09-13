@@ -42,3 +42,12 @@ def wim():
     if current_user is None:
         return redirect(url_for('user.login'))
     return render_template('page/wim.html')
+
+
+@page.route('/nfvo')
+@jwt_optional
+def nfvo():
+    current_user = get_jwt_identity()
+    if current_user is None:
+        return redirect(url_for('user.login'))
+    return render_template('page/nfvo.html')
