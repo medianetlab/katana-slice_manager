@@ -43,6 +43,15 @@ class NFVOView(FlaskView):
                                type=infvo['type']))
         return dumps(return_data)
 
+
+    # @route('/all/') #/nfvo/all
+    def all(self):
+        """
+        Same with index(self) above, but returns all nfvo details
+        """
+        return dumps(mongoUtils.index("nfvo"))
+
+
     def get(self, uuid):
         """
         Returns the details of specific nfvo,
