@@ -15,7 +15,11 @@ Flask application to provide a UI for `katana-mngr`.
         command: gunicorn -b 0.0.0.0:8080 --access-logfile - --reload "ui.app:create_app()"
 
 
-## Database / cli tool for initialization
+
+
+## Database
+
+### Initialization
 - this app needs a database (for users/passwords etc). In the `docker-compose.yaml` file it's the service with name `postgres`
 - to initialize the database use the cli tool `ui`:
     1. get "inside" the container with `docker container exec -it katana-ui bash`
@@ -24,12 +28,21 @@ Flask application to provide a UI for `katana-mngr`.
 
 > ⚠️ **Warning**: Not using `init` and `seed` after the first time you run the app makes it crash!
 
-## Database Configuration
+### Configuration
  - can be modified at the [.env](./.env) file:
  
        POSTGRES_USER=mnladmin
        POSTGRES_PASSWORD=devpassword
        POSTGRES_DB=mnladmin
+
+### Deletion
+- data are stored to a named docker `volume`. This means that even if you `docker-compose up` / `docker-compose down`, the data will be there.
+- in case that you need a fresh start, `docker-compose down` and then find and the delete the relative `volume`. Ddepending on your folder names/configuration, it will be something like:
+
+        docker volume rm katanaslicemanager_postgres
+
+
+
 
 
 ## UI admin user/pass
