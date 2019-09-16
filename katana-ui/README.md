@@ -3,17 +3,20 @@
 Flask application to provide a UI for `katana-mngr`.
 
 
-## Where to start...
+**Where to start...**
  - how this container starts can be found at the `docker-compose.yaml` file at the root folder of the repo.
  - how this container is built can be found at the [Dockerfile](./Dockerfile)
  - which flask-plugins and python libraries are used can be found at the [requirements.txt](./requirements.txt)
 
 
-## Gunicorn
+**Gunicorn**
  - to modify things like listening port, logs, hot-reload... go to the `docker-compose.yaml` file, `katana-ui` service and modify:
 
         command: gunicorn -b 0.0.0.0:8080 --access-logfile - --reload "ui.app:create_app()"
 
+<br>
+<br>
+<br>
 
 
 
