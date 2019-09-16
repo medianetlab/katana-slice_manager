@@ -1,0 +1,205 @@
+{% extends 'layouts/base_coreui_dashboard.html' %}
+
+{% block title %}VIM{% endblock %}
+
+{% block body %}
+
+<br>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="card">
+		  <div class="card-header">
+		    <i class="cui-cloud"></i> VIM list
+			<div class="lds-ring lds-vim-table"><div></div><div></div><div></div><div></div></div>
+		</div>
+		  <div class="card-body">
+			<div class="float-right mb-2">
+				<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#add-modal">
+					<i class="fa fa-upload fa-sm"></i> Add
+				</button>
+			</div>
+		    <table class="table table-responsive-sm table-striped">
+		      <thead>
+		        <tr>
+		          <th>name</th>
+		          <th>uuid</th>
+		          <th>auth url</th>
+		          <th>created at</th>
+		          <th>type</th>
+		          <th class="text-center">actions</th>
+		        </tr>
+		      </thead>
+		      <tbody class="vim-table-tpl">
+		       
+	        	<script id="vim-table" type="text/x-handlebars-template">
+	        	{% raw %}
+        		{{#each this}}
+    			<tr class="vim-trow-{{_id}}">
+    				<td>{{name}}</td>
+    				<td>{{_id}}</td>
+    				<td>{{auth_url}}</td>
+    				<td>{{created_at_UTC}}</td>
+    				<td>{{type}}</td>
+    				<td class="text-center">
+    					<div class="btn-group mr-2" role="group" aria-label="First group" data-uuid="{{_id}}" data-name="{{name}}">
+							<button class="btn btn-secondary btn-inspect" type="button" data-toggle="modal" data-target="#inspect-modal"><i class="icons font-lg d-block cui-code"></i></button>
+							<button class="btn btn-secondary btn-edit" type="button" data-toggle="modal" data-target="#edit-modal"><i class="icons font-lg d-block cui-pencil"></i></button>
+							<button class="btn btn-secondary btn-rm" type="button" data-toggle="modal" data-target="#delete-modal"><i class="icons font-lg d-block cui-trash"></i></button>
+						</div>
+    				</td>
+        		</tr>
+    			{{/each}}
+    			{% endraw %}
+	           </script>
+
+		      </tbody>
+		    </table>
+		  </div>
+		</div>
+	</div>
+</div>
+<!-- /.row-->
+
+
+<!-- Inspect Modal -->
+<div class="modal fade" id="inspect-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-textarea">
+			<!-- codemirror will be initialized here -->
+		</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Delete VIM -->
+<div class="modal fade show" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog modal-warning" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"></h4>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+			<p class="modal-text"></p>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<button class="btn btn-warning btn-rm-proceed" data-vim-uuid="" type="button">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<!-- Edit VIM -->
+<div class="modal fade show" id="edit-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"></h4>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="card">
+					<div class="card-header">
+						<strong>Editable fields</strong>
+					</div>
+					<div class="card-body">
+						<div class="form-group">
+							<label for="edit-name">name</label>
+							<input class="form-control" id="edit-name" type="text" placeholder="name">
+						</div>
+						<div class="form-group">
+							<label for="edit-description">description</label>
+							<input class="form-control" id="edit-description" type="text" placeholder="description">
+						</div>
+						<div class="form-group">
+							<label for="edit-location">location</label>
+							<input class="form-control" id="edit-location" type="text" placeholder="location">
+						</div>
+						<div class="form-group">
+							<label for="edit-type">type</label>
+							<input class="form-control" id="edit-type" type="text" placeholder="type">
+						</div>
+						<div class="form-group">
+							<label for="edit-version">version</label>
+							<input class="form-control" id="edit-version" type="text" placeholder="version">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<button class="btn btn-primary btn-edit-proceed" data-vim-uuid="" type="button">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+<!-- Add VIM -->
+<div class="modal fade show" id="add-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Add VIM</h4>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+			<div class="card-body">
+				<p class="mb-4">Provide a file with the details of your VIM. You can only use valid json or yaml.</p>
+				
+				<form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
+					<div class="form-group row">
+						<div id="" class="drop-area col-12 p-4 mb-2">
+							<p class="file-name m-0">Drop your file here or click in this area</p>
+							<input id="file-input" type="file" name="file-input">
+						</div>
+					</div>
+				</form>
+			</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<button class="btn btn-primary btn-add-proceed" type="button" disabled="">Add</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='scripts/handlebars-v4.1.2.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/toastr/toastr.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/codemirror/codemirror.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/codemirror/javascript.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/codemirror/autorefresh.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/js-yaml/js-yaml.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/pages/vim.js') }}"></script>
+{% endblock %}

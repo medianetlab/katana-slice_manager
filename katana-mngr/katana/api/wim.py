@@ -7,6 +7,8 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
+import ast
+import base64
 
 from katana.api.mongoUtils import mongoUtils
 from katana.api.wimUtils import wimUtils
@@ -41,6 +43,13 @@ class WimView(FlaskView):
                                created_at=iwim['created_at']))
         return dumps(return_data)
 
+    # @route('/all/') #/wim/all
+    def all(self):
+        """
+        Same with index(self) above, but returns all wim details
+        """
+        return dumps(mongoUtils.index("wim"))
+
     def get(self, uuid):
         """
         Returns the details of specific wim,
@@ -61,3 +70,37 @@ class WimView(FlaskView):
         thebytes = pickle.dumps(wim)
         request.json['wim'] = Binary(thebytes)
         return mongoUtils.add('wim', request.json)
+
+    def delete(self, uuid):
+        """
+        Delete a specific vim.
+        used by: `katana vim rm [uuid]`
+        """
+        result = mongoUtils.delete("wim", uuid)
+        if result == 1:
+            return uuid
+        elif result == 0:
+            # if uuid is not found, return error
+            return "Error: No such wim: {}".format(uuid)
+
+    def put(self, uuid):
+        """
+        Update the details of a specific wim.
+        used by: `katana wim update -f [yaml file] [uuid]`
+        """
+        request.json['_id'] = uuid
+
+        """
+        Make binary data acceptable by Mongo
+          - REST api sends: 'wim': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
+        By decoding the base64 string and then using Binary() it works
+          - Inside Mongo  : "wim" : BinData(0,"gANja2F0YW5h....a base64 string...")
+        """
+        request.json['wim'] = Binary(base64.b64decode(request.json['wim']['$binary']))
+        result = mongoUtils.update("wim", uuid, request.json)
+
+        if result == 1:
+            return uuid
+        elif result == 0:
+            # if no object was modified, return error
+            return "Error: No such wim: {}".format(uuid)

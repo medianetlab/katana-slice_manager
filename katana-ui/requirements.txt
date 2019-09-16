@@ -1,0 +1,29 @@
+Flask==0.12
+
+# Application server for both development and production.
+gunicorn==19.4
+
+# Database.
+psycopg2==2.8.3
+Flask-SQLAlchemy==2.4.0
+SQLAlchemy-Utils==0.34.2
+marshmallow-sqlalchemy==0.17.0
+
+# Testing and static analysis.
+pytest==2.9
+pytest-cov==2.2
+flake8==2.5
+
+# CLI.
+Click==6.4
+
+# API.
+flask-classful==0.14.2
+flask-marshmallow==0.10.1
+flask-jwt-extended==3.22.0
+requests==2.22.0
+
+# Extensions and libraries.
+flask-debugtoolbar==0.10.0
+pytz==2017.3
+faker==0.8.7
