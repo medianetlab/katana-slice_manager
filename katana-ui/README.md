@@ -14,6 +14,13 @@ Flask application to provide a UI for `katana-mngr`.
 
         command: gunicorn -b 0.0.0.0:8080 --access-logfile - --reload "ui.app:create_app()"
 
+**UI admin user/pass**
+- can be modified at the [config/settings.py](./config/settings.py) file:
+
+       SEED_USER_EMAIL = 'admin@local.host'
+       SEED_USER_USERNAME = 'admin'
+       SEED_USER_PASSWORD = 'password'
+
 <br>
 <br>
 <br>
@@ -45,15 +52,10 @@ Flask application to provide a UI for `katana-mngr`.
         docker volume rm katanaslicemanager_postgres
 
 
+<br>
+<br>
+<br>
 
-
-
-## UI admin user/pass
-- can be modified at the [config/settings.py](./config/settings.py) file:
-
-       SEED_USER_EMAIL = 'admin@local.host'
-       SEED_USER_USERNAME = 'admin'
-       SEED_USER_PASSWORD = 'password'
 
 
 
