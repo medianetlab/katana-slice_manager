@@ -7,6 +7,8 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
+import ast
+import base64
 
 from katana.api.mongoUtils import mongoUtils
 from katana.api.emsUtils import emsUtils
@@ -41,6 +43,13 @@ class EmsView(FlaskView):
                                created_at=iems['created_at']))
         return dumps(return_data)
 
+    # @route('/all/') #/ems/all
+    def all(self):
+        """
+        Same with index(self) above, but returns all EMS details
+        """
+        return dumps(mongoUtils.index("ems"))
+
     def get(self, uuid):
         """
         Returns the details of specific EMS,
@@ -61,3 +70,37 @@ class EmsView(FlaskView):
         thebytes = pickle.dumps(ems)
         request.json['ems'] = Binary(thebytes)
         return mongoUtils.add('ems', request.json)
+
+    def delete(self, uuid):
+        """
+        Delete a specific EMS.
+        used by: `katana ems rm [uuid]`
+        """
+        result = mongoUtils.delete("ems", uuid)
+        if result == 1:
+            return uuid
+        elif result == 0:
+            # if uuid is not found, return error
+            return "Error: No such EMS: {}".format(uuid)
+
+    def put(self, uuid):
+        """
+        Update the details of a specific EMS.
+        used by: `katana ems update -f [yaml file] [uuid]`
+        """
+        request.json['_id'] = uuid
+
+        """
+        Make binary data acceptable by Mongo
+          - REST api sends: 'ems': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
+        By decoding the base64 string and then using Binary() it works
+          - Inside Mongo  : "ems" : BinData(0,"gANja2F0YW5h....a base64 string...")
+        """
+        request.json['ems'] = Binary(base64.b64decode(request.json['ems']['$binary']))
+        result = mongoUtils.update("ems", uuid, request.json)
+
+        if result == 1:
+            return uuid
+        elif result == 0:
+            # if no object was modified, return error
+            return "Error: No such EMS: {}".format(uuid)
