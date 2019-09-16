@@ -51,3 +51,12 @@ def nfvo():
     if current_user is None:
         return redirect(url_for('user.login'))
     return render_template('page/nfvo.html')
+
+
+@page.route('/ems')
+@jwt_optional
+def ems():
+    current_user = get_jwt_identity()
+    if current_user is None:
+        return redirect(url_for('user.login'))
+    return render_template('page/ems.html')
