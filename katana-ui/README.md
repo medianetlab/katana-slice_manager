@@ -83,3 +83,26 @@ The folder structure looks similar to this:
         │       ├── login.html
         │       └── signup.html
         └── views.py
+
+
+
+
+<br>
+<br>
+<br>
+
+
+
+
+## API routes
+API routes can be found inside the [/ui/api/](./ui/api/) folder:
+
+    .
+    ├── auth.py
+    ├── mngr
+    │   ├── ems_view.py
+    │   ├── nfvo_view.py
+    │   ├── vim_view.py
+    │   └── wim_view.py
+    └── v1
+        └── user.py
