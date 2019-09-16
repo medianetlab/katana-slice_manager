@@ -203,9 +203,6 @@ function add_save_edit_button_listener() {
         // collect edited data
         ems_being_edited.name        = $('#edit-name').val();
         ems_being_edited.description = $('#edit-description').val();
-        ems_being_edited.type        = $('#edit-type').val();
-        ems_being_edited.location    = $('#edit-location').val();
-        ems_being_edited.version     = $('#edit-version').val();
         $('#edit-modal').modal('hide');
         
         update_ems(ems_being_edited._id, ems_being_edited);
