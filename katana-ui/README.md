@@ -51,3 +51,30 @@ Flask application to provide a UI for `katana-mngr`.
        SEED_USER_EMAIL = 'admin@local.host'
        SEED_USER_USERNAME = 'admin'
        SEED_USER_PASSWORD = 'password'
+
+
+
+## Page routes & templates
+Page routes can be found inside the [/ui/blueprints/](./ui/blueprints/) folder:
+- page-related routes: [/ui/blueprints/page/views.py](./ui/blueprints/page/views.py)
+- user-related page routes: [/ui/blueprints/user/views.py](./ui/blueprints/user/views.py)
+
+The folder structure looks similar to this:
+
+    .
+    ├── page
+    │   ├── templates
+    │   │   └── page
+    │   │       ├── ems.html
+    │   │       ├── home2.html
+    │   │       ├── home.html
+    │   │       ├── nfvo.html
+    │   │       ├── vim.html
+    │   │       └── wim.html
+    │   └── views.py
+    └── user
+        ├── templates
+        │   └── user
+        │       ├── login.html
+        │       └── signup.html
+        └── views.py
