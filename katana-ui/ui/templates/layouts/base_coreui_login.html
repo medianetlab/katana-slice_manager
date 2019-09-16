@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!--
+* CoreUI - Free Bootstrap Admin Template
+* @version v2.1.8
+* @link https://coreui.io
+* Copyright (c) 2018 creativeLabs Łukasz Holeczek
+* Licensed under MIT (https://coreui.io/license)
+-->
+
+<html lang="en">
+  <head>
+    <base href="./">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <!-- <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template"> -->
+    <meta name="description" content="{% block meta_description %}{% endblock %}">
+    <meta name="author" content="Łukasz Holeczek">
+    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
+    <title>{% block title %}{% endblock %}</title>
+    <!-- Icons-->
+    <link href="{{ url_for('static', filename='node_modules/@coreui/icons/css/coreui-icons.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='node_modules/flag-icon-css/css/flag-icon.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='node_modules/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='node_modules/simple-line-icons/css/simple-line-icons.css') }}" rel="stylesheet">
+    <!-- Main styles for this application-->
+    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles/main-old.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendors/pace-progress/css/pace.min.css') }}" rel="stylesheet">
+    <!-- Global site tag (gtag.js) - Google Analytics-->
+    <!--<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-118965717-3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      // Shared ID
+      gtag('config', 'UA-118965717-3');
+      // Bootstrap ID
+      gtag('config', 'UA-118965717-5');
+    </script>-->
+  </head>
+  <body class="app flex-row align-items-center" data-username="{{ current_user.username }}">
+    {% block body %}{% endblock %}
+
+    <p style="display:none;">
+      <a id="signup-link" href="{{ url_for('user.signup') }}" data-next="{{ url_for('user.login') }}"></a>
+      <a id="login-link" href="{{ url_for('user.login') }}" data-next="{{ url_for('page.home') }}">Login</a>
+      <a id="logout-link" href="{{ url_for('AuthView:delete') }}" data-next="{{ url_for('page.home') }}">
+    </p>
+
+    <!-- CoreUI and necessary plugins-->
+    <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/pace-progress/pace.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/@coreui/coreui/dist/js/coreui.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
+  </body>
+</html>

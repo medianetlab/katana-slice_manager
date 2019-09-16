@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import request
-from flask_classful import FlaskView
+from flask_classful import FlaskView, route
 from katana.api.openstackUtils import utils as openstackUtils
 from katana.api.opennebulaUtils import utils as opennebulaUtils
 from katana.api.mongoUtils import mongoUtils
@@ -10,6 +10,8 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
+import ast
+import base64
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -41,6 +43,14 @@ class VimView(FlaskView):
                                created_at=ivim['created_at'],
                                type=ivim['type']))
         return dumps(return_data)
+
+    # @route('/all/') #/vim/all
+    def all(self):
+        """
+        Same with index(self) above, but returns all vim details
+        """
+        return dumps(mongoUtils.index("vim"))
+
 
     def get(self, uuid):
         """
@@ -130,6 +140,14 @@ class VimView(FlaskView):
         used by: `katana vim update -f [yaml file] [uuid]`
         """
         request.json['_id'] = uuid
+
+        """
+        Make binary data acceptable by Mongo
+          - REST api sends: 'vim': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
+        By decoding the base64 string and then using Binary() it works
+          - Inside Mongo  : "vim" : BinData(0,"gANja2F0YW5h....a base64 string...")
+        """
+        request.json['vim'] = Binary(base64.b64decode(request.json['vim']['$binary']))
         result = mongoUtils.update("vim", uuid, request.json)
 
         if result == 1:

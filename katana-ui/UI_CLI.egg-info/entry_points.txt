@@ -1,0 +1,4 @@
+
+        [console_scripts]
+        ui=cli.cli:cli
+    

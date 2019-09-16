@@ -8,23 +8,23 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+# build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
-var/
+# var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
-*.egg-info/
+# *.egg-info/
 .installed.cfg
-*.egg
+# *.egg
 MANIFEST
 
 # PyInstaller
@@ -97,7 +97,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
-.env
+# .env
 .venv
 env/
 venv/
