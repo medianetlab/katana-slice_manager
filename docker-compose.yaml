@@ -41,7 +41,7 @@ services:
     build: ./katana-ui
     image: katana-ui
     container_name: katana-ui
-    command: gunicorn -b 0.0.0.0:8080 --access-logfile - --reload "ui.app:create_app()"
+    command: gunicorn -b 0.0.0.0:8080 --workers 3 --access-logfile - --reload "ui.app:create_app()"
     depends_on:
       - "postgres"
     env_file:
