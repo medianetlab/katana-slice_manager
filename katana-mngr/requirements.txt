@@ -1,4 +1,4 @@
-Flask==1.0.2
+Flask==1.1.1
 
 # API.
 flask-classful==0.14
