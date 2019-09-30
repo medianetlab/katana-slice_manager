@@ -1,14 +1,10 @@
 #!/bin/bash
 
 # Stop the containers
-docker-compose -f katana-mngr/docker-compose.yaml down
-docker container stop katana-cli-container
-
-# Remove every docker container and image from the system
-docker container rm katana-cli-container
+docker-compose -f docker-compose-ui.yaml down
 
 # Remove the katana-container-log file
-file=katana-logs
+file=katana-container-logs
 if [[ -L "$file" ]]; then
     rm -f $file
 fi

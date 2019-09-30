@@ -38,6 +38,47 @@ services:
     volumes:
       - './katana-cli:/cli'
 
+  postgres:
+    env_file:
+      - "./katana-ui/.env"
+    image: "postgres:10.3-alpine"
+    container_name: katana-postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+
+  katana-ui:
+    build: ./katana-ui
+    image: katana-ui
+    container_name: katana-ui
+    command: gunicorn -b 0.0.0.0:8080 --access-logfile - --reload "ui.app:create_app()"
+    depends_on:
+      - "postgres"
+    env_file:
+      - "./katana-ui/.env"
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - "./katana-ui:/app"
+
+  # nginx reverse-proxy
+  #
+  # katana-nginx: 
+  #   image: nginx:1.17-alpine
+  #   container_name: katana-nginx
+  #   depends_on:
+  #     - "katana-mngr"
+  #     - "katana-ui"
+  #   volumes:
+  #     - ./katana-nginx/nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+
 volumes:
   mongo-datadb: {}
   mongo-configdb: {}
+  postgres: {}

@@ -97,11 +97,7 @@ class SliceView(FlaskView):
         """
 
         # check if slice uuid exists
-        delete_json = json.loads(
-            dumps(
-                mongoUtils.get("slice", uuid)
-            )
-        )
+        delete_json = mongoUtils.get("slice", uuid)
 
         if not delete_json:
             return "Error: No such slice: {}".format(uuid)

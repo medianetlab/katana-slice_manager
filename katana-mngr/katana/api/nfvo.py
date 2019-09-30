@@ -79,7 +79,7 @@ class NFVOView(FlaskView):
             osm = osmUtils.Osm(osm_ip, osm_username,
                                osm_password, osm_project_name)
             try:
-                osm.get_token()
+                osm.getToken()
             except ConnectTimeout as e:
                 logger.exception("It is time for ... Time out")
                 response = dumps({'error': 'Unable to connect to NFVO'})
@@ -92,6 +92,7 @@ class NFVOView(FlaskView):
                 # Store the osm object to the mongo db
                 thebytes = pickle.dumps(osm)
                 request.json['nfvo'] = Binary(thebytes)
+                osmUtils.bootstrapNfvo(osm)
                 return mongoUtils.add("nfvo", request.json)
         else:
             response = dumps({'error': 'This type nfvo is not supported'})
