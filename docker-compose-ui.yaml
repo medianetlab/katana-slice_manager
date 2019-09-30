@@ -13,7 +13,7 @@ services:
     build: ./katana-mngr
     image: katana-mngr
     container_name: katana-mngr
-    command: gunicorn -b 0.0.0.0:8000 --access-logfile - --reload "katana.app:create_app()"
+    command: gunicorn -b 0.0.0.0:8080 --workers 3 --access-logfile - --reload "ui.app:create_app()"
     volumes:
       - "./katana-mngr:/katana"
     ports:
