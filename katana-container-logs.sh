@@ -5,14 +5,9 @@ file=katana-container-logs
 if [[ -L "$file" ]]; then
     rm -f $file
 fi
-container_logs1=$(docker inspect --format='{{.LogPath}}' katanamngr_katana_1) || \
-container_logs2=$(docker inspect --format='{{.LogPath}}' katana-mngr_katana_1)
-if [[ $container_logs1 ]]; then
-	ln -s $container_logs1 $file
-	tail -f $file
-	rm -f $file
-elif [[ $container_logs2 ]]; then
-	ln -s $container_logs2 $file
+container_logs=$(docker inspect --format='{{.LogPath}}' katana-mngr)
+if [[ $container_logs ]]; then
+	ln -s $container_logs $file
 	tail -f $file
 	rm -f $file
 else
