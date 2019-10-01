@@ -13,7 +13,7 @@ services:
     build: ./katana-mngr
     image: katana-mngr
     container_name: katana-mngr
-    command: gunicorn -b 0.0.0.0:8080 --workers 3 --access-logfile - --reload "ui.app:create_app()"
+    command: gunicorn -b 0.0.0.0:8000 --access-logfile - --reload "katana.app:create_app()"
     volumes:
       - "./katana-mngr:/katana"
     ports:
@@ -37,6 +37,16 @@ services:
     network_mode: "host"
     volumes:
       - './katana-cli:/cli'
+
+  swagger:
+    image: 'swaggerapi/swagger-ui'
+    container_name: swagger
+    environment:
+      - SWAGGER_JSON=/my_swagger/swagger.json
+    ports:
+      - '8001:8080'
+    volumes:
+      - './swagger:/my_swagger'
 
   postgres:
     env_file:
