@@ -7,21 +7,31 @@
 - docker-compose version >= 1.17.1
 
 ### Installation
-`# ./install.sh`
+````
+# ./install.sh
+````
 
 ### Start
 Start katana Slice Manager service without the web UI module, run:
-`# ./start.sh`
+````
+# ./start.sh
+````
 
 Start katana Slice Manager service and the web UI module, run:
-`# ./start-ui.sh`
+````
+# ./start-ui.sh
+````
 
 ### Stop
 Stop Katana service, but keep the databases with any associated data:
-`# ./stop.sh`
+````
+# ./stop.sh
+````
 
 Stop Katana service, and clean any associated data:
-`# ./clear.sh`
+````
+# ./clear.sh
+````
 
 ## New in version 1.0.0
 ### New Features
