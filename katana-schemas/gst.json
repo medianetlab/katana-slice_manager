@@ -1,0 +1,87 @@
+{
+  "sliceid": "654",
+  "availability": "null",
+  "coverage": [{
+  	"value": 1, 
+  	"_comment": "1.Global, 2.National, 3.Regional, 4.Local (outdoor), 5.Local (indoor)", 
+  	"measurement unit" : "NA", 
+  	"tags": "Character Attribute/Operation, Scalability Attribute, KPI",
+  	"presence": "mandatory"}],
+  "delay tolerance": [{
+   	"value": "<binary>",
+   	"measurement unit": "null",
+   	"_comment": "0: not supported, 1: supported",
+   	"tags": "Character attribute/Functional, KPI",
+   	"presence": "mandatory"}],
+  "deterministic communication": {
+    "_comment": "deterministic communication for periodic user traffic",
+    "availability": [{ 
+    	"value": "<binary>",
+   		"measurement unit": null,
+   		"_comment": "0:not supported, 1: supported",
+   		"tags": "Character attribute/Performance, KPI",
+   		"presence": "mandatory"}],
+   	 "periodicity": [{
+   		"value": "<binary>",
+   		"measurement unit": null,
+   		"_comment": "motion control/printing machine: 2*10^3 sec, list of periodicities supported",
+   		"tags": "Character attributes/Performance, KPI",
+   		"presence": "conditional"}]
+  },
+  "DL throughput per network slice": {
+  	"guaranteed DL throughput": [{
+  		"value": "<float>",
+   		"measurement unit": kbps,
+   		"tags": "Scalability attribute, KPI",
+   		"presence": "mandatory"}],
+  	"maximum DL throughput": [{
+  		"value": "<integer>",
+   		"measurement unit": kbps,
+   		"tags": "Scalability attributes, KPI",
+   		"presence": "conditional"
+  	}],
+  }, 
+  "DL throughput per UE": {
+  	"guaranteed DL throughput": [{
+  		"value": "<integer>",
+  		"_comment": "0 denotes best effort",
+   		"measurement unit": kbps,
+   		"tags": "Scalability attribute, KPI",
+   		"presence": "mandatory"}],
+  	"maximum DL throughput": [{
+  		"value": "<integer>",
+   		"measurement unit": kbps,
+   		"_comment": "to denote gold,silver,gold. RAN CN optimise scheduling, orchestrator optimise resources"
+   		"tags": "Scalability attributes, KPI",
+   		"presence": "conditional"}]
+  },
+  "Energy efficiency": {},
+  "Group communications support": {},
+  "Isolation level": {
+  	"isolation": {}, 
+  	"physical isolation": {}, 
+  	"logical isolation": {}
+  },
+  "maximum supported packet size": {},
+  "mission critical support": {},
+  "number of connections":{},
+  "number of terminals": {},
+  "performance monitoring": {},
+  "performance prediction": {},
+  "positioning support": {},
+  "radio spectrum": {}, 
+  "session and service continuity support": {},
+  "concurrent use of network slice": {},
+  "slice quality service parameters": {},
+  "supported access technologies": {}, 
+  "supported video velocity": {},
+  "synchronicity": {},
+  "terminal density": {},
+  "UL throughput per network slice": {},
+  "UL throughput per UE": {},
+  "User data access": {}, 
+  "V2X comm mode": {}
+  
+}
+
+ 
