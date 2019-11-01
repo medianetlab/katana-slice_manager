@@ -7,7 +7,7 @@
         "service_descriptor": { "$ref": "#/definitions/service_descriptor" },
         "test_descriptor": { "$ref": "#/definitions/test_descriptor" }
     },
-    "required": ["GNST"],
+    "required": ["slice_descriptor"],
 
     "definitions": {
         "slice_descriptor":{
