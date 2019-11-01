@@ -1,14 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
 
-    "type": "object",
-    "properties": {
-        "slice_descriptor": { "$ref": "#/definitions/slice_descriptor" },
-        "service_descriptor": { "$ref": "#/definitions/service_descriptor" },
-        "test_descriptor": { "$ref": "#/definitions/test_descriptor" }
-    },
-    "required": ["slice_descriptor"],
-
     "definitions": {
         "slice_descriptor":{
             "type": "object",
@@ -38,7 +30,7 @@
                         "periodicity": {
                             "type": "array",
                             "description": "This parameter provides a list of periodicities supported by the network slice.",
-                            "item": {
+                            "items": {
                                 "type": "number",
                                 "description": "Seconds"
                             }
@@ -183,7 +175,7 @@
                     "description": "Defines the radio spectrum supported by the network slice.",
                     "items": {
                         "type": "string",
-                        "description": "This attribute simply tells which frequencies can be used to access the network slice. EWxample: n1, n77, n38"
+                        "description": "This attribute simply tells which frequencies can be used to access the network slice. Example: n1, n77, n38"
                     }
                 },
                 "simultaneous_nsi": {
@@ -257,12 +249,13 @@
                         "type": "object",
                         "description": "A NS",
                         "properties":{
-                            "ns_id": {"type": "string"},
+                            "nsd_id": {"type": "string"},
                             "placement": {"type": "string"}
                         }
                     }
                 }
-            }
+            },
+            "required": ["nsd_list", "nfvo_id"]
         },
         "test_descriptor":{
             "type": "object",
@@ -273,7 +266,7 @@
                     "type": "array",
                     "description": "A list of probe ids to be included in the slice",
                     "items": {
-                        "probe_id": "string"
+                        "type": "string"
                     }
                 },
                 "performance_monitoring": {
@@ -316,5 +309,14 @@
                 }
             }
         }
-    }
+    },
+
+
+    "type": "object",
+    "properties": {
+        "slice_descriptor": { "$ref": "#/definitions/slice_descriptor" },
+        "service_descriptor": { "$ref": "#/definitions/service_descriptor" },
+        "test_descriptor": { "$ref": "#/definitions/test_descriptor" }
+    },
+    "required": ["slice_descriptor"]
 }

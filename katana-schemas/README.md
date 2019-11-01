@@ -19,7 +19,7 @@ Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs 
 ## Useful Tools
 * [JSON Validator](https://jsonlint.com/)
 * [YAML Validator](http://www.yamllint.com/)
-* [JSON Schema Validator](https://www.jsonschemavalidator.net/)
+* [JSON Schema Validator](https://json-schema-validator.herokuapp.com/)
 * [JSON Schema Generator](https://jsonschema.net/)
 
 ## Values from GSMA GNST
