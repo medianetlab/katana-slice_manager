@@ -1,9 +1,9 @@
-# Katana Slice Information Model
+# Katana Slice Information Model - Generic Network Slice Template (GNST)
 
-## Structure of the IM
-Katana Slice IM has three sections:
+## Structure of the GNST
+Katana Slice GNST has three sections:
 
-* Generic Network Slice Template (GNST)
+* Slice Descriptor
 * Vertical Services Descriptor
 * Test Descriptor
 
@@ -22,8 +22,8 @@ Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs 
 * [JSON Schema Validator](https://www.jsonschemavalidator.net/)
 * [JSON Schema Generator](https://jsonschema.net/)
 
-## GNST values
-### GNST Included
+## Values from GSMA GNST
+### Included
 * sliceid
 * delay_tolerance
 * deterministic_communication
@@ -54,6 +54,17 @@ Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs 
     - accuracy
 * radio_spectrum
 * simultaneous_nsi
+* qos
+    - qi
+    - resource_type
+    - priority_level
+    - packet_delay_budget
+    - packet_error_rate
+    - jitter
+    - max_packet_loss_rate
+* nonIP_traffic
+* device_velocity
+* terminal_density
 
 ### Not included
 * Energy efficiency
@@ -62,3 +73,4 @@ Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs 
 * Availability --> Not defined yet
 * Root cause investigation
 * Session and Service Continuity support
+* Synchronicity --> Not defined yet
