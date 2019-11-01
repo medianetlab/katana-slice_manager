@@ -4,9 +4,9 @@
     "definitions": {
         "slice_descriptor":{
             "type": "object",
-            "description": "This is the schema for the GNST part of slice IM",
+            "description": "This is the schema for the core part of the new slice",
             "properties": {
-                "sliceid": {"type": "string"},
+                "slice_des": {"type": "string"},
                 "coverage": {
                     "type": "array",
                     "description": "A list with all the locations that are part of the slice",
@@ -240,7 +240,7 @@
             "type": "object",
             "description": "This is the schema for the Service Descriptor part of slice IM",
             "properties": {
-                "ns_dest_id": {"type": "string"},
+                "ns_des_id": {"type": "string"},
                 "nfvo_id": {"type": "string"},
                 "nsd_list": {
                     "type": "array",
@@ -254,8 +254,7 @@
                         }
                     }
                 }
-            },
-            "required": ["nsd_list", "nfvo_id"]
+            }
         },
         "test_descriptor":{
             "type": "object",

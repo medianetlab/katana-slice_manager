@@ -1,5 +1,5 @@
 {
-    "_comment": "In this GST all slice, ns and test descriptor are described. They will be given an id and stored in katana for future reference",
+    "_comment": "In this GST, slice_descriptor is defined, service_descriptor is used by reference to an on-boarded service_descriptor and no test_descriptor is included",
     "slice_descriptor": {
         "coverage": [
             "Cosmote",
@@ -26,26 +26,6 @@
         "simultaneous_nsi": 0
     },
     "service_descriptor": {
-        "nfvo_id": "osmR5",
-        "nsd_list": [
-            {
-                "nsd_id": "firewall",
-                "placement": "Cosmote"
-            },
-            {
-                "nsd_id": "proxy",
-                "placement": "Core"
-            },
-            {
-                "nsd_id": "drone_controller",
-                "placement": "Egaleo"
-            }
-        ]
-    },
-    "test_descriptor": {
-        "probe_list": [
-            "ixia_endpoint_1",
-            "ixia_endpoint_2"
-        ]
+        "ns_des_id": "proxy-firewall"
     }
 }

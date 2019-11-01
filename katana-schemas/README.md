@@ -1,15 +1,36 @@
-# Katana Slice Information Model - Generic Network Slice Template (GNST)
+# Katana Slice Information Model - Generic Slice Template (GST)
 
-## Structure of the GNST
-Katana Slice GNST has three sections:
+## Introduction
+The Generic Slice Template (GST) is a set of attributes that can characterise a type
+of network slice/service. GST is generic and is not tied to any specific network deployment.
+The NEtwork Slice Type (NEST) is a GST filled with values. The attributes and their values
+are assigned to fulfil a given set of requirements derived from a network slice customer use
+case. The NEST is an input to the network slice (instance) preparation performed by the
+Network Slice Manager. One or more NSIs (Network Slice Instance
+as defined in 3GPP TS 23.501) can be created out of the same NEST, but also existing
+NSI(s) may be reused
 
-* Slice Descriptor
-* Vertical Services Descriptor
-* Test Descriptor
+## How to use
+### Structure
+Katana Slice GST is used for the creation of new slices. It has three sections:
+
+* Slice Descriptor (slice_descriptor)
+* Vertical Services Descriptor (service_descriptor)
+* Test Descriptor (test_descriptor)
+
+> Slice Descriptor is mandatory object while the other two are optional.
+These descriptors define parameters that will be used for the creation of the new slice.
+
+### On-board descriptors
+Descriptors for each sections can be on-boarded to Katana Slice Manager before the slice creation phase. Katana returns lists with all the onboarded descriptors. The on-boarded descriptors can be referenced in a GST during the creation of a slice, instead of defining a new descriptor on the GST.
+
+### Overwrite parameter values of a referenced descriptor
+You can reference a previously on-boarded descriptor on a GST, and also define some parameter values for that sector. This will use the referenced descriptor as a base, replacing the parameters with the ones defined on the GST.
+
 
 ## Sources
-The GNST is based on the [GSMA GNST v1.0](https://www.gsma.com/newsroom/wp-content/uploads//NG.116-v1.0.pdf)
-and [GSMA GNST v2.0](https://www.gsma.com/newsroom/wp-content/uploads//NG.116-v2.0.pdf)
+The GST is based on the [GSMA GST v1.0](https://www.gsma.com/newsroom/wp-content/uploads//NG.116-v1.0.pdf)
+and [GSMA GST v2.0](https://www.gsma.com/newsroom/wp-content/uploads//NG.116-v2.0.pdf)
 
 Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs are based:
 
@@ -22,7 +43,7 @@ Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs 
 * [JSON Schema Validator](https://json-schema-validator.herokuapp.com/)
 * [JSON Schema Generator](https://jsonschema.net/)
 
-## Values from GSMA GNST
+## Values from GSMA GST
 ### Included
 * sliceid
 * delay_tolerance
