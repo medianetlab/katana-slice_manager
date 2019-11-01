@@ -1,6 +1,6 @@
 {
+    "_comment": "In this GNST all slice, ns and test descriptor are described. They will be given an id and stored in katana for future reference",
     "slice_descriptor": {
-        "_comment": "bla bla bla",
         "coverage": [
             "Cosmote",
             "Egaleo"

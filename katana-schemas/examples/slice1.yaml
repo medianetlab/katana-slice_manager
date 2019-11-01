@@ -1,0 +1,38 @@
+---
+_comment: In this GNST all slice, ns and test descriptor are described. They will
+  be given an id and stored in katana for future reference
+slice_descriptor:
+  coverage:
+  - Cosmote
+  - Egaleo
+  delay_tolerance: true
+  deterministic_communication:
+    availability: false
+  network_DL_throughput:
+    guaranteed: 10000
+    maximum: 100000
+  network_UL_throughput:
+    guaranteed: 2000
+  group_communication_support: 1
+  isolation_level:
+    isolation: 1
+  mtu: 1500
+  number_of_terminals: 100
+  radio_spectrum:
+  - n1
+  - n77
+  - n38
+  simultaneous_nsi: 0
+service_descriptor:
+  nfvo_id: osmR5
+  nsd_list:
+  - nsd_id: firewall
+    placement: Cosmote
+  - nsd_id: proxy
+    placement: Core
+  - nsd_id: drone_controller
+    placement: Egaleo
+test_descriptor:
+  probe_list:
+  - ixia_endpoint_1
+  - ixia_endpoint_2
