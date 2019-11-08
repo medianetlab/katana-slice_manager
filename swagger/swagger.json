@@ -1,1091 +1,1160 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "description": "This is Katana Slice Manager Swagger for documenting Katana's NBI REST APIs. You can find more about Katana Slice Manager at [Katana Github page](https://github.com/medianetlab/katana-slice_manager).",
-    "title": "Katana Swagger",
-    "version": "1.0.0",
-    "contact": {
-      "email": "thmanagnostopoulos@iit.demokritos.gr"
+{ 
+  "swagger":"2.0",
+  "info":{ 
+    "description":"This is Katana Slice Manager Swagger for documenting Katana's NBI REST APIs. You can find more about Katana Slice Manager at [Katana Github page](https://github.com/medianetlab/katana-slice_manager).",
+    "title":"Katana Swagger",
+    "version":"1.0.0",
+    "contact":{ 
+      "email":"thmanagnostopoulos@iit.demokritos.gr"
     },
-    "license": {
-      "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    "license":{ 
+      "name":"Apache 2.0",
+      "url":"http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   },
-  "host": "localhost:8000",
-  "basePath": "/api",
-  "tags": [
-    {
-      "name": "Slice",
-      "description": "Create, Read, Update and Delete Network Slices",
-      "externalDocs": {
-        "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/user_guide.md"
+  "host":"localhost:8000",
+  "basePath":"/api",
+  "tags":[ 
+    { 
+      "name":"Slice",
+      "description":"Create, Read, Update and Delete Network Slices",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/user_guide.md"
       }
     },
-    {
-      "name": "VIM",
-      "description": "Add, Read, Update and Delete VIMs",
-      "externalDocs": {
-        "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+    { 
+      "name":"VIM",
+      "description":"Add, Read, Update and Delete VIMs",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
       }
     },
-    {
-      "name": "NFVO",
-      "description": "Add, Read, Update and Delete NFVOs",
-      "externalDocs": {
-        "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+    { 
+      "name":"NFVO",
+      "description":"Add, Read, Update and Delete NFVOs",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
       }
     },
-    {
-      "name": "WIM",
-      "description": "Add, Read, Update and Delete WIMs",
-      "externalDocs": {
-        "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+    { 
+      "name":"WIM",
+      "description":"Add, Read, Update and Delete WIMs",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
       }
     },
-    {
-      "name": "EMS",
-      "description": "Add, Read, Update and Delete EMSs",
-      "externalDocs": {
-        "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+    { 
+      "name":"EMS",
+      "description":"Add, Read, Update and Delete EMSs",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
       }
     },
-    {
-      "name": "Registered Slice Services",
-      "description": "Create, Read, Update and Delete Registered End-to-End Services",
-      "externalDocs": {
-        "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/services.md"
-      }
+    { 
+      "name":"Resources",
+      "description":"Read the available/max resources"
     }
   ],
-  "schemes": [
+  "schemes":[ 
     "http"
   ],
-  "paths": {
-   "/slice": {
-     "get": {
-       "tags": [
-         "Slice"
-       ],
-       "summary": "Returns a list of created slices",
-       "produces": [
-        "application/json"
-      ],
-       "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/slice_ls"
+  "paths":{ 
+    "/slice":{ 
+      "get":{ 
+        "tags":[ 
+          "Slice"
+        ],
+        "summary":"Returns a list of created slices",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"array",
+              "items":{ 
+                "$ref":"#/definitions/slice_ls"
+              }
             }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post":{ 
+        "tags":[ 
+          "Slice"
+        ],
+        "summary":"Creates a new slice",
+        "consumes":[ 
+          "application/json",
+          "application/yaml"
+        ],
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"string"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
           }
         },
-        "400": {
-          "description": "Bad Request",
-        },
-        "500": {
-          "description": "Server Error",
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"Slice Parameters",
+            "required":true,
+            "schema":{ 
+              "type":"object",
+              "properties":{ 
+                "nsi":{ 
+                  "$ref":"#/definitions/nsi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "/slice/{slice_id}":{ 
+      "get":{ 
+        "tags":[ 
+          "Slice"
+        ],
+        "summary":"Returns information about the given slice",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"slice_id",
+            "in":"path",
+            "description":"ID of slice to be inspected",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/slice_inspect"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "delete":{ 
+        "tags":[ 
+          "Slice"
+        ],
+        "summary":"Deletes the given slice",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"slice_id",
+            "in":"path",
+            "description":"ID of slice to be deleted",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
         }
       }
     },
-    "post":{
-      "tags": [
-       "Slice"
-     ],
-      "summary": "Creates a new slice",
-      "consumes": [
-        "application/json",
-        "application/yaml"
-      ],
-      "produces": [
-        "application/json"
-      ],
-      "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "string"
+    "/slice/{slice_id}/time":{ 
+      "get":{ 
+        "tags":[ 
+          "Slice"
+        ],
+        "summary":"Returns information about the deployment time of the given slice",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"slice_id",
+            "in":"path",
+            "description":"ID of slice",
+            "required":true,
+            "type":"string"
           }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "405": {
-          "description": "Invalid Input",
-        },
-        "500": {
-          "description": "Server Error",
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/time"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
+    "/vim":{ 
+      "get":{ 
+        "tags":[ 
+          "VIM"
+        ],
+        "summary":"Returns a list of registered VIMs",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"array",
+              "items":{ 
+                "$ref":"#/definitions/any_ls"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
         }
       },
-      "parameters":[
-        {
-          "in": "body",
-          "name": "body",
-          "description": "Slice Parameters",
-          "required": true,
-          "schema": {
+      "post":{ 
+        "tags":[ 
+          "VIM"
+        ],
+        "summary":"Adds a new VIM",
+        "consumes":[ 
+          "application/json",
+          "application/yaml"
+        ],
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"string"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"VIM Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/vim"
+            }
+          }
+        ]
+      }
+    },
+    "/vim/{vim_id}":{ 
+      "get":{ 
+        "tags":[ 
+          "VIM"
+        ],
+        "summary":"Returns information about the given VIM",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"vim_id",
+            "in":"path",
+            "description":"ID of VIM to be inspected",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/vim"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "delete":{ 
+        "tags":[ 
+          "VIM"
+        ],
+        "summary":"Deletes the given VIM",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"vim_id",
+            "in":"path",
+            "description":"ID of VIM to be deleted",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
+    "/nfvo":{ 
+      "get":{ 
+        "tags":[ 
+          "NFVO"
+        ],
+        "summary":"Returns a list of registered NFVOs",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"array",
+              "items":{ 
+                "$ref":"#/definitions/any_ls"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post":{ 
+        "tags":[ 
+          "NFVO"
+        ],
+        "summary":"Adds a new NFVO",
+        "consumes":[ 
+          "application/json",
+          "application/yaml"
+        ],
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"string"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"NFVO Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/nfvo"
+            }
+          }
+        ]
+      }
+    },
+    "/nfvo/{nfvo_id}":{ 
+      "get":{ 
+        "tags":[ 
+          "NFVO"
+        ],
+        "summary":"Returns information about the given NFVO",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"nfvo_id",
+            "in":"path",
+            "description":"ID of NFVO to be inspected",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/nfvo"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "delete":{ 
+        "tags":[ 
+          "NFVO"
+        ],
+        "summary":"Deletes the given NFVO",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"nfvo_id",
+            "in":"path",
+            "description":"ID of NFVO to be deleted",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
+    "/wim":{ 
+      "get":{ 
+        "tags":[ 
+          "WIM"
+        ],
+        "summary":"Returns a list of registered WIMs",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"array",
+              "items":{ 
+                "$ref":"#/definitions/any_ls"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post":{ 
+        "tags":[ 
+          "WIM"
+        ],
+        "summary":"Adds a new WIM",
+        "consumes":[ 
+          "application/json",
+          "application/yaml"
+        ],
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"string"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"WIM Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/wim"
+            }
+          }
+        ]
+      }
+    },
+    "/wim/{wim_id}":{ 
+      "get":{ 
+        "tags":[ 
+          "WIM"
+        ],
+        "summary":"Returns information about the given WIM",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"wim_id",
+            "in":"path",
+            "description":"ID of WIM to be inspected",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/wim"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "delete":{ 
+        "tags":[ 
+          "WIM"
+        ],
+        "summary":"Deletes the given WIM",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"wim_id",
+            "in":"path",
+            "description":"ID of WIM to be deleted",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
+    "/ems":{ 
+      "get":{ 
+        "tags":[ 
+          "EMS"
+        ],
+        "summary":"Returns a list of registered EMSs",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"array",
+              "items":{ 
+                "$ref":"#/definitions/any_ls"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post":{ 
+        "tags":[ 
+          "EMS"
+        ],
+        "summary":"Adds a new EMS",
+        "consumes":[ 
+          "application/json",
+          "application/yaml"
+        ],
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "type":"string"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"EMS Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/ems"
+            }
+          }
+        ]
+      }
+    },
+    "/ems/{ems_id}":{ 
+      "get":{ 
+        "tags":[ 
+          "EMS"
+        ],
+        "summary":"Returns information about the given EMS",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"ems_id",
+            "in":"path",
+            "description":"ID of EMS to be inspected",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/ems"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "delete":{ 
+        "tags":[ 
+          "EMS"
+        ],
+        "summary":"Deletes the given EMS",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"ems_id",
+            "in":"path",
+            "description":"ID of EMS to be deleted",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
+    "/resources":{ 
+      "get":{ 
+        "tags":[ 
+          "Resources"
+        ],
+        "summary":"Returns information about the platform resources",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"successful operation",
+            "schema":{ 
+              "$ref":"#/definitions/resources"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    }
+  },
+  "definitions":{ 
+    "nsi":{ 
+      "type":"object",
+      "properties":{ 
+        "id":{ 
+          "type":"string"
+        },
+        "name":{ 
+          "type":"string"
+        },
+        "short-name":{ 
+          "type":"string"
+        },
+        "description":{ 
+          "type":"string"
+        },
+        "type":{ 
+          "type":"string"
+        },
+        "nsd-ref":{ 
+          "type":"array",
+          "items":{ 
+            "type":"object",
+            "properties":{ 
+              "id":{ 
+                "type":"string"
+              },
+              "name":{ 
+                "type":"string"
+              },
+              "short-name":{ 
+                "type":"string"
+              },
+              "radio":{ 
+                "type":"boolean"
+              }
+            }
+          }
+        },
+        "wim-ref":{ 
+          "type":"object",
+          "properties":{ 
+            "endpoint-segment":{ 
+              "type":"array",
+              "items":{ 
+                "type":"object",
+                "properties":{ 
+                  "endpoint_id":{ 
+                    "type":"string"
+                  },
+                  "endpoint_name":{ 
+                    "type":"string"
+                  },
+                  "endpoint_ip":{ 
+                    "type":"string"
+                  }
+                }
+              }
+            },
+            "topology":{ 
+              "type":"string"
+            },
+            "bidirectional":{ 
+              "type":"boolean"
+            },
+            "link_params":{ 
+              "type":"object",
+              "properties":{ 
+                "bw":{ 
+                  "type":"integer"
+                },
+                "latency":{ 
+                  "type":"integer"
+                }
+              }
+            }
+          }
+        },
+        "radio-ref":{ 
+          "type":"object",
+          "properties":{ 
+            "location":{ 
+              "type":"string"
+            }
+          }
+        }
+      }
+    },
+    "any_ls":{ 
+      "type":"object",
+      "properties":{ 
+        "_id":{ 
+          "type":"string"
+        },
+        "created at":{ 
+          "type":"string",
+          "format":"date-time"
+        },
+        "type":{ 
+          "type":"string"
+        }
+      }
+    },
+    "slice_ls":{ 
+      "type":"object",
+      "properties":{ 
+        "_id":{ 
+          "type":"string"
+        },
+        "created at":{ 
+          "type":"string",
+          "format":"date-time"
+        },
+        "type":{ 
+          "type":"string"
+        }
+      }
+    },
+    "time":{ 
+      "type":"object",
+      "properties":{ 
+        "NS_Deployment_Time":{ 
+          "type":"object",
+          "properties":{ 
+            "NSi_name":{ 
+              "type":"string"
+            }
+          }
+        },
+        "Placement_Time":{ 
+          "type":"string"
+        },
+        "Provisioning_Time":{ 
+          "type":"string"
+        },
+        "Radio_Configuration_Time":{ 
+          "type":"string"
+        },
+        "Slice_Deployment_Time":{ 
+          "type":"string"
+        },
+        "WAN_Deployment_Time":{ 
+          "type":"string"
+        }
+      }
+    },
+    "slice_inspect":{ 
+      "type":"object",
+      "properties":{ 
+        "nsi":{ 
+          "$ref":"#/definitions/nsi"
+        },
+        "created_at":{ 
+          "type":"string",
+          "format":"date-time"
+        },
+        "nfvo_vim_id":{ 
+          "type":"string"
+        },
+        "placement":{ 
+          "type":"object",
+          "properties":{ 
+            "<NSi_name>":{ 
+              "type":"object",
+              "properties":{ 
+                "requirements":{ 
+                  "type":"object",
+                  "properties":{ 
+                    "memory-mb":{ 
+                      "type":"number"
+                    },
+                    "storage-mb":{ 
+                      "type":"number"
+                    },
+                    "vcpu-count":{ 
+                      "type":"number"
+                    }
+                  }
+                },
+                "vim":{ 
+                  "type":"string"
+                },
+                "vim_net":{ 
+                  "type":"array",
+                  "items":{ 
+                    "type":"string"
+                  }
+                },
+                "vnfr":{ 
+                  "type":"object",
+                  "properties":{ 
+                    "<VNFi_name>":{ 
+                      "type":"array",
+                      "items":{ 
+                        "type":"object",
+                        "properties":{ 
+                          "ip_list":{ 
+                            "type":"array",
+                            "items":{ 
+                              "type":"string"
+                            }
+                          },
+                          "mgmt_ip":{ 
+                            "type":"string"
+                          },
+                          "vm_name":{ 
+                            "type":"string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "deployment_time":{ 
+                  "$ref":"#/definitions/time"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vim":{ 
+      "type":"object",
+      "properties":{ 
+        "name":{ 
+          "type":"string"
+        },
+        "auth_url":{ 
+          "type":"string"
+        },
+        "username":{ 
+          "type":"string"
+        },
+        "password":{ 
+          "type":"string"
+        },
+        "admin_project_name":{ 
+          "type":"string"
+        },
+        "location":{ 
+          "type":"string"
+        },
+        "type":{ 
+          "type":"string"
+        },
+        "version":{ 
+          "type":"string"
+        },
+        "description":{ 
+          "type":"string"
+        },
+        "config":{ 
+          "type":"object",
+          "description":"Depends on the vim type"
+        }
+      }
+    },
+    "nfvo":{ 
+      "type":"object",
+      "properties":{ 
+        "name":{ 
+          "type":"string"
+        },
+        "nfvoip":{ 
+          "type":"string"
+        },
+        "nfvousername":{ 
+          "type":"string"
+        },
+        "nfvopassword":{ 
+          "type":"string"
+        },
+        "tenantname":{ 
+          "type":"string"
+        },
+        "type":{ 
+          "type":"string"
+        },
+        "version":{ 
+          "type":"string"
+        },
+        "description":{ 
+          "type":"string"
+        },
+        "config":{ 
+          "type":"object",
+          "description":"Depends on the nfvo type"
+        }
+      }
+    },
+    "wim":{ 
+      "type":"object",
+      "properties":{ 
+        "name":{ 
+          "type":"string"
+        },
+        "description":{ 
+          "type":"string"
+        },
+        "url":{ 
+          "type":"string"
+        }
+      }
+    },
+    "ems":{ 
+      "type":"object",
+      "properties":{ 
+        "name":{ 
+          "type":"string"
+        },
+        "description":{ 
+          "type":"string"
+        },
+        "url":{ 
+          "type":"string"
+        }
+      }
+    },
+    "resources":{
+      "type": "object",
+      "properties": {
+        "VIMs": {
+          "type": "array",
+          "description": "A list of all the available VIMs",
+          "items":{
             "type": "object",
-            "properties":{
-              "nsi":{
-                "$ref": "#/definitions/nsi"
-              }  
-            }
-          }
-        }
-      ]
-    },
-  },
-  "/slice/{slice_id}":{
-    "get":{
-     "tags": [
-       "Slice"
-     ],
-     "summary": "Returns information about the given slice",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "slice_id",
-        "in": "path",
-        "description": "ID of slice to be inspected",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation",
-        "schema": {
-          "$ref": "#/definitions/slice_inspect",
-        }
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  },
-  "delete":{
-     "tags": [
-       "Slice"
-     ],
-     "summary": "Deletes the given slice",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "slice_id",
-        "in": "path",
-        "description": "ID of slice to be deleted",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation"
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  }
-},
-  "/slice/{slice_id}/time":{
-    "get":{
-     "tags": [
-       "Slice"
-     ],
-     "summary": "Returns information about the deployment time of the given slice",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "slice_id",
-        "in": "path",
-        "description": "ID of slice",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation",
-        "schema": {
-          "$ref": "#/definitions/time",
-        }
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    },
-  }
-  },
-  "/vim": {
-     "get": {
-       "tags": [
-         "VIM"
-       ],
-       "summary": "Returns a list of registered VIMs",
-       "produces": [
-        "application/json"
-      ],
-       "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/any_ls"
+            "description": "A VIM",
+            "properties": {
+              "name": {"type": "string"},
+              "type": {"type": "string"},
+              "location": {"type": "string"},
+              "max_resources":{
+                "type": "object",
+                "properties": {
+                  "CPUs": {"type": "number"},
+                  "RAM": {"type": "number"},
+                  "Disk": {"type": "number"}
+                }
+              },
+              "available_resources":{
+                "type": "object",
+                "properties": {
+                  "CPUs": {"type": "number"},
+                  "RAM": {"type": "number"},
+                  "Disk": {"type": "number"}
+                }
+              }
             }
           }
         },
-        "400": {
-          "description": "Bad Request",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      }
-    },
-    "post":{
-      "tags": [
-       "VIM"
-     ],
-      "summary": "Adds a new VIM",
-      "consumes": [
-        "application/json",
-        "application/yaml"
-      ],
-      "produces": [
-        "application/json"
-      ],
-      "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "string"
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "405": {
-          "description": "Invalid Input",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      },
-      "parameters":[
-        {
-          "in": "body",
-          "name": "body",
-          "description": "VIM Parameters",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/vim"
-          }
-        }
-      ]
-    }
-  },
-  "/vim/{vim_id}":{
-    "get":{
-     "tags": [
-       "VIM"
-     ],
-     "summary": "Returns information about the given VIM",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "vim_id",
-        "in": "path",
-        "description": "ID of VIM to be inspected",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation",
-        "schema": {
-          "$ref": "#/definitions/vim",
-        }
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  },
-  "delete":{
-     "tags": [
-       "VIM"
-     ],
-     "summary": "Deletes the given VIM",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "vim_id",
-        "in": "path",
-        "description": "ID of VIM to be deleted",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation"
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  }
-  },
-  "/nfvo": {
-     "get": {
-       "tags": [
-         "NFVO"
-       ],
-       "summary": "Returns a list of registered NFVOs",
-       "produces": [
-        "application/json"
-      ],
-       "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/any_ls"
+        "Radio-Elements": {
+          "type": "array",
+          "description": "A list of all the available radio elements",
+          "items": {
+            "type": "object",
+            "description": "A radio element",
+            "properties": {
+              "name": {"type": "string"},
+              "type": {"type": "string"},
+              "location": {"type": "string"},
+              "available": {"type": "boolean"}
             }
           }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "500": {
-          "description": "Server Error",
         }
-      }
-    },
-    "post":{
-      "tags": [
-       "NFVO"
-     ],
-      "summary": "Adds a new NFVO",
-      "consumes": [
-        "application/json",
-        "application/yaml"
-      ],
-      "produces": [
-        "application/json"
-      ],
-      "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "string"
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "405": {
-          "description": "Invalid Input",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      },
-      "parameters":[
-        {
-          "in": "body",
-          "name": "body",
-          "description": "NFVO Parameters",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/nfvo"
-          }
-        }
-      ]
-    }
-  },
-  "/nfvo/{nfvo_id}":{
-    "get":{
-     "tags": [
-       "NFVO"
-     ],
-     "summary": "Returns information about the given NFVO",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "nfvo_id",
-        "in": "path",
-        "description": "ID of NFVO to be inspected",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation",
-        "schema": {
-          "$ref": "#/definitions/nfvo",
-        }
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  },
-  "delete":{
-     "tags": [
-       "NFVO"
-     ],
-     "summary": "Deletes the given NFVO",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "nfvo_id",
-        "in": "path",
-        "description": "ID of NFVO to be deleted",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation"
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-}
-},
-  "/wim": {
-     "get": {
-       "tags": [
-         "WIM"
-       ],
-       "summary": "Returns a list of registered WIMs",
-       "produces": [
-        "application/json"
-      ],
-       "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/any_ls"
-            }
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      }
-    },
-    "post":{
-      "tags": [
-       "WIM"
-     ],
-      "summary": "Adds a new WIM",
-      "consumes": [
-        "application/json",
-        "application/yaml"
-      ],
-      "produces": [
-        "application/json"
-      ],
-      "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "string"
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "405": {
-          "description": "Invalid Input",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      },
-      "parameters":[
-        {
-          "in": "body",
-          "name": "body",
-          "description": "WIM Parameters",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/wim"
-          }
-        }
-      ]
-    }
-  },
-  "/wim/{wim_id}":{
-    "get":{
-     "tags": [
-       "WIM"
-     ],
-     "summary": "Returns information about the given WIM",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "wim_id",
-        "in": "path",
-        "description": "ID of WIM to be inspected",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation",
-        "schema": {
-          "$ref": "#/definitions/wim",
-        }
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  },
-  "delete":{
-     "tags": [
-       "WIM"
-     ],
-     "summary": "Deletes the given WIM",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "wim_id",
-        "in": "path",
-        "description": "ID of WIM to be deleted",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation"
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
       }
     }
   }
-  },
-  "/ems": {
-     "get": {
-       "tags": [
-         "EMS"
-       ],
-       "summary": "Returns a list of registered EMSs",
-       "produces": [
-        "application/json"
-      ],
-       "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/any_ls"
-            }
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      }
-    },
-    "post":{
-      "tags": [
-       "EMS"
-     ],
-      "summary": "Adds a new EMS",
-      "consumes": [
-        "application/json",
-        "application/yaml"
-      ],
-      "produces": [
-        "application/json"
-      ],
-      "responses": {
-        "200": {
-          "description": "successful operation",
-          "schema": {
-            "type": "string"
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-        },
-        "405": {
-          "description": "Invalid Input",
-        },
-        "500": {
-          "description": "Server Error",
-        }
-      },
-      "parameters":[
-        {
-          "in": "body",
-          "name": "body",
-          "description": "EMS Parameters",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/ems"
-          }
-        }
-      ]
-    }
-  },
-  "/ems/{ems_id}":{
-    "get":{
-     "tags": [
-       "EMS"
-     ],
-     "summary": "Returns information about the given EMS",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "ems_id",
-        "in": "path",
-        "description": "ID of EMS to be inspected",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation",
-        "schema": {
-          "$ref": "#/definitions/ems",
-        }
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  },
-  "delete":{
-     "tags": [
-       "EMS"
-     ],
-     "summary": "Deletes the given EMS",
-     "produces": [
-      "application/json"
-    ],
-     "parameters": [
-      {
-        "name": "ems_id",
-        "in": "path",
-        "description": "ID of EMS to be deleted",
-        "required": true,
-        "type": "string"
-      }
-    ],
-     "responses": {
-      "200": {
-        "description": "successful operation"
-      },
-      "400": {
-        "description": "Bad Request",
-      },
-      "500": {
-        "description": "Server Error",
-      }
-    }
-  }
-  }
-},
-"definitions":{
- "nsi":{
-   "type": "object",
-   "properties":{
-     "id": {
-       "type": "string"
-     },
-     "name":{
-       "type": "string"
-     },
-     "short-name":{
-       "type": "string"
-     },
-     "description":{
-       "type": "string"
-     },
-     "type":{
-       "type": "string"
-     },
-     "nsd-ref":{
-       "type": "array",
-       "items":{
-         "type": "object",
-         "properties": {
-           "id":{
-            "type": "string"
-          },
-          "name":{
-            "type": "string"
-          },
-          "short-name":{
-            "type": "string"
-          },
-          "radio":{
-            "type": "boolean"
-          },
-        }
-      }
-    },
-    "wim-ref": {
-     "type": "object",
-     "properties": {
-       "endpoint-segment":{
-         "type": "array",
-         "items":{
-           "type": "object",
-           "properties":{
-             "endpoint_id":{
-               "type": "string"
-             },
-             "endpoint_name":{
-               "type": "string"
-             },
-             "endpoint_ip":{
-               "type": "string"
-             }
-           }
-         }
-       },
-       "topology":{
-         "type": "string"
-       },
-       "bidirectional":{
-         "type": "boolean"
-       },
-       "link_params": {
-         "type": "object",
-         "properties":{
-           "bw":{
-             "type": "integer"
-           },
-           "latency":{
-             "type": "integer"
-           }
-         }
-       }
-     }
-   },
-   "radio-ref": {
-     "type": "object",
-     "properties": {
-       "location": {
-         "type": "string"
-       }
-     }
-   }
- }
-},
-"any_ls":{
- "type": "object",
- "properties":{
-   "_id":{
-     "type": "string"
-   },
-   "created at":{
-     "type": "string",
-     "format": "date-time"
-   },
-   "type":{
-     "type": "string"
-   }
- }
-},
-"slice_ls":{
- "type": "object",
- "properties":{
-   "_id":{
-     "type": "string"
-   },
-   "created at":{
-     "type": "string",
-     "format": "date-time"
-   },
-   "type":{
-     "type": "string"
-   }
- }
-},
-"time":{
- "type": "object",
- "properties":{
-   "NS_Deployment_Time":{
-     "type": "object",
-     "properties":{
-       "NSi_name":{
-         "type": "string"
-       }
-     }
-   },
-   "Placement_Time":{
-     "type": "string"
-   },
-   "Provisioning_Time":{
-     "type": "string"
-   },
-   "Radio_Configuration_Time":{
-     "type": "string"
-   },
-   "Slice_Deployment_Time":{
-     "type": "string"
-   },
-   "WAN_Deployment_Time":{
-     "type": "string"
-   },
- }
-},
-"slice_inspect":{
- "type": "object",
- "properties":{
-   "nsi": {
-     "$ref": "#/definitions/nsi"
-   },
-   "created_at":{
-     "type": "string",
-     "format": "date-time"
-   },
-   "nfvo_vim_id":{
-     "type": "string"
-   },
-   "placement":{
-     "type": "object",
-     "properties": {
-       "<NSi_name>":{
-         "type": "object",
-         "properties":{
-           "requirements":{
-             "type": "object",
-             "properties":{
-               "memory-mb":{
-                 "type": "number"
-               },
-               "storage-mb":{
-                 "type": "number"
-               },
-               "vcpu-count":{
-                 "type": "number"
-               }
-             }
-           },
-           "vim":{
-             "type": "string"
-           },
-           "vim_net":{
-             "type": "array",
-             "items":{
-               "type": "string"
-             }
-           },
-           "vnfr":{
-             "type": "object",
-             "properties": {
-               "<VNFi_name>":{
-                 "type": "array",
-                 "items":{
-                   "type": "object",
-                   "properties":{
-                     "ip_list":{
-                       "type": "array",
-                       "items": {
-                         "type": "string"
-                       }
-                     },
-                     "mgmt_ip":{
-                       "type": "string"
-                     },
-                     "vm_name":{
-                       "type": "string"
-                     }
-                   }
-                 }
-               }
-             }
-           },
-           "deployment_time":{
-             "$ref": "#/definitions/time"
-           }
-         }
-       }
-     }
-   }
- }
-},
-"vim":{
-  "type": "object",
-  "properties":{
-    "name":{
-      "type": "string"
-    },
-    "auth_url":{
-      "type": "string"
-    },
-    "username":{
-      "type": "string"
-    },
-    "password":{
-      "type": "string"
-    },
-    "admin_project_name":{
-      "type": "string"
-    },
-    "location":{
-      "type": "string"
-    },
-    "type":{
-      "type": "string"
-    },
-    "version":{
-      "type": "string"
-    },
-    "description":{
-      "type": "string"
-    },
-    "config":{
-      "type": "object",
-      "description": "Depends on the vim type"
-    },
-  }
-},
-"nfvo":{
-  "type":"object",
-  "properties":{
-    "name":{
-      "type": "string"
-    },
-    "nfvoip":{
-      "type": "string"
-    },
-    "nfvousername":{
-      "type": "string"
-    },
-    "nfvopassword":{
-      "type": "string"
-    },
-    "tenantname":{
-      "type": "string"
-    },
-    "type":{
-      "type": "string"
-    },
-    "version":{
-      "type": "string"
-    },
-    "description":{
-      "type": "string"
-    },
-    "config":{
-      "type": "object",
-      "description": "Depends on the nfvo type"
-    }
-  }
-},
-"wim":{
-  "type":"object",
-  "properties":{
-    "name":{
-      "type": "string"
-    },
-    "description":{
-      "type": "string"
-    },
-    "url":{
-      "type": "string"
-    },
-  }
-},
-"ems":{
-  "type":"object",
-  "properties":{
-    "name":{
-      "type": "string"
-    },
-    "description":{
-      "type": "string"
-    },
-    "url":{
-      "type": "string"
-    },
-  }
-}
-}
 }
