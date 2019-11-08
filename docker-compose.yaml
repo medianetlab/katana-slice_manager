@@ -35,12 +35,14 @@ services:
     stdin_open: true
     tty: true
     network_mode: "host"
+    restart: always
     volumes:
       - './katana-cli:/cli'
 
   swagger:
     image: 'swaggerapi/swagger-ui'
     container_name: swagger
+    restart: always
     environment:
       - SWAGGER_JSON=/my_swagger/swagger.json
     ports:
