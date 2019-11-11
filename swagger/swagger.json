@@ -20,7 +20,7 @@
       "description":"Create, Read, Update and Delete Network Slices",
       "externalDocs":{ 
         "description":"Wiki",
-        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/user_guide.md"
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/user_guide"
       }
     },
     { 
@@ -28,7 +28,7 @@
       "description":"Add, Read, Update and Delete VIMs",
       "externalDocs":{ 
         "description":"Wiki",
-        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi"
       }
     },
     { 
@@ -36,7 +36,7 @@
       "description":"Add, Read, Update and Delete NFVOs",
       "externalDocs":{ 
         "description":"Wiki",
-        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi"
       }
     },
     { 
@@ -44,7 +44,7 @@
       "description":"Add, Read, Update and Delete WIMs",
       "externalDocs":{ 
         "description":"Wiki",
-        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi"
       }
     },
     { 
@@ -52,12 +52,20 @@
       "description":"Add, Read, Update and Delete EMSs",
       "externalDocs":{ 
         "description":"Wiki",
-        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi.md"
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi"
       }
     },
     { 
       "name":"Resources",
       "description":"Read the available/max resources"
+    },
+    {
+      "name": "Supported SST",
+      "description": "Read, Write, Update and Delete the supported slices on the platform",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sst"
+      }
     }
   ],
   "schemes":[ 
@@ -75,7 +83,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"array",
               "items":{ 
@@ -105,7 +113,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"string"
             }
@@ -158,7 +166,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/slice_inspect"
             }
@@ -190,7 +198,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation"
+            "description":"Successful Operation"
           },
           "400":{ 
             "description":"Bad Request"
@@ -221,7 +229,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/time"
             }
@@ -246,7 +254,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"array",
               "items":{ 
@@ -276,7 +284,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"string"
             }
@@ -324,7 +332,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/vim"
             }
@@ -356,7 +364,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation"
+            "description":"Successful Operation"
           },
           "400":{ 
             "description":"Bad Request"
@@ -378,7 +386,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"array",
               "items":{ 
@@ -408,7 +416,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"string"
             }
@@ -456,7 +464,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/nfvo"
             }
@@ -488,7 +496,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation"
+            "description":"Successful Operation"
           },
           "400":{ 
             "description":"Bad Request"
@@ -510,7 +518,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"array",
               "items":{ 
@@ -540,7 +548,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"string"
             }
@@ -588,7 +596,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/wim"
             }
@@ -620,7 +628,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation"
+            "description":"Successful Operation"
           },
           "400":{ 
             "description":"Bad Request"
@@ -642,7 +650,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"array",
               "items":{ 
@@ -672,7 +680,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "type":"string"
             }
@@ -720,7 +728,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/ems"
             }
@@ -752,7 +760,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation"
+            "description":"Successful Operation"
           },
           "400":{ 
             "description":"Bad Request"
@@ -774,7 +782,7 @@
         ],
         "responses":{ 
           "200":{ 
-            "description":"successful operation",
+            "description":"Successful Operation",
             "schema":{ 
               "$ref":"#/definitions/resources"
             }
@@ -786,6 +794,179 @@
             "description":"Server Error"
           }
         }
+      }
+    },
+    "/sst": {
+      "get": {
+        "tags": [
+          "Supported SST"
+        ],
+        "summary": "Returns a list of the supported SST on the platform",
+        "produces": [
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{
+              "type": "array",
+              "description": "A list of supported sst",
+              "items": {
+                "$ref":"#/definitions/sup_sst"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Supported SST"
+        ],
+        "summary": "Add a supported SST on the platform",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "201":{ 
+            "description":"Created"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"EMS Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/sup_sst"
+            }
+          }
+        ]
+      }
+    },
+    "/sst/{sst_id}": {
+      "get": {
+        "tags": [
+          "Supported SST"
+        ],
+        "summary": "Return Info about a specific supported SST on the platform",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{ 
+              "$ref":"#/definitions/resources"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "name":"sst_id",
+            "in":"path",
+            "description":"ID of SST",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Supported SST"
+        ],
+        "summary": "Add or update a supported SST on the platform",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{
+          "200":{ 
+            "description":"Modified"
+          }, 
+          "201":{ 
+            "description":"Created"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"SST Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/sup_sst"
+            }
+          },
+          { 
+            "name":"sst_id",
+            "in":"path",
+            "description":"ID of SST",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Supported SST"
+        ],
+        "summary": "Delete a supported SST on the platform",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{
+          "200":{ 
+            "description":"Deleted"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[
+          { 
+            "name":"sst_id",
+            "in":"path",
+            "description":"ID of SST",
+            "required":true,
+            "type":"string"
+          }
+        ]
       }
     }
   },
@@ -1153,6 +1334,82 @@
               "available": {"type": "boolean"}
             }
           }
+        }
+      }
+    },
+    "sup_sst": {
+      "type": "object",
+      "description": "A supported slice by the platform",
+      "properties": {
+        "sst": {
+          "type": "number",
+          "enum": [1, 2, 3],
+          "description": "1: embb, 2: urllc, 3: iot"
+        },
+        "sd": {
+          "type": "number",
+          "description": "Service Differentiator - Optional information that complements the Slice/Service type(s) to differentiate amongst multiple Network Slices of the same SST"
+        },
+        "supported_locations": {
+          "type": "array",
+          "description" : "A list of the supported edge locations of the platform for that slice",
+          "items": {
+            "type": "string",
+            "description": "A location"
+          }
+        },
+        "ns_list": {
+          "type": "array",
+          "description": "A list of the NSs that will be part of the slice",
+          "items": {
+            "$ref": "#/definitions/ns"
+          }
+        },
+        "pnf_list": {
+          "type": "array",
+          "description": "A list of the PNFs that will be part of the slice",
+          "items": {
+            "$ref": "#/definitions/pnf"
+          }
+        }
+      }
+    },
+    "ns": {
+      "type": "object",
+      "description": "A Network Service",
+      "properties":{
+        "nfvo-id":{
+          "type": "string",
+          "description": "The NFVO that will manage the life cycle of the NS"
+        },
+        "nsd-id": {
+          "type": "string",
+          "description": "The NSD id as defined on the NFVO"
+        },
+        "placement": {
+          "type": "number",
+          "enum": [1, 2],
+          "description": "1: Core, 2: Edge"
+        },
+        "optional":{
+          "type": "boolean"
+        }
+      }
+    },
+    "pnf": {
+      "type": "object",
+      "description": "A Physical Network Service",
+      "properties": {
+        "ems-id": {
+          "type": "string",
+          "description": "The EMS that will manage the life cycle of the EMS"
+        },
+        "pdu-id": {
+          "type": "string",
+          "description": "The Physical Device Unit that will be used for the PNF"
+        },
+        "optional":{
+          "type": "boolean"
         }
       }
     }
