@@ -6,7 +6,7 @@ from katana.api.wim import WimView
 from katana.api.nfvo import NFVOView
 from katana.api.ems import EmsView
 from katana.api.slice import SliceView
-from katana.api.service import ServiceView
+from katana.api.sst import SstView
 
 
 def create_app():
@@ -26,6 +26,6 @@ def create_app():
     EmsView.register(app, trailing_slash=False)
     NFVOView.register(app, trailing_slash=False)
     SliceView.register(app, trailing_slash=False)
-    ServiceView.register(app, trailing_slash=False)
+    SstView.register(app, trailing_slash=False)
 
     return app

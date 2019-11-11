@@ -55,6 +55,10 @@
       "type": "number",
       "description": "Service Differentiator - Optional information that complements the Slice/Service type(s) to differentiate amongst multiple Network Slices of the same SST"
     },
+    "name": {
+      "type": "string",
+      "description": "Optional name for the SST"
+    },
     "supported_locations": {
       "type": "array",
       "description" : "A list of the supported edge locations of the platform for that slice",
