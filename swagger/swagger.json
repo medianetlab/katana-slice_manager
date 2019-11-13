@@ -1379,7 +1379,7 @@
       "properties": {
         "id":{
           "type": "string",
-          "description": "uuid - If not provided it will be asigned by Katana"
+          "description": "Optional id"
         },
         "name": {
           "type": "string",
@@ -1429,7 +1429,7 @@
       "properties": {
         "id":{
           "type": "string",
-          "description": "uuid - If not provided it will be asigned by Katana"
+          "description": "Optional id"
         },
         "name": {
           "type": "string",
@@ -1471,7 +1471,7 @@
       "properties": {
         "id":{
           "type": "string",
-          "description": "uuid - If not provided it will be asigned by Katana"
+          "description": "Optional id"
         },
         "name": {
           "type": "string",
@@ -1497,7 +1497,7 @@
       "properties": {
         "id":{
           "type": "string",
-          "description": "uuid - If not provided it will be asigned by Katana"
+          "description": "Optional id"
         },
         "name": {
           "type": "string",
@@ -1523,7 +1523,7 @@
       "properties": {
         "id":{
           "type": "string",
-          "description": "uuid - If not provided it will be assigned by Katana"
+          "description": "Optional id"
         },
         "name": {
           "type": "string",
