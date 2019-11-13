@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+
+  "type": "object",
+  "description": "A new WIM",
+  "properties": {
+    "id":{
+      "type": "string",
+      "description": "uuid - If not provided it will be asigned by Katana"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name for the new WIM"
+    },
+    "description": {
+      "type": "string",
+      "description": "A description for the WIM"
+    },
+    "url": {
+      "type": "string",
+      "description": "WIM's authentication URL - example: http://10.200.64.2:5000/"
+    },
+    "type": {
+      "type": "string",
+      "description": "WIM's type"
+    }
+  }
+}

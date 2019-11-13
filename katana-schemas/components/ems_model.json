@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+
+  "type": "object",
+  "description": "A new EMS",
+  "properties": {
+    "id":{
+      "type": "string",
+      "description": "uuid - If not provided it will be asigned by Katana"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name for the new EMS"
+    },
+    "description": {
+      "type": "string",
+      "description": "A description for the EMS"
+    },
+    "url": {
+      "type": "string",
+      "description": "EMS' authentication URL - example: http://10.200.64.2:5000/"
+    },
+    "type": {
+      "type": "string",
+      "description": "EMS' type"
+    }
+  }
+}

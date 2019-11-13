@@ -1193,99 +1193,146 @@
       }
     },
     "vim":{ 
-      "type":"object",
-      "properties":{ 
-        "name":{ 
-          "type":"string"
+      "type": "object",
+      "description": "A new VIM",
+      "properties": {
+        "id":{
+          "type": "string",
+          "description": "uuid - If not provided it will be asigned by Katana"
         },
-        "auth_url":{ 
-          "type":"string"
+        "name": {
+          "type": "string",
+          "description": "The name for the new VIM"
         },
-        "username":{ 
-          "type":"string"
+        "auth_url": {
+          "type": "string",
+          "description": "VIM's authentication URL - example: http://10.200.64.2:5000/v3/"
         },
-        "password":{ 
-          "type":"string"
+        "username": {
+          "type": "string",
+          "description": "The admin username"
         },
-        "admin_project_name":{ 
-          "type":"string"
+        "password": {
+          "type": "string",
+          "description": "The admin password"
         },
-        "location":{ 
-          "type":"string"
+        "admin_project_name": {
+          "type": "string",
+          "description": "The admin project"
         },
-        "type":{ 
-          "type":"string"
+        "location": {
+          "type": "string",
+          "description": "VIM's location"
         },
-        "version":{ 
-          "type":"string"
+        "type": {
+          "type": "string",
+          "description": "VIM's type"
         },
-        "description":{ 
-          "type":"string"
+        "version": {
+          "type": "string",
+          "description": "The version of the VIM's OS"
         },
-        "config":{ 
-          "type":"object",
-          "description":"Depends on the vim type"
+        "description": {
+          "type": "string",
+          "description": "A description for the VIM"
+        },
+        "config": {
+            "type": "object",
+            "description": "Optional parameters regarding the VIM operation - example: Security group"
         }
       }
     },
     "nfvo":{ 
-      "type":"object",
-      "properties":{ 
-        "name":{ 
-          "type":"string"
+      "type": "object",
+      "description": "A new NFVO",
+      "properties": {
+        "id":{
+          "type": "string",
+          "description": "uuid - If not provided it will be asigned by Katana"
         },
-        "nfvoip":{ 
-          "type":"string"
+        "name": {
+          "type": "string",
+          "description": "The name for the new NFVO"
         },
-        "nfvousername":{ 
-          "type":"string"
+        "nfvoip": {
+          "type": "string",
+          "description": "NFVO's authentication URL - example: http://10.200.64.2:5000/v3/"
         },
-        "nfvopassword":{ 
-          "type":"string"
+        "nfvousername": {
+          "type": "string",
+          "description": "The admin username"
         },
-        "tenantname":{ 
-          "type":"string"
+        "nfvopassword": {
+          "type": "string",
+          "description": "The admin password"
         },
-        "type":{ 
-          "type":"string"
+        "type": {
+          "type": "string",
+          "description": "NFVO's type"
         },
-        "version":{ 
-          "type":"string"
+        "version": {
+          "type": "string",
+          "description": "The version of the NFVO's OS"
         },
-        "description":{ 
-          "type":"string"
+        "description": {
+          "type": "string",
+          "description": "A description for the NFVO"
         },
-        "config":{ 
-          "type":"object",
-          "description":"Depends on the nfvo type"
+        "config": {
+            "type": "object",
+            "description": "Optional parameters regarding the NFVO operation - example: network: flat"
         }
       }
     },
     "wim":{ 
-      "type":"object",
-      "properties":{ 
-        "name":{ 
-          "type":"string"
+      "type": "object",
+      "description": "A new WIM",
+      "properties": {
+        "id":{
+          "type": "string",
+          "description": "uuid - If not provided it will be asigned by Katana"
         },
-        "description":{ 
-          "type":"string"
+        "name": {
+          "type": "string",
+          "description": "The name for the new WIM"
         },
-        "url":{ 
-          "type":"string"
+        "description": {
+          "type": "string",
+          "description": "A description for the WIM"
+        },
+        "url": {
+          "type": "string",
+          "description": "WIM's authentication URL - example: http://10.200.64.2:5000/"
+        },
+        "type": {
+          "type": "string",
+          "description": "WIM's type"
         }
       }
     },
     "ems":{ 
-      "type":"object",
-      "properties":{ 
-        "name":{ 
-          "type":"string"
+      "type": "object",
+      "description": "A new EMS",
+      "properties": {
+        "id":{
+          "type": "string",
+          "description": "uuid - If not provided it will be asigned by Katana"
         },
-        "description":{ 
-          "type":"string"
+        "name": {
+          "type": "string",
+          "description": "The name for the new EMS"
         },
-        "url":{ 
-          "type":"string"
+        "description": {
+          "type": "string",
+          "description": "A description for the EMS"
+        },
+        "url": {
+          "type": "string",
+          "description": "EMS' authentication URL - example: http://10.200.64.2:5000/"
+        },
+        "type": {
+          "type": "string",
+          "description": "EMS' type"
         }
       }
     },
