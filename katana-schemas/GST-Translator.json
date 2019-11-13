@@ -4,7 +4,7 @@
             "description": "This is the schema for the core part of the new slice",
             "properties": {
                 "slice_des": {"type": "string"},
-                # ***** Copy to the NEST - Will be used for placement *****
+                // # ***** Copy to the NEST - Will be used for placement *****
                 "coverage": {
                     "type": "array",
                     "description": "A list with all the locations that are part of the slice",
@@ -13,12 +13,12 @@
                         "description": " The location name for each site in the slice"
                     }
                 },
-                # ***** Will define sst *****
+                // # ***** Will define sst *****
                 "delay_tolerance": {
                     "type": "boolean",
                     "description": "Supported or not supported"
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "deterministic_communication":{
                     "type": "object",
                     "description": "This attribute defines if the network slice supports deterministic communication for periodic user traffic. Periodic traffic refers to the type of traffic with periodic transmissions.",
@@ -37,7 +37,7 @@
                         }
                     }
                 },
-                # ***** Copy to the NEST - Will be sent to WIM and EMS*****
+                // # ***** Copy to the NEST - Will be sent to WIM and EMS*****
                 "network_DL_throughput": {
                     "type": "object",
                     "description": "The achievable data rate in downlink for the whole network slice (and not per user).",
@@ -94,13 +94,13 @@
                         }
                     }
                 },
-                # ***** Copy to the NEST - To EMS *****
+                // # ***** Copy to the NEST - To EMS *****
                 "group_communication_support": {
                     "type": "number",
                     "enum": [0, 1, 2, 3],
                     "description": "0: not available 1: Single Cell Point to Multipoint (SCPTM) 2: Broadcast/Multicast 3: Broadcast/Multicast + SC-PTM"
                 },
-                # ***** Copy to the NEST - By SM *****
+                // # ***** Copy to the NEST - By SM *****
                 "isolation_level": {
                     "type": "object",
                     "description": " A network slice instance may be fully or partly, logically and/or physically, isolated from another network slice instance",
@@ -112,12 +112,12 @@
                         }
                     }
                 },
-                # ***** Copy to the NEST - To EMS and WIM *****
+                // # ***** Copy to the NEST - To EMS and WIM *****
                 "mtu": {
                     "type": "number",
                     "description": "Bytes"
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "mission_critical_support": {
                     "type": "object",
                     "description": "Mission-critical (MC) leads to a priority of the network slice relative to others, for C-plane and U-plane decisions.",
@@ -136,27 +136,27 @@
                         }
                     }
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "mmtel_support": {
                     "type": "boolean",
                     "description": "This attribute describes whether the network slice supports IP Multimedia Subsystem (IMS) and Multimedia Telephony Service MMTel."
                 },
-                # ***** Will define SST *****
+                // # ***** Will define SST *****
                 "nb_iot": {
                     "type": "boolean",
                     "description": "This parameter describes whether NB-IoT is supported in the network slice."
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "number_of_connections": {
                     "type": "number",
                     "description": "This attribute describes the maximum number of concurrent sessions supported by the network slice."
                 },
-                # ***** NEST - to EMS *****
+                // # ***** NEST - to EMS *****
                 "number_of_terminals": {
                     "type": "number",
                     "description": "This attribute describes the maximum number of concurrent terminals supported by the network slice."
                 },
-                # ***** NEST - to EMS *****
+                // # ***** NEST - to EMS *****
                 "positional_support": {
                     "type": "object",
                     "description": "This attribute describes if the network slice provides geo-localization methods or supporting methods.",
@@ -180,7 +180,7 @@
                         }
                     }
                 },
-                # ***** NEST - to EMS *****
+                // # ***** NEST - to EMS *****
                 "radio_spectrum": {
                     "type": "array",
                     "description": "Defines the radio spectrum supported by the network slice.",
@@ -189,13 +189,13 @@
                         "description": "This attribute simply tells which frequencies can be used to access the network slice. Example: n1, n77, n38"
                     }
                 },
-                # ***** NEST - By SM *****
+                // # ***** NEST - By SM *****
                 "simultaneous_nsi": {
                     "type": "number",
                     "enum": [0, 1, 2, 3, 4, 5],
                     "description": "0: Can be used with any network slice 1: Can be used with network slices with same SST value 2: Can be used with any network slice with same SD value 3: Cannot be used with another network slice 4-15: operator defined class"
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "qos": {
                     "type": "array",
                     "description": "This attribute defines all the QoS relevant parameters supported by the network slice, based on 3GPP defined standard values (5QIs)",
@@ -235,17 +235,17 @@
                         }
                     }
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "nonIP_traffic": {
                     "type": "boolean"
                 },
-                # ***** NEST - to EMS *****
+                // # ***** NEST - to EMS *****
                 "device_velocity": {
                     "type": "number",
                     "enum": [1, 2, 3, 4],
                     "description": "1: Stationary: 0 km/h 2: Pedestrian: 0 km/h to 10 km/h 3: Vehicular: 10 km/h to 120 km/h 4: High speed vehicular: 120 km/h to 500 km/h"
                 },
-                # ***** NEST - to EMS *****
+                // # ***** NEST - to EMS *****
                 "terminal_density": {
                     "type": "number",
                     "description": "maximum number of connected and/or accessible devices per unit area (per km2) supported by the network slice [Number/km^2]"
@@ -257,8 +257,7 @@
             "description": "This is the schema for the Service Descriptor part of slice IM",
             "properties": {
                 "ns_des_id": {"type": "string"},
-                # ***** NEST - by SM *****
-                "nfvo_id": {"type": "string"},
+                // # ***** NEST - by SM *****
                 "nsd_list": {
                     "type": "array",
                     "description": "List of the NSD to be instantiated alongside the slice",
@@ -267,7 +266,8 @@
                         "description": "A NS",
                         "properties":{
                             "nsd_id": {"type": "string"},
-                            "placement": {"type": "string"}
+                            "placement": {"type": "string"},
+                            "nfvo_id": {"type": "string"}
                         }
                     }
                 }
@@ -278,7 +278,7 @@
             "description": "This is the schema for the Test Descriptor part of slice IM",
             "properties": {
                 "test_des_id": {"type": "string"},
-                # ***** NEST - to WIM *****
+                // # ***** NEST - to WIM *****
                 "probe_list": {
                     "type": "array",
                     "description": "A list of probe ids to be included in the slice",
@@ -286,7 +286,7 @@
                         "type": "string"
                     }
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "performance_monitoring": {
                     "type": "object",
                     "description": "This attribute provides the capability to monitor KQIs and KPIs.",
@@ -306,7 +306,7 @@
                         }
                     }
                 },
-                # ***** TBD *****
+                // # ***** TBD *****
                 "performance_prediction": {
                     "type": "object",
                     "description": "This attribute provides the capability to predict KQIs and KPIs.",

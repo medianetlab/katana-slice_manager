@@ -241,7 +241,6 @@
       "description": "This is the schema for the Service Descriptor part of slice IM",
       "properties": {
         "ns_des_id": {"type": "string"},
-        "nfvo_id": {"type": "string"},
         "nsd_list": {
           "type": "array",
           "description": "List of the NSD to be instantiated alongside the slice",
@@ -250,7 +249,8 @@
             "description": "A NS",
             "properties":{
               "nsd_id": {"type": "string"},
-              "placement": {"type": "string"}
+              "placement": {"type": "string"},
+              "nfvo_id": {"type": "string"}
             }
           }
         }
