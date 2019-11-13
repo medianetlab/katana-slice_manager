@@ -7,6 +7,7 @@ from katana.api.nfvo import NFVOView
 from katana.api.ems import EmsView
 from katana.api.slice import SliceView
 from katana.api.sst import SstView
+from katana.api.pdu import PduView
 
 
 def create_app():
@@ -25,6 +26,7 @@ def create_app():
     WimView.register(app, trailing_slash=False)
     EmsView.register(app, trailing_slash=False)
     NFVOView.register(app, trailing_slash=False)
+    PduView.register(app, trailing_slash=False)
     SliceView.register(app, trailing_slash=False)
     SstView.register(app, trailing_slash=False)
 

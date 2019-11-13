@@ -73,8 +73,8 @@ class WimView(FlaskView):
 
     def delete(self, uuid):
         """
-        Delete a specific vim.
-        used by: `katana vim rm [uuid]`
+        Delete a specific wim.
+        used by: `katana wim rm [uuid]`
         """
         result = mongoUtils.delete("wim", uuid)
         if result == 1:
