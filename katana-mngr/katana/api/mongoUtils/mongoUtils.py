@@ -1,7 +1,5 @@
 from pymongo import MongoClient
-from pprint import pprint
-import yaml
-import json
+
 
 client = MongoClient("mongodb://mongo")
 db = client.katana

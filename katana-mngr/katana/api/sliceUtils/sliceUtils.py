@@ -19,20 +19,42 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-def do_work(request_json):
+NEST_KEYS = ("sst", "sd", "coverage", "nsd_list", "shared",
+             "network_DL_throughput", "ue_DL_throughput",
+             "network_UL_throughput", "ue_UL_throughput",
+             "group_communication_support", "mtu", "number_of_terminals",
+             "positional_support", "radio_spectrum", "device_velocity",
+             "terminal_density", "probe_list")
+
+
+def do_work(nest):
     """
     Creates the network slice
     """
 
-    # TODO !!!
-    # proper error handling and return
-
     # **** STEP-1: Placement ****
-    request_json['status'] = 'Placement'
-    mongoUtils.update("slice", request_json['_id'], request_json)
+    nest['status'] = 'Placement'
+    mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Placement")
     placement_start_time = time.time()
 
+    # Recreate the NEST with None options where missiong
+    new_nest = {}
+    for nest_key in NEST_KEYS:
+        new_nest[nest_key] = nest.get(nest_key, None)
+
+    # Find the supported sst based on the sst and the sd value (if defined)
+    find_data = {"sst": new_nest["sst"], "sd": new_nest["sd"]}
+    sst = mongoUtils.find("sst", find_data)
+
+    # Make the NS and PNF list
+    ns_list = sst.get("ns_list", [])
+    pnf_list = sst.get("pnf_list", [])
+    for ns in ns_list:
+        if ns["placement"] == 1:
+            
+
+    return
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
     nfvo = pickle.loads(nfvo_list[0]['nfvo'])
@@ -43,8 +65,8 @@ def do_work(request_json):
     vim_list = []
     placement_list = {}
     radio_nsd_list = []
-    new_ns_list = request_json['nsi']['nsd-ref']
-    slice_name = request_json['nsi']['name']
+    new_ns_list = nest['nsi']['nsd-ref']
+    slice_name = nest['nsi']['name']
     data = {"name": slice_name}
     registered_service = mongoUtils.find('service', data=data)
     if registered_service is not None:
@@ -59,7 +81,7 @@ def do_work(request_json):
                 if not nsd:
                     logger.error(f"NSd {new_ns['id']} was not found in the\
 NFVO. Deleting slice")
-                    delete_slice(request_json)
+                    delete_slice(nest)
                     return "Error: NSD was not found int the NFVO"
             try:
                 logger.debug(new_ns["radio"])
@@ -103,7 +125,7 @@ will be created')
                 if not nsd:
                     logger.error(f"NSd {new_ns['id']} was not found in the\
                         NFVO. Deleting slice")
-                    delete_slice(request_json)
+                    delete_slice(nest)
                     return "Error: NSD was not found int the NFVO"
             try:
                 if new_ns["radio"]:
@@ -115,15 +137,15 @@ will be created')
             placement_list[new_ns["name"]]["vim"] = default_vim["_id"]
         vim_list.append(default_vim["_id"])
 
-    request_json["vim_list"] = vim_list
-    request_json["placement"] = placement_list
+    nest["vim_list"] = vim_list
+    nest["placement"] = placement_list
     # TODO:Create the network graph
-    request_json['deployment_time']['Placement_Time'] = format(
+    nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
 
     # **** STEP-2: Provisioning ****
-    request_json['status'] = 'Provisioning'
-    mongoUtils.update("slice", request_json['_id'], request_json)
+    nest['status'] = 'Provisioning'
+    mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Provisioning")
     prov_start_time = time.time()
 
@@ -134,11 +156,11 @@ will be created')
         # STEP-2a-i: openstack prerequisites
         # Define project parameters
         tenant_project_name = 'vim_{0}_katana_{1}'.format(
-            num, request_json['_id'])
+            num, nest['_id'])
         tenant_project_description = 'vim_{0}_katana_{1}'.format(
-            num, request_json['_id'])
+            num, nest['_id'])
         tenant_project_user = 'vim_{0}_katana_{1}'.format(
-            num, request_json['_id'])
+            num, nest['_id'])
         tenant_project_password = 'password'
 
         # Create the project on the NFVi
@@ -150,10 +172,10 @@ will be created')
             tenant_project_description,
             tenant_project_user,
             tenant_project_password,
-            request_json['_id']
+            nest['_id']
         )
         # Register the tenant to the mongo db
-        selected_vim["tenants"][request_json["_id"]] = ids
+        selected_vim["tenants"][nest["_id"]] = ids
         mongoUtils.update("vim", ivim, selected_vim)
 
         if selected_vim["type"] == "openstack":
@@ -168,7 +190,7 @@ will be created')
             selected_vim['type'], selected_vim['auth_url'],
             selected_vim['username'],
             config_param)
-    request_json["nfvo_vim_id"] = nfvo_vim_id_dict
+    nest["nfvo_vim_id"] = nfvo_vim_id_dict
 
     # *** STEP-2b: WAN ***
     if (mongoUtils.count('wim') <= 0):
@@ -183,30 +205,30 @@ will be created')
         wsd = {}
         wsd['services-segment'] = []
         try:
-            services = request_json["nsi"]["wim-ref"]["services-segment"]
+            services = nest["nsi"]["wim-ref"]["services-segment"]
         except Exception:
             logger.warning("There are no services on the slice descriptor")
         else:
             for service in services:
                 wsd["services-segment"].append(service)
-        wsd['topology'] = request_json['nsi']['wim-ref']['topology']
-        wsd['bidirectional'] = request_json['nsi']['wim-ref']['bidirectional']
-        wsd['link_params'] = request_json['nsi']['wim-ref']['link_params']
+        wsd['topology'] = nest['nsi']['wim-ref']['topology']
+        wsd['bidirectional'] = nest['nsi']['wim-ref']['bidirectional']
+        wsd['link_params'] = nest['nsi']['wim-ref']['link_params']
         # TODO Add the intermediate VIMs
         # Create the WAN Slice
         wim.create_slice(wsd)
-        request_json['deployment_time']['WAN_Deployment_Time'] =\
+        nest['deployment_time']['WAN_Deployment_Time'] =\
             format(time.time() - wan_start_time, '.4f')
-    request_json['deployment_time']['Provisioning_Time'] =\
+    nest['deployment_time']['Provisioning_Time'] =\
         format(time.time() - prov_start_time, '.4f')
 
     # **** STEP-3: Activation ****
-    request_json['status'] = 'Activation'
-    mongoUtils.update("slice", request_json['_id'], request_json)
+    nest['status'] = 'Activation'
+    mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Activation")
     # *** STEP-3a: Cloud ***
     # Instantiate NS
-    request_json['deployment_time']['NS_Deployment_Time'] = {}
+    nest['deployment_time']['NS_Deployment_Time'] = {}
     ns_id_dict = {}
     for num, ins in enumerate(new_ns_list):
         ns_start_time = time.time()
@@ -216,7 +238,7 @@ will be created')
             ins["id"],
             slice_vim_id
         )
-    request_json["running_ns"] = ns_id_dict
+    nest["running_ns"] = ns_id_dict
     # Get the nsr for each service and wait for the activation
     nsr_dict = {}
     for num, ins in enumerate(new_ns_list):
@@ -224,7 +246,7 @@ will be created')
         while nsr_dict[ins["name"]]['operational-status'] != 'running':
             time.sleep(10)
             nsr_dict[ins["name"]] = nfvo.getNsr(ns_id_dict[ins["name"]])
-        request_json['deployment_time']['NS_Deployment_Time'][ins['name']] =\
+        nest['deployment_time']['NS_Deployment_Time'][ins['name']] =\
             format(time.time() - ns_start_time, '.4f')
 
     # Get the IPs for any radio delployed service
@@ -236,7 +258,7 @@ will be created')
             vnf_name = vnfr["vnfd-ref"]
             nsr[vnf_name] = nfvo.getIPs(vnfr)
         placement_list[ns_name]["vnfr"] = nsr
-    mongoUtils.update("slice", request_json['_id'], request_json)
+    mongoUtils.update("slice", nest['_id'], nest)
     logger.debug(f"****** placement_list ******")
     for mynsd, nsd_value in placement_list.items():
         logger.debug(f"{mynsd} --> {nsd_value}")
@@ -253,21 +275,21 @@ will be created')
         ems = pickle.loads(ems_list[0]['ems'])
         radio_start_time = time.time()
         emsd = {
-            "sst": request_json["nsi"]["type"],
-            "location": request_json["nsi"]["radio-ref"]["location"],
+            "sst": nest["nsi"]["type"],
+            "location": nest["nsi"]["radio-ref"]["location"],
             "nsr_list": radio_component_list
         }
         logger.debug("**** EMS *****")
         logger.debug(emsd)
         ems.conf_radio(emsd)
-        request_json['deployment_time']['Radio_Configuration_Time']\
+        nest['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
 
     logger.info("Status: Running")
-    request_json['status'] = 'Running'
-    request_json['deployment_time']['Slice_Deployment_Time'] =\
-        format(time.time() - request_json['created_at'], '.4f')
-    mongoUtils.update("slice", request_json['_id'], request_json)
+    nest['status'] = 'Running'
+    nest['deployment_time']['Slice_Deployment_Time'] =\
+        format(time.time() - nest['created_at'], '.4f')
+    mongoUtils.update("slice", nest['_id'], nest)
 
 
 def delete_slice(slice_json):

@@ -3,7 +3,6 @@ from flask_classful import FlaskView, route
 from katana.api.mongoUtils import mongoUtils
 from katana.api.sliceUtils import sliceUtils
 
-import json
 import uuid
 from bson.json_util import dumps
 from threading import Thread
@@ -84,7 +83,7 @@ class SliceView(FlaskView):
         # https://stackoverflow.com/questions/48994440/execute-a-function-after-flask-returns-response
         # might be replaced with Celery...
 
-        thread = Thread(target=sliceUtils.do_work, kwargs={'request_json':
+        thread = Thread(target=sliceUtils.do_work, kwargs={'nest':
                                                            request.json})
         thread.start()
 
