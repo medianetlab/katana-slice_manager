@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
 
   "type": "object",
-  "description": "A new EMS",
+  "description": "A new PDU",
   "properties": {
     "id":{
       "type": "string",
@@ -10,19 +10,19 @@
     },
     "name": {
       "type": "string",
-      "description": "The name for the new EMS"
+      "description": "The name for the new PDU"
+    },
+    "ip": {
+      "type": "string",
+      "description": "The mgmt IP of the PDU"
     },
     "description": {
       "type": "string",
-      "description": "A description for the EMS"
+      "description": "A description for the PDU"
     },
-    "url": {
+    "location": {
       "type": "string",
-      "description": "EMS' authentication URL - example: http://10.200.64.2:5000/"
-    },
-    "type": {
-      "type": "string",
-      "description": "EMS' type"
+      "description": "The location for new PDU"
     }
   }
 }

@@ -55,6 +55,14 @@
         "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi"
       }
     },
+    {
+      "name": "PDU",
+      "description": "Add, Read, Update and Delete EMSs",
+      "externalDocs":{ 
+        "description":"Wiki",
+        "url":"https://github.com/medianetlab/katana-slice_manager/wiki/sbi"
+      }
+    },
     { 
       "name":"Resources",
       "description":"Read the available/max resources"
@@ -771,6 +779,179 @@
         }
       }
     },
+    "/pdu": {
+      "get":{ 
+        "tags":[ 
+          "PDU"
+        ],
+        "summary":"Returns a list of registered PDUs",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{ 
+              "type":"array",
+              "items":{ 
+                "$ref":"#/definitions/any_ls"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post":{ 
+        "tags":[ 
+          "PDU"
+        ],
+        "summary":"Adds a new PDU",
+        "consumes":[ 
+          "application/json",
+          "application/yaml"
+        ],
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "201":{ 
+            "description":"Created"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"EMS Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/pdu"
+            }
+          }
+        ]
+      }
+    },
+    "/pdu/{pdu_id}": {
+      "get":{ 
+        "tags":[ 
+          "PDU"
+        ],
+        "summary":"Returns information about the given PDU",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"pdu_id",
+            "in":"path",
+            "description":"ID of PDU to be inspected",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{ 
+              "$ref":"#/definitions/pdu"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PDU"
+        ],
+        "summary": "Add or update a supported PDU on the platform",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{
+          "200":{ 
+            "description":"Modified"
+          }, 
+          "201":{ 
+            "description":"Created"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"PDU Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/pdu"
+            }
+          },
+          { 
+            "name":"pdu_id",
+            "in":"path",
+            "description":"ID of PDU",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      },
+      "delete":{ 
+        "tags":[ 
+          "PDU"
+        ],
+        "summary":"Deletes the given PDU",
+        "produces":[ 
+          "application/json"
+        ],
+        "parameters":[ 
+          { 
+            "name":"pdu_id",
+            "in":"path",
+            "description":"ID of PDU to be deleted",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Deleted"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
     "/resources":{ 
       "get":{ 
         "tags":[ 
@@ -1333,6 +1514,32 @@
         "type": {
           "type": "string",
           "description": "EMS' type"
+        }
+      }
+    },
+    "pdu": {
+      "type": "object",
+      "description": "A new PDU",
+      "properties": {
+        "id":{
+          "type": "string",
+          "description": "uuid - If not provided it will be assigned by Katana"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name for the new PDU"
+        },
+        "ip": {
+          "type": "string",
+          "description": "The mgmt IP of the PDU"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description for the PDU"
+        },
+        "location": {
+          "type": "string",
+          "description": "The location for new PDU"
         }
       }
     },

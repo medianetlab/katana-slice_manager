@@ -6,7 +6,7 @@
   "properties": {
     "id":{
       "type": "string",
-      "description": "uuid - If not provided it will be asigned by Katana"
+      "description": "uuid - If not provided it will be assigned by Katana"
     },
     "name": {
       "type": "string",
