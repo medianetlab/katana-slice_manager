@@ -64,6 +64,7 @@ class PduView(FlaskView):
         Delete a specific pdu.
         used by: `katana pdu rm [uuid]`
         """
+        # TODO: Check if there is anything running by this ems before delete
         result = mongoUtils.delete("pdu", uuid)
         if result:
             return "Deleted PDU {}".format(uuid), 200
@@ -76,6 +77,7 @@ class PduView(FlaskView):
         Update the details of a specific pdu.
         used by: `katana pdu update [uuid] -f [yaml file]`
         """
+        # TODO: Validate what data should not change
         data = request.json
         data['_id'] = uuid
         old_data = mongoUtils.get("pdu", uuid)

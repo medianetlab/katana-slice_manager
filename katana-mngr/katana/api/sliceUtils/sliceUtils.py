@@ -96,7 +96,6 @@ def do_work(nest):
         ns["nsd-info"] = nsd
     ns_list = [ns for ns in ns_list if ns not in pop_list]
 
-    logger.debug(f"ns list = {ns_list}")
     # Select the VIMs for each NS acording to location
     vim_list = []
     for ns in ns_list:
@@ -114,9 +113,7 @@ def do_work(nest):
             if selected_vim not in vim_list:
                 vim_list.append(selected_vim)
 
-    logger.debug(f"ns list = {ns_list}")
-    return
-
+    
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
     nfvo = pickle.loads(nfvo_list[0]['nfvo'])

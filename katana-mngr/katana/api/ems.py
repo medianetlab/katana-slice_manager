@@ -7,8 +7,6 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
-import ast
-import base64
 
 from katana.api.mongoUtils import mongoUtils
 from katana.api.emsUtils import emsUtils
@@ -41,21 +39,25 @@ class EmsView(FlaskView):
         for iems in ems_data:
             return_data.append(dict(_id=iems['_id'],
                                created_at=iems['created_at']))
-        return dumps(return_data)
+        return dumps(return_data), 200
 
     # @route('/all/') #/ems/all
     def all(self):
         """
         Same with index(self) above, but returns all EMS details
         """
-        return dumps(mongoUtils.index("ems"))
+        return dumps(mongoUtils.index("ems")), 200
 
     def get(self, uuid):
         """
         Returns the details of specific EMS,
         used by: `katana ems inspect [uuid]`
         """
-        return dumps((mongoUtils.get("ems", uuid)))
+        data = (mongoUtils.get("ems", uuid))
+        if data:
+            return dumps(data), 200
+        else:
+            return "Not Found", 404
 
     def post(self):
         """
@@ -64,43 +66,47 @@ class EmsView(FlaskView):
         """
         # TODO: Test connectivity with the EMS
         new_uuid = str(uuid.uuid4())
-        request.json['_id'] = new_uuid
-        request.json['created_at'] = time.time()  # unix epoch
+        # Create the object and store it in the object collection
         ems = emsUtils.Ems(request.json['url'])
         thebytes = pickle.dumps(ems)
-        request.json['ems'] = Binary(thebytes)
-        return mongoUtils.add('ems', request.json)
+        obj_json = {"_id": new_uuid, "id": request.json["id"],
+                    "obj": Binary(thebytes)}
+        mongoUtils.add('ems_obj', obj_json)
+        request.json['_id'] = new_uuid
+        request.json['created_at'] = time.time()  # unix epoch
+        return mongoUtils.add('ems', request.json), 201
 
     def delete(self, uuid):
         """
         Delete a specific EMS.
         used by: `katana ems rm [uuid]`
         """
+        # TODO: Check if there is anything running by this ems before delete
+        mongoUtils.delete("ems_obj", uuid)
         result = mongoUtils.delete("ems", uuid)
-        if result == 1:
-            return uuid
-        elif result == 0:
+        if result:
+            return "Deleted EMS {}".format(uuid), 200
+        else:
             # if uuid is not found, return error
-            return "Error: No such EMS: {}".format(uuid)
+            return "Error: No such EMS: {}".format(uuid), 404
 
     def put(self, uuid):
         """
         Update the details of a specific EMS.
         used by: `katana ems update -f [yaml file] [uuid]`
         """
-        request.json['_id'] = uuid
+        # TODO: Validate what data should not change
+        data = request.json
+        data['_id'] = uuid
+        old_data = mongoUtils.get("ems", uuid)
 
-        """
-        Make binary data acceptable by Mongo
-          - REST api sends: 'ems': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
-        By decoding the base64 string and then using Binary() it works
-          - Inside Mongo  : "ems" : BinData(0,"gANja2F0YW5h....a base64 string...")
-        """
-        request.json['ems'] = Binary(base64.b64decode(request.json['ems']['$binary']))
-        result = mongoUtils.update("ems", uuid, request.json)
-
-        if result == 1:
-            return uuid
-        elif result == 0:
-            # if no object was modified, return error
-            return "Error: No such EMS: {}".format(uuid)
+        if old_data:
+            data["created_at"] = old_data["created_at"]
+            mongoUtils.update("ems", uuid, data)
+            return f"Modified {uuid}", 200
+        else:
+            new_uuid = uuid
+            data = request.json
+            data['_id'] = new_uuid
+            data['created_at'] = time.time()  # unix epoch
+            return "Created " + str(mongoUtils.add('ems', data)), 201

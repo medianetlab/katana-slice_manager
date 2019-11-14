@@ -1,11 +1,9 @@
-import os
 import requests
 import json
 import yaml
-import subprocess
-
 import click
 import datetime
+
 
 @click.group()
 def cli():
@@ -29,7 +27,8 @@ def ls():
         for i in range(len(json_data)):
             print(console_formatter(
                 json_data[i]["_id"],
-                datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime('%Y-%m-%d %H:%M:%S')))
+                datetime.datetime.fromtimestamp(json_data[i]["created_at"])
+                .strftime('%Y-%m-%d %H:%M:%S')))
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -68,7 +67,8 @@ def inspect(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str, help='yaml file with wim details')
+@click.option('-f', '--file', required=True, type=str,
+              help='yaml file with wim details')
 def add(file):
     """
     Add new WIM
@@ -94,12 +94,64 @@ def add(file):
         print("Error:", err)
 
 
+@click.command()
+@click.argument('id')
+def rm(id):
+    """
+    Remove supported WIM
+    """
+    url = "http://localhost:8000/api/wim/"+id
+    r = None
+    try:
+        r = requests.delete(url, timeout=3)
+        r.raise_for_status()
+        click.echo(r.content)
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Error:", err)
+
+
+@click.command()
+@click.option('-f', '--file', required=True, type=str,
+              help='yaml file with WIM details')
+@click.argument('id')
+def update(file, id):
+    """
+    Update WIM
+    """
+    with open(file, 'r') as stream:
+        data = yaml.load(stream)
+
+    url = "http://localhost:8000/api/wim/"+id
+    r = None
+    try:
+        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=3)
+        r.raise_for_status()
+
+        click.echo(r.content)
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Error:", err)
+
+
 cli.add_command(ls)
 cli.add_command(inspect)
 cli.add_command(add)
+cli.add_command(rm)
+cli.add_command(update)
 
 
-def console_formatter(uuid,created_at):
+def console_formatter(uuid, created_at):
     return '{0: <40}{1: <25}'.format(
         uuid,
         created_at

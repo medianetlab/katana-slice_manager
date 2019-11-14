@@ -6,7 +6,7 @@
   "properties": {
     "id":{
       "type": "string",
-      "description": "Optional id"
+      "description": "Unique id"
     },
     "name": {
       "type": "string",
