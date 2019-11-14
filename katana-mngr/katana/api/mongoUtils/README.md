@@ -2,3 +2,5 @@
 
 * nsd
 * vnfd
+* nfvo
+* vim

@@ -56,7 +56,7 @@ def do_work(nest):
     # Get the NSs and PNFsfrom the supported sst
     for ns in ns_list:
         if not ns["placement"]:
-            ns["placement"] = "core"
+            ns["placement"] = ["core"]
         else:
             ns["placement"] = new_nest["coverage"]
         ems = ns.get("ems-id", None)
@@ -74,12 +74,14 @@ def do_work(nest):
 
     # Find the details for each NS
     pop_list = []
-    logger.debug(f"before ns_list = {ns_list}")
     for ns in ns_list:
         # Search the nsd collection in Mongo for the nsd
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
         if not nsd:
-            # Select NFVO - Assume that there is only one registered --> Fixed - select OSM based on nfvo- id and object storage database
+            # Bootstrap the NFVO to check for NSDs that are not in mongo
+            # If again is not found, check if NS is optional.
+            # If it is just remove it, else error
+            # TODO: Select NFVO - Assume that there is only one registered --> Fixed - select OSM based on nfvo- id and object storage database
             nfvo_list = list(mongoUtils.index('nfvo'))
             nfvo = pickle.loads(nfvo_list[0]['nfvo'])
             osmUtils.bootstrapNfvo(nfvo)
@@ -87,17 +89,33 @@ def do_work(nest):
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)
             else:
-                # The ns is not optional and the nsd is not on the NFVO - stop and return
+                # ERROR HANDLING: The ns is not optional and the nsd is not on the NFVO - stop and return
+                logger.error("NSD not found")
                 return
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
         ns["nsd-info"] = nsd
     ns_list = [ns for ns in ns_list if ns not in pop_list]
 
-    logger.debug(f"after ns_list = {ns_list}")
-    return
-
+    logger.debug(f"ns list = {ns_list}")
     # Select the VIMs for each NS acording to location
     vim_list = []
+    for ns in ns_list:
+        ns["vims"] = []
+        for location in ns["placement"]:
+            get_vim = list(mongoUtils.find_all('vim', {"location": location}))
+            logger.debug(f"Get vim = {get_vim}")
+            if not get_vim:
+                # ERROR HANDLING: There is no VIM at that location
+                return
+            # TODO: Check the available resources and select vim
+            # Temporary use the first element
+            selected_vim = get_vim[0]
+            ns["vims"].append(selected_vim)
+            if selected_vim not in vim_list:
+                vim_list.append(selected_vim)
+
+    logger.debug(f"ns list = {ns_list}")
+    return
 
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))

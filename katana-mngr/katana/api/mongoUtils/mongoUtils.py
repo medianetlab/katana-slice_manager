@@ -33,7 +33,8 @@ def delete(collection_name, uuid):
 
 
 def update(collection_name, uuid, json_data):
-    return db[collection_name].replace_one({"_id": uuid}, json_data).modified_count
+    collection = db[collection_name]
+    return collection.replace_one({"_id": uuid}, json_data).modified_count
 
 
 def count(collection_name):
@@ -44,3 +45,8 @@ def count(collection_name):
 def find(collection_name, data={}):
     collection = db[collection_name]
     return collection.find_one(data)
+
+
+def find_all(collection_name, data={}):
+    collection = db[collection_name]
+    return collection.find(data)
