@@ -72,21 +72,32 @@ def do_work(nest):
                                  "ip": pdu["ip"], "location": pdu["location"],
                                  "ems": ems})
 
-    # Find the requirements for each NS
+    # Find the details for each NS
+    pop_list = []
+    logger.debug(f"before ns_list = {ns_list}")
     for ns in ns_list:
         # Search the nsd collection in Mongo for the nsd
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
-        # Select NFVO - Assume that there is only one registered --> Fixed - select OSM based on nfvo- id and object storage database
-        nfvo_list = list(mongoUtils.index('nfvo'))
-        nfvo = pickle.loads(nfvo_list[0]['nfvo'])
-        osmUtils.bootstrapNfvo(nfvo)
+        if not nsd:
+            # Select NFVO - Assume that there is only one registered --> Fixed - select OSM based on nfvo- id and object storage database
+            nfvo_list = list(mongoUtils.index('nfvo'))
+            nfvo = pickle.loads(nfvo_list[0]['nfvo'])
+            osmUtils.bootstrapNfvo(nfvo)
+            nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
+            if not nsd and ns.get("optional", False):
+                pop_list.append(ns)
+            else:
+                # The ns is not optional and the nsd is not on the NFVO - stop and return
+                return
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
         ns["nsd-info"] = nsd
+    ns_list = [ns for ns in ns_list if ns not in pop_list]
 
-    logger.debug(f"ns_list = {ns_list}")
+    logger.debug(f"after ns_list = {ns_list}")
     return
 
     # Select the VIMs for each NS acording to location
+    vim_list = []
 
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
