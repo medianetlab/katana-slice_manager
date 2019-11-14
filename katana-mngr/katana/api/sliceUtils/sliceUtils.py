@@ -48,11 +48,33 @@ def do_work(nest):
     sst = mongoUtils.find("sst", find_data)
 
     # Make the NS and PNF list
-    ns_list = sst.get("ns_list", [])
+    # Initiate the lists
+    ns_list = sst.get("ns_list", []) + nest.get("ns_list", [])
     pnf_list = sst.get("pnf_list", [])
+    for_ems_list = []
+
+    # Get the NSs and PNFsfrom the supported sst
     for ns in ns_list:
-        if ns["placement"] == 1:
-            
+        if not ns["placement"]:
+            ns["placement"] = "core"
+        else:
+            ns["placement"] = new_nest["coverage"]
+        ems = ns.get("ems-id", None)
+        if ems:
+            for_ems_list.append({"type": "ns", "name": ns["ns-name"], "ip": [],
+                                 "location": ns["placement"], "ems": ems})
+
+    for pnf in pnf_list:
+        pdu = mongoUtils.find("pdu", {"id": pnf["pdu-id"]})
+        ems = pnf.get("ems-id", None)
+        if ems:
+            for_ems_list.append({"type": "pnf", "name": pnf["pnf-name"],
+                                 "ip": pdu["ip"], "location": pdu["location"],
+                                 "ems": ems})
+
+    logger.debug(f"ns_list = {ns_list}")
+    logger.debug(f"pnf_list = {pnf_list}")
+    logger.debug(f"for_ems_list = {for_ems_list}")
 
     return
     # Select NFVO - Assume that there is only one registered

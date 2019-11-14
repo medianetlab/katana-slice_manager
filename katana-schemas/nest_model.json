@@ -20,16 +20,34 @@
         "description": " The location name for each site in the slice"
       }
     },
-    "nsd_list": {
+    "ns_list": {
       "type": "array",
       "description": "List of the NSD to be instantiated alongside the slice",
       "items": {
         "type": "object",
         "description": "A NS",
         "properties":{
-          "nsd_id": {"type": "string"},
-          "placement": {"type": "string"},
-          "nfvo_id": {"type": "string"}
+          "nfvo-id":{
+            "type": "string",
+            "description": "The NFVO that will manage the life cycle of the NS"
+          },
+          "nsd-id": {
+            "type": "string",
+            "description": "The NSD id as defined on the NFVO"
+          },
+          "ns-name": {
+            "type": "string",
+            "description": "The name of the NS"
+          },
+          "placement": {
+            "type": "number",
+            "enum": [0, 1],
+            "description": "1: Core, 2: Edge"
+          },
+          "ems-id": {
+            "type": "string",
+            "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
+          }
         }
       }
     },

@@ -14,10 +14,18 @@
           "type": "string",
           "description": "The NSD id as defined on the NFVO"
         },
+        "ns-name": {
+          "type": "string",
+          "description": "The name of the NS"
+        },
         "placement": {
           "type": "number",
-          "enum": [1, 2],
+          "enum": [0, 1],
           "description": "1: Core, 2: Edge"
+        },
+        "ems-id": {
+          "type": "string",
+          "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
         },
         "optional":{
           "type": "boolean"
@@ -28,9 +36,13 @@
       "type": "object",
       "description": "A Physical Network Service",
       "properties": {
+        "ns-name": {
+          "type": "string",
+          "description": "The name of the PNF"
+        },
         "ems-id": {
           "type": "string",
-          "description": "The EMS that will manage the life cycle of the EMS"
+          "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
         },
         "pdu-id": {
           "type": "string",

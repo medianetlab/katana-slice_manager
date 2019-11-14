@@ -258,16 +258,30 @@
             "properties": {
                 "ns_des_id": {"type": "string"},
                 // # ***** NEST - by SM *****
-                "nsd_list": {
+                "ns_list": {
                     "type": "array",
                     "description": "List of the NSD to be instantiated alongside the slice",
                     "items": {
                         "type": "object",
                         "description": "A NS",
                         "properties":{
-                            "nsd_id": {"type": "string"},
-                            "placement": {"type": "string"},
-                            "nfvo_id": {"type": "string"}
+                            "nsd_id": {
+                                "type": "string",
+                                "description": "The onboarded NS descriptor"
+                            },
+                            "placement": {
+                                "type": "number",
+                                "enum": [0, 1],
+                                "description": "0: Core, 1: Edge"
+                            },
+                            "nfvo_id": {
+                                "type": "string",
+                                "description": "The NFVO responsible for the NS LCM"
+                            },
+                            "ems-id": {
+                                "type": "string",
+                                "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
+                            }
                         }
                     }
                 }
