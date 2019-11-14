@@ -72,11 +72,22 @@ def do_work(nest):
                                  "ip": pdu["ip"], "location": pdu["location"],
                                  "ems": ems})
 
-    logger.debug(f"ns_list = {ns_list}")
-    logger.debug(f"pnf_list = {pnf_list}")
-    logger.debug(f"for_ems_list = {for_ems_list}")
+    # Find the requirements for each NS
+    for ns in ns_list:
+        # Search the nsd collection in Mongo for the nsd
+        nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
+        # Select NFVO - Assume that there is only one registered --> Fixed - select OSM based on nfvo- id and object storage database
+        nfvo_list = list(mongoUtils.index('nfvo'))
+        nfvo = pickle.loads(nfvo_list[0]['nfvo'])
+        osmUtils.bootstrapNfvo(nfvo)
+        nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
+        ns["nsd-info"] = nsd
 
+    logger.debug(f"ns_list = {ns_list}")
     return
+
+    # Select the VIMs for each NS acording to location
+
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
     nfvo = pickle.loads(nfvo_list[0]['nfvo'])

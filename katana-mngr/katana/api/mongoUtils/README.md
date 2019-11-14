@@ -1,0 +1,4 @@
+# Mongo Collections
+
+* nsd
+* vnfd
