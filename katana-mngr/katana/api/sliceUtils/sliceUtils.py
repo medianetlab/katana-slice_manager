@@ -76,17 +76,22 @@ def do_work(nest):
     pop_list = []
     for ns in ns_list:
         # Search the nsd collection in Mongo for the nsd
-        logger.debug(mongoUtils.find("nsd"))
-        nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
+        nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"],
+                              "nfvo_id": ns["nfvo-id"]})
         if not nsd:
             # Bootstrap the NFVO to check for NSDs that are not in mongo
             # If again is not found, check if NS is optional.
             # If it is just remove it, else error
-            # TODO: Select NFVO - Assume that there is only one registered --> Fixed - select OSM based on nfvo- id and object storage database
-            nfvo_list = list(mongoUtils.index('nfvo'))
-            nfvo = pickle.loads(nfvo_list[0]['nfvo'])
+            nfvo_obj_json = mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})
+            if not nfvo_obj_json:
+                # ERROR HANDLING: There is no OSM for that ns - stop and return
+                logger.error("There is no NFVO with id {}"
+                             .format(ns["nfvo-id"]))
+                return
+            nfvo = pickle.loads(nfvo_obj_json["obj"])
             osmUtils.bootstrapNfvo(nfvo)
-            nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
+            nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"],
+                                  "nfvo_id": ns["nfvo-id"]})
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)
             else:
@@ -106,6 +111,7 @@ def do_work(nest):
             logger.debug(f"Get vim = {get_vim}")
             if not get_vim:
                 # ERROR HANDLING: There is no VIM at that location
+                logger.error("VIM not found")
                 return
             # TODO: Check the available resources and select vim
             # Temporary use the first element
@@ -114,7 +120,8 @@ def do_work(nest):
             if selected_vim not in vim_list:
                 vim_list.append(selected_vim)
 
-    
+    logger.debug(ns_list)
+    return
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
     nfvo = pickle.loads(nfvo_list[0]['nfvo'])
