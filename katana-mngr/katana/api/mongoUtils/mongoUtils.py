@@ -50,3 +50,8 @@ def find(collection_name, data={}):
 def find_all(collection_name, data={}):
     collection = db[collection_name]
     return collection.find(data)
+
+
+def delete_all(collection_name, data={}):
+    collection = db[collection_name]
+    return collection.delete_many(data)

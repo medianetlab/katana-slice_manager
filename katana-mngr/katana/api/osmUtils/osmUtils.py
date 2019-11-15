@@ -43,7 +43,8 @@ class Osm():
     Class implementing the communication API with OSM
     """
 
-    def __init__(self, ip, username, password, project_id="admin", timeout=5):
+    def __init__(self, nfvo_id, ip, username, password, project_id="admin",
+                 timeout=5):
         """
         Initialize an object of the class
         """
@@ -53,6 +54,7 @@ class Osm():
         self.project_id = project_id
         self.token = ""
         self.timeout = timeout
+        self.nfvo_id = nfvo_id
 
     def getToken(self):
         """
@@ -255,6 +257,7 @@ class Osm():
                         new_vnfd["flavor"]["storage-gb"] += int(
                             vdu["vm-flavor"]["storage-gb"])
                     new_vnfd["mgmt"] = osm_vnfd["mgmt-interface"]["cp"]
+                    new_vnfd["nfvo_id"] = self.nfvo_id
                     mongoUtils.add("vnfd", new_vnfd)
                     new_vnfd = {}
                 break
@@ -285,9 +288,9 @@ class Osm():
                             new_nsd["vim_networks"].append(
                                 vld["vim-network-name"])
                         except KeyError:
-                            print(f"No vim networks for {vld['id']}")
+                            logger.warning(f"No vim networks for {vld['id']}")
                         except e:
-                            print(e)
+                            logger.exception(e)
                     new_nsd["vnfd_list"] = []
                     new_nsd["flavor"] = {"memory-mb": 0,
                                          "vcpu-count": 0,
@@ -306,6 +309,7 @@ NFVO repository")
                                 reg_vnfd["flavor"]["vcpu-count"]
                             new_nsd["flavor"]["storage-gb"] +=\
                                 reg_vnfd["flavor"]["storage-gb"]
+                    new_nsd["nfvo_id"] = self.nfvo_id
                     mongoUtils.add("nsd", new_nsd)
                     new_nsd = {}
                 break

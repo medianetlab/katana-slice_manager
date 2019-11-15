@@ -1,9 +1,6 @@
-import os
 import requests
 import json
 import yaml
-import subprocess
-
 import click
 import datetime
 
@@ -27,12 +24,13 @@ def ls():
         r.raise_for_status()
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
-        #click.echo(json.dumps(json_data, indent=2))
+        # click.echo(json.dumps(json_data, indent=2))
         print(console_formatter("NFVO_ID", "CREATED AT", "TYPE"))
         for i in range(len(json_data)):
             print(console_formatter(
                 json_data[i]["_id"],
-                datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime('%Y-%m-%d %H:%M:%S'),
+                datetime.datetime.fromtimestamp(json_data[i]["created_at"])
+                .strftime('%Y-%m-%d %H:%M:%S'),
                 json_data[i]["type"]
                 )
             )
@@ -73,7 +71,8 @@ def inspect(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str, help='yaml file with NFVO details')
+@click.option('-f', '--file', required=True, type=str,
+              help='yaml file with NFVO details')
 def add(file):
     """
     Add new NFVO
@@ -122,7 +121,8 @@ def rm(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str, help='yaml file with NFVO details')
+@click.option('-f', '--file', required=True, type=str,
+              help='yaml file with NFVO details')
 @click.argument('id')
 def update(file, id):
     """
@@ -155,7 +155,7 @@ cli.add_command(rm)
 cli.add_command(update)
 
 
-def console_formatter(uuid,created_at,nfvotype):
+def console_formatter(uuid, created_at, nfvotype):
     return '{0: <40}{1: <25}{2: <20}'.format(
         uuid,
         created_at,

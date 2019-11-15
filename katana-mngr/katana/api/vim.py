@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import request
-from flask_classful import FlaskView, route
+from flask_classful import FlaskView
 from katana.api.openstackUtils import utils as openstackUtils
 from katana.api.opennebulaUtils import utils as opennebulaUtils
 from katana.api.mongoUtils import mongoUtils
@@ -10,8 +10,6 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
-import ast
-import base64
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -42,22 +40,25 @@ class VimView(FlaskView):
             return_data.append(dict(_id=ivim['_id'],
                                created_at=ivim['created_at'],
                                type=ivim['type']))
-        return dumps(return_data)
+        return dumps(return_data), 200
 
     # @route('/all/') #/vim/all
     def all(self):
         """
         Same with index(self) above, but returns all vim details
         """
-        return dumps(mongoUtils.index("vim"))
-
+        return dumps(mongoUtils.index("vim")), 200
 
     def get(self, uuid):
         """
         Returns the details of specific vim,
         used by: `katana vim inspect [uuid]`
         """
-        return dumps((mongoUtils.get("vim", uuid)))
+        data = (mongoUtils.get("vim", uuid))
+        if data:
+            return dumps(data), 200
+        else:
+            return "Not Found", 404
 
     def post(self):
         """
@@ -84,18 +85,13 @@ class VimView(FlaskView):
                 if new_vim.auth_error:
                     raise(AttributeError)
             except AttributeError as e:
-                response = dumps({'error': 'Openstack authorization failed.'})
+                response = dumps({'error': 'Openstack auth failed.'+e})
                 return response, 400
             else:
-                if (mongoUtils.count("wim") > 0):
-                    # Select WIM - Assume that there is only one registered
-                    wim_list = list(mongoUtils.index('wim'))
-                    wim = pickle.loads(wim_list[0]['wim'])
-                    wim.register_vim(request.json)
-                else:
-                    logger.warning('There is no registered WIM')
                 thebytes = pickle.dumps(new_vim)
-                request.json['vim'] = Binary(thebytes)
+                obj_json = {"_id": new_uuid, "id": request.json["id"],
+                            "obj": Binary(thebytes)}
+                mongoUtils.add("vim_obj", obj_json)
                 return mongoUtils.add("vim", request.json)
         elif request.json['type'] == "opennebula":
             try:
@@ -105,18 +101,13 @@ class VimView(FlaskView):
                                                      username=username,
                                                      password=password)
             except AttributeError as e:
-                response = dumps({'error': 'OpenNebula authorization failed.'})
+                response = dumps({'Error': 'OpenNebula auth failed.'+e})
                 return response, 400
             else:
-                if (mongoUtils.count("wim") > 0):
-                    # Select WIM - Assume that there is only one registered
-                    wim_list = list(mongoUtils.index('wim'))
-                    wim = pickle.loads(wim_list[0]['wim'])
-                    wim.register_vim(request.json)
-                else:
-                    logging.warning('There is no registered WIM\n')
                 thebytes = pickle.dumps(new_vim)
-                request.json['vim'] = Binary(thebytes)
+                obj_json = {"_id": new_uuid, "id": request.json["id"],
+                            "obj": Binary(thebytes)}
+                mongoUtils.add("vim_obj", obj_json)
                 return mongoUtils.add("vim", request.json)
         else:
             response = dumps({'error': 'This type VIM is not supported'})
@@ -127,31 +118,32 @@ class VimView(FlaskView):
         Delete a specific vim.
         used by: `katana vim rm [uuid]`
         """
+        # TODO: Check if there is anything running by this ems before delete
+        mongoUtils.delete("vim_obj", uuid)
         result = mongoUtils.delete("vim", uuid)
-        if result == 1:
-            return uuid
-        elif result == 0:
+        if result:
+            return "Deleted VIM {}".format(uuid), 200
+        else:
             # if uuid is not found, return error
-            return "Error: No such vim: {}".format(uuid)
+            return "Error: No such vim: {}".format(uuid), 404
 
     def put(self, uuid):
         """
         Update the details of a specific vim.
         used by: `katana vim update -f [yaml file] [uuid]`
         """
-        request.json['_id'] = uuid
+        # TODO: Validate what data should not change
+        data = request.json
+        data['_id'] = uuid
+        old_data = mongoUtils.get("vim", uuid)
 
-        """
-        Make binary data acceptable by Mongo
-          - REST api sends: 'vim': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
-        By decoding the base64 string and then using Binary() it works
-          - Inside Mongo  : "vim" : BinData(0,"gANja2F0YW5h....a base64 string...")
-        """
-        request.json['vim'] = Binary(base64.b64decode(request.json['vim']['$binary']))
-        result = mongoUtils.update("vim", uuid, request.json)
-
-        if result == 1:
-            return uuid
-        elif result == 0:
-            # if no object was modified, return error
-            return "Error: No such vim: {}".format(uuid)
+        if old_data:
+            data["created_at"] = old_data["created_at"]
+            mongoUtils.update("vim", uuid, data)
+            return f"Modified {uuid}", 200
+        else:
+            new_uuid = uuid
+            data = request.json
+            data['_id'] = new_uuid
+            data['created_at'] = time.time()  # unix epoch
+            return "Created " + str(mongoUtils.add('vim', data)), 201

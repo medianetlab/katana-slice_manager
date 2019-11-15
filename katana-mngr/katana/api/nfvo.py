@@ -43,23 +43,25 @@ class NFVOView(FlaskView):
             return_data.append(dict(_id=infvo['_id'],
                                created_at=infvo['created_at'],
                                type=infvo['type']))
-        return dumps(return_data)
-
+        return dumps(return_data), 200
 
     # @route('/all/') #/nfvo/all
     def all(self):
         """
         Same with index(self) above, but returns all nfvo details
         """
-        return dumps(mongoUtils.index("nfvo"))
-
+        return dumps(mongoUtils.index("nfvo")), 200
 
     def get(self, uuid):
         """
         Returns the details of specific nfvo,
         used by: `katana nfvo inspect [uuid]`
         """
-        return dumps((mongoUtils.get("nfvo", uuid)))
+        data = (mongoUtils.get("nfvo", uuid))
+        if data:
+            return dumps(data), 200
+        else:
+            return "Not Found", 404
 
     def post(self):
         """
@@ -76,7 +78,8 @@ class NFVOView(FlaskView):
             osm_password = request.json['nfvopassword']
             osm_ip = request.json['nfvoip']
             osm_project_name = request.json['tenantname']
-            osm = osmUtils.Osm(osm_ip, osm_username,
+            nfvo_id = request.json["id"]
+            osm = osmUtils.Osm(nfvo_id, osm_ip, osm_username,
                                osm_password, osm_project_name)
             try:
                 osm.getToken()
@@ -91,9 +94,12 @@ class NFVOView(FlaskView):
             else:
                 # Store the osm object to the mongo db
                 thebytes = pickle.dumps(osm)
-                request.json['nfvo'] = Binary(thebytes)
+                obj_json = {"_id": new_uuid, "id": request.json["id"],
+                            "obj": Binary(thebytes)}
+                mongoUtils.add('nfvo_obj', obj_json)
+                # Get information regarding VNFDs and NSDs
                 osmUtils.bootstrapNfvo(osm)
-                return mongoUtils.add("nfvo", request.json)
+                return mongoUtils.add("nfvo", request.json), 201
         else:
             response = dumps({'error': 'This type nfvo is not supported'})
             return response, 400
@@ -103,31 +109,35 @@ class NFVOView(FlaskView):
         Delete a specific nfvo.
         used by: `katana nfvo rm [uuid]`
         """
-        result = mongoUtils.delete("nfvo", uuid)
-        if result == 1:
-            return uuid
-        elif result == 0:
+        # TODO: Check if there is anything running by this ems before delete
+        del_nfvo = mongoUtils.find("nfvo", uuid)
+        if del_nfvo:
+            mongoUtils.delete("nfvo_obj", uuid)
+            mongoUtils.delete_all("nsd", {"nfvo_id": del_nfvo["id"]})
+            mongoUtils.delete_all("vnfd", {"nfvoid": del_nfvo["id"]})
+            mongoUtils.delete("nfvo", uuid)
+            return "Deleted NFVO {}".format(uuid), 200
+        else:
             # if uuid is not found, return error
-            return "Error: No such nfvo: {}".format(uuid)
+            return "Error: No such nfvo: {}".format(uuid), 404
 
     def put(self, uuid):
         """
         Update the details of a specific nfvo.
         used by: `katana nfvo update -f [yaml file] [uuid]`
         """
-        request.json['_id'] = uuid
-        
-        """
-        Make binary data acceptable by Mongo
-          - REST api sends: 'nfvo': {'$binary':'gANja2F0YW5h....a base64 string...', '$type': '00'} which is rejected when passed to Mongo
-        By decoding the base64 string and then using Binary() it works
-          - Inside Mongo  : "nfvo" : BinData(0,"gANja2F0YW5h....a base64 string...")
-        """
-        request.json['nfvo'] = Binary(base64.b64decode(request.json['nfvo']['$binary']))
-        result = mongoUtils.update("nfvo", uuid, request.json)
+        # TODO: Validate what data should not change
+        data = request.json
+        data['_id'] = uuid
+        old_data = mongoUtils.get("nfvo", uuid)
 
-        if result == 1:
-            return uuid
-        elif result == 0:
-            # if no object was modified, return error
-            return "Error: No such nfvo: {}".format(uuid)
+        if old_data:
+            data["created_at"] = old_data["created_at"]
+            mongoUtils.update("nfvo", uuid, data)
+            return f"Modified {uuid}", 200
+        else:
+            new_uuid = uuid
+            data = request.json
+            data['_id'] = new_uuid
+            data['created_at'] = time.time()  # unix epoch
+            return "Created " + str(mongoUtils.add('nfvo', data)), 201

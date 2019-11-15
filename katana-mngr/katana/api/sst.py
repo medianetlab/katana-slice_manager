@@ -58,6 +58,18 @@ class SstView(FlaskView):
         data['created_at'] = time.time()  # unix epoch
         return str(mongoUtils.add('sst', data)), 201
 
+    def delete(self, uuid):
+        """
+        Delete a specific sst.
+        used by: `katana sst rm [uuid]`
+        """
+        result = mongoUtils.delete("sst", uuid)
+        if result:
+            return "Deleted SST {}".format(uuid), 200
+        else:
+            # if uuid is not found, return error
+            return "Error: No such pdu: {}".format(uuid), 404
+
     def put(self, uuid):
         """
         Add or update a new supported sst.

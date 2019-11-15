@@ -68,7 +68,7 @@ class PduView(FlaskView):
         result = mongoUtils.delete("pdu", uuid)
         if result:
             return "Deleted PDU {}".format(uuid), 200
-        elif result == 0:
+        else:
             # if uuid is not found, return error
             return "Error: No such pdu: {}".format(uuid), 404
 

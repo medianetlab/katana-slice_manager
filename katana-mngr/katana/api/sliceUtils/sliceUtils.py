@@ -76,6 +76,7 @@ def do_work(nest):
     pop_list = []
     for ns in ns_list:
         # Search the nsd collection in Mongo for the nsd
+        logger.debug(mongoUtils.find("nsd"))
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
         if not nsd:
             # Bootstrap the NFVO to check for NSDs that are not in mongo

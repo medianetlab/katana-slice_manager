@@ -1,7 +1,6 @@
 import requests
 import json
 import yaml
-
 import click
 import datetime
 
