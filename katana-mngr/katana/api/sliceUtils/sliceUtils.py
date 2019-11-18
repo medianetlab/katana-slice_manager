@@ -63,15 +63,17 @@ def do_work(nest_req):
     # Get the NSs and PNFsfrom the supported sst
     for ns in ns_list:
         if not ns["placement"]:
-            ns["placement"] = ["core"]
+            ns["placement"] = [{"location": "core"}]
         else:
-            ns["placement"] = nest["coverage"]
+            ns["placement"] = []
+            for location in nest["coverage"]:
+                ns["placement"].append({"location": location})
         ems = ns.get("ems-id", None)
         if ems:
             ems_messages[ems] = ems_messages.get(ems, {"func_list": []})
             ems_messages[ems]["func_list"].append(
                 {"type": "ns", "name": ns["ns-name"], "ip": [],
-                 "location": ns["placement"]})
+                 "ns-placement": ns["placement"]})
 
     for pnf in pnf_list:
         pdu = mongoUtils.find("pdu", {"id": pnf["pdu-id"]})
@@ -81,7 +83,7 @@ def do_work(nest_req):
             ems_messages[ems] = ems_messages.get(ems, {"func_list": []})
             ems_messages[ems]["func_list"].append(
                 {"type": "pnf", "name": pnf["pnf-name"], "ip": [pdu["ip"]],
-                 "location": [pdu["location"]]})
+                 "pdu-location": pdu["location"]})
 
     # Find the details for each NS
     pop_list = []
@@ -118,8 +120,8 @@ OSM{ns['nfvo-id']}")
     # Select the VIMs for each NS acording to location
     for ns in ns_list:
         ns["vims"] = []
-        for location in ns["placement"]:
-            get_vim = list(mongoUtils.find_all('vim', {"location": location}))
+        for site in ns["placement"]:
+            get_vim = list(mongoUtils.find_all('vim', {"location": site["location"]}))
             if not get_vim:
                 # ERROR HANDLING: There is no VIM at that location
                 logger.error("VIM not found")
@@ -128,6 +130,7 @@ OSM{ns['nfvo-id']}")
             # Temporary use the first element
             selected_vim = get_vim[0]["id"]
             ns["vims"].append(selected_vim)
+            site["vim"] = selected_vim
             if selected_vim not in vim_list:
                 vim_list.append(selected_vim)
 
@@ -149,7 +152,7 @@ OSM{ns['nfvo-id']}")
     for ems in ems_messages.values():
         ems.update(ems_data)
 
-    nest["placement"] = {"ns_list": ns_list, "pnf_list": pnf_list}
+    nest["network functions"] = {"ns_list": ns_list, "pnf_list": pnf_list}
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
 
@@ -204,6 +207,9 @@ OSM{ns['nfvo-id']}")
                 # Register the tenant to the mongo db
                 target_nfvo["tenants"] = target_nfvo.get("tenants", [])
                 target_nfvo["tenants"].append({nest["_id"]: vim_id})
+                for site in ns["placement"]:
+                    if site["vim"] == vim:
+                        site["nfvo_vim"] = vim_id
 
     # *** STEP-2b: WAN ***
     if (mongoUtils.count('wim') <= 0):
@@ -228,7 +234,9 @@ OSM{ns['nfvo-id']}")
     logger.info("Status: Activation")
     # *** STEP-3a: Cloud ***
     # Instantiate NS
-    nest['deployment_time']['NS_Deployment_Time'] = {}
+    # nest['deployment_time']['NS_Deployment_Time'] = {}
+    # for ns in ns_list:
+    #     ns_start_time = time.time()
     # **************** HERE *******************************************************
     return
 
