@@ -68,7 +68,6 @@ class VimView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
-        request.json['tenants'] = {}
 
         # TODO implement authorizing VIM connection
         username = request.json['username']

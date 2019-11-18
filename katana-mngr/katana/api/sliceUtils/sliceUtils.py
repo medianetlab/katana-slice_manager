@@ -34,7 +34,8 @@ def do_work(nest_req):
     """
 
     # Recreate the NEST with None options where missiong
-    nest = {"_id": nest_req["_id"], "created_at": nest_req["created_at"]}
+    nest = {"_id": nest_req["_id"], "created_at": nest_req["created_at"],
+            "deployment_time": {}}
     for nest_key in NEST_KEYS_OBJ:
         nest[nest_key] = nest_req.get(nest_key, None)
     for nest_key in NEST_KEYS_LIST:
@@ -136,7 +137,6 @@ OSM{ns['nfvo-id']}")
     wim_data = {"network_DL_throughput": nest["network_DL_throughput"],
                 "network_UL_throughput": nest["network_UL_throughput"],
                 "mtu": nest["mtu"], "end_points": end_points}
-    # TODO: Should be more data for each EMS
     ems_data = {"ue_DL_throughput": nest["ue_DL_throughput"],
                 "ue_UL_throughput": nest["ue_UL_throughput"],
                 "group_communication_support":
@@ -149,95 +149,7 @@ OSM{ns['nfvo-id']}")
     for ems in ems_messages.values():
         ems.update(ems_data)
 
-    logger.debug(wim_data)
-    logger.debug(ems_messages)
-    return
-
-    # Select NFVO - Assume that there is only one registered
-    nfvo_list = list(mongoUtils.index('nfvo'))
-    nfvo = pickle.loads(nfvo_list[0]['nfvo'])
-
-    data = {"location": "core"}
-    get_vim = mongoUtils.find('vim', data=data)
-    default_vim = get_vim
-    vim_list = []
-    placement_list = {}
-    radio_nsd_list = []
-    new_ns_list = nest['nsi']['nsd-ref']
-    slice_name = nest['nsi']['name']
-    data = {"name": slice_name}
-    registered_service = mongoUtils.find('service', data=data)
-    if registered_service is not None:
-        registered_ns_list = registered_service['ns']
-        for new_ns in new_ns_list:
-            # Find the NS in the NFVO NSs
-            data = {"id": new_ns["id"]}
-            nsd = mongoUtils.find("nsd", data)
-            if not nsd:
-                osmUtils.bootstrapNfvo(nfvo)
-                nsd = mongoUtils.find("nsd", data)
-                if not nsd:
-                    logger.error(f"NSd {new_ns['id']} was not found in the\
-NFVO. Deleting slice")
-                    delete_slice(nest)
-                    return "Error: NSD was not found int the NFVO"
-            try:
-                logger.debug(new_ns["radio"])
-                if new_ns["radio"]:
-                    radio_nsd_list.append(new_ns["name"])
-            except KeyError:
-                logger.debug("No radio for this NS")
-            placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
-                                              "vim_net": nsd["vim_networks"]}
-            # Find the NS in the registered NSs
-            registered_ns_index = next((index for (index, d) in
-                                       enumerate(registered_ns_list) if
-                                       d["name"] == new_ns["name"]),
-                                       None)
-            if registered_ns_index is None:
-                logger.warning("Network Service {0} isn't registered.\
-                Will be placed at the default core NFVI".format(
-                    new_ns["name"]))
-                selected_vim = default_vim
-                placement_list[new_ns["name"]]["vim"] = selected_vim["_id"]
-            else:
-                vim_location =\
-                    registered_ns_list[registered_ns_index]['location']
-                data = {"location": vim_location}
-                get_vim = mongoUtils.find('vim', data=data)
-                selected_vim = get_vim
-                placement_list[new_ns["name"]]["vim"] = selected_vim["_id"]
-            if selected_vim["_id"] not in vim_list:
-                vim_list.append(selected_vim["_id"])
-    else:
-        logger.warning('There are no registered slice services. All \
-Network services will be placed on the default core NFVI and no network graph \
-will be created')
-        for new_ns in new_ns_list:
-            # Find the NS in the NFVO NSs
-            data = {"id": new_ns["id"]}
-            nsd = mongoUtils.find("nsd", data)
-            if not nsd:
-                osmUtils.bootstrapNfvo(nfvo)
-                nsd = mongoUtils.find("nsd", data)
-                if not nsd:
-                    logger.error(f"NSd {new_ns['id']} was not found in the\
-                        NFVO. Deleting slice")
-                    delete_slice(nest)
-                    return "Error: NSD was not found int the NFVO"
-            try:
-                if new_ns["radio"]:
-                    radio_nsd_list.append(new_ns["name"])
-            except KeyError:
-                pass
-            placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
-                                              "vim_net": nsd["vim_networks"]}
-            placement_list[new_ns["name"]]["vim"] = default_vim["_id"]
-        vim_list.append(default_vim["_id"])
-
-    nest["vim_list"] = vim_list
-    nest["placement"] = placement_list
-    # TODO:Create the network graph
+    nest["placement"] = {"ns_list": ns_list, "pnf_list": pnf_list}
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
 
@@ -248,10 +160,11 @@ will be created')
     prov_start_time = time.time()
 
     # *** STEP-2a: Cloud ***
-    # Create a new tenant/project on every VIM used in the placement
-    nfvo_vim_id_dict = {}
-    for num, ivim in enumerate(vim_list):
-        # STEP-2a-i: openstack prerequisites
+    # *** STEP-2a-i: Create the new tenant/project on the VIM ***
+    for num, vim in enumerate(vim_list):
+        target_vim = mongoUtils.find("vim", {"id": vim})
+        target_vim_obj = pickle.loads(
+            mongoUtils.find("vim_obj", {"id": vim})["obj"])
         # Define project parameters
         tenant_project_name = 'vim_{0}_katana_{1}'.format(
             num, nest['_id'])
@@ -260,12 +173,7 @@ will be created')
         tenant_project_user = 'vim_{0}_katana_{1}'.format(
             num, nest['_id'])
         tenant_project_password = 'password'
-
-        # Create the project on the NFVi
-        selected_vim = mongoUtils.get("vim", ivim)
-
-        ivim_obj = pickle.loads(selected_vim["vim"])
-        ids = ivim_obj.create_slice_prerequisites(
+        ids = target_vim_obj.create_slice_prerequisites(
             tenant_project_name,
             tenant_project_description,
             tenant_project_user,
@@ -273,22 +181,29 @@ will be created')
             nest['_id']
         )
         # Register the tenant to the mongo db
-        selected_vim["tenants"][nest["_id"]] = ids
-        mongoUtils.update("vim", ivim, selected_vim)
+        target_vim["tenants"] = target_vim.get("tenants", [])
+        target_vim["tenants"].append({nest["_id"]: tenant_project_name})
 
-        if selected_vim["type"] == "openstack":
+        # STEP-2a-ii: Αdd the new VIM tenant to NFVO
+        if target_vim["type"] == "openstack":
             # Update the config parameter for the tenant
             config_param = dict(security_groups=ids["secGroupName"])
-        elif selected_vim["type"] == "opennebula":
+        elif target_vim["type"] == "opennebula":
             config_param = selected_vim['config']
 
-        # STEP-2a-ii: add VIM to NFVO
-        nfvo_vim_id_dict[ivim] = nfvo.addVim(
-            tenant_project_name, selected_vim['password'],
-            selected_vim['type'], selected_vim['auth_url'],
-            selected_vim['username'],
-            config_param)
-    nest["nfvo_vim_id"] = nfvo_vim_id_dict
+        for ns in ns_list:
+            if vim in ns["vims"]:
+                target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+                target_nfvo_obj = pickle.loads(
+                    mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+                vim_id = target_nfvo_obj.addVim(
+                    tenant_project_name, target_vim['password'],
+                    target_vim['type'], target_vim['auth_url'],
+                    target_vim['username'],
+                    config_param)
+                # Register the tenant to the mongo db
+                target_nfvo["tenants"] = target_nfvo.get("tenants", [])
+                target_nfvo["tenants"].append({nest["_id"]: vim_id})
 
     # *** STEP-2b: WAN ***
     if (mongoUtils.count('wim') <= 0):
@@ -297,28 +212,25 @@ will be created')
         wan_start_time = time.time()
         # Select WIM - Assume that there is only one registered
         wim_list = list(mongoUtils.index('wim'))
-        wim = pickle.loads(wim_list[0]['wim'])
-
-        # Create the WAN Slice Descriptor
-        wsd = {}
-        wsd['services-segment'] = []
-        try:
-            services = nest["nsi"]["wim-ref"]["services-segment"]
-        except Exception:
-            logger.warning("There are no services on the slice descriptor")
-        else:
-            for service in services:
-                wsd["services-segment"].append(service)
-        wsd['topology'] = nest['nsi']['wim-ref']['topology']
-        wsd['bidirectional'] = nest['nsi']['wim-ref']['bidirectional']
-        wsd['link_params'] = nest['nsi']['wim-ref']['link_params']
-        # TODO Add the intermediate VIMs
-        # Create the WAN Slice
-        wim.create_slice(wsd)
+        target_wim = wim_list[0]
+        target_wim_id = target_wim["id"]
+        target_wim_obj = pickle.loads(
+            mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
+        target_wim_obj.create_slice(wim_data)
         nest['deployment_time']['WAN_Deployment_Time'] =\
             format(time.time() - wan_start_time, '.4f')
     nest['deployment_time']['Provisioning_Time'] =\
         format(time.time() - prov_start_time, '.4f')
+
+    # **** STEP-3: Activation ****
+    nest['status'] = 'Activation'
+    mongoUtils.update("slice", nest['_id'], nest)
+    logger.info("Status: Activation")
+    # *** STEP-3a: Cloud ***
+    # Instantiate NS
+    nest['deployment_time']['NS_Deployment_Time'] = {}
+    # **************** HERE *******************************************************
+    return
 
     # **** STEP-3: Activation ****
     nest['status'] = 'Activation'
