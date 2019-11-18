@@ -52,7 +52,7 @@
         }
       }
     },
-// Will be used for the extra Network Service Creation
+// Will be used for the extra Network Service Creation - Done
 // ****************************************************************************
     "shared": {
       "type": "object",
@@ -70,7 +70,7 @@
         }
       }
     },
-// Currently nothing - will be used later for sharing
+// Currently nothing - will be used later for sharing - TBI in future release
 // *****************************************************************************
     "network_DL_throughput": {
       "type": "object",
@@ -128,26 +128,26 @@
         }
       }
     },
-// Will be forwared to WIM/EMS
+// Will be forwared to WIM/EMS - Done
 // *****************************************************************************
     "group_communication_support": {
       "type": "number",
       "enum": [0, 1, 2, 3],
       "description": "0: not available 1: Single Cell Point to Multipoint (SCPTM) 2: Broadcast/Multicast 3: Broadcast/Multicast + SC-PTM"
     },
-// Will be forwared to EMS
+// Will be forwared to EMS - Done
 // *****************************************************************************
     "mtu": {
       "type": "number",
       "description": "Bytes"
     },
-// Will be forwared to WIM
+// Will be forwared to WIM - Done
 // *****************************************************************************
     "number_of_terminals": {
       "type": "number",
       "description": "This attribute describes the maximum number of concurrent terminals supported by the network slice."
     },
-// Will be forwared to EMS
+// Will be forwared to EMS - Done
 // *****************************************************************************
     "positional_support": {
       "type": "object",
@@ -172,7 +172,7 @@
         }
       }
     },
-// Will be forwared to EMS
+// Will be forwared to EMS - Done
 // *****************************************************************************
     "radio_spectrum": {
       "type": "array",
@@ -182,20 +182,20 @@
         "description": "This attribute simply tells which frequencies can be used to access the network slice. Example: n1, n77, n38"
       }
     },
-// Will be forwared to EMS
+// Will be forwared to EMS - Done
 // *****************************************************************************
     "device_velocity": {
       "type": "number",
       "enum": [1, 2, 3, 4],
       "description": "1: Stationary: 0 km/h 2: Pedestrian: 0 km/h to 10 km/h 3: Vehicular: 10 km/h to 120 km/h 4: High speed vehicular: 120 km/h to 500 km/h"
     },
-// Will be forwared to EMS
+// Will be forwared to EMS - Done
 // *****************************************************************************
     "terminal_density": {
       "type": "number",
       "description": "maximum number of connected and/or accessible devices per unit area (per km2) supported by the network slice [Number/km^2]"
     },
-// Will be forwared to EMS
+// Will be forwared to EMS - Done
 // *****************************************************************************
     "probe_list": {
       "type": "array",

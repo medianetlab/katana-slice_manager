@@ -83,7 +83,7 @@ class SliceView(FlaskView):
         # https://stackoverflow.com/questions/48994440/execute-a-function-after-flask-returns-response
         # might be replaced with Celery...
 
-        thread = Thread(target=sliceUtils.do_work, kwargs={'nest':
+        thread = Thread(target=sliceUtils.do_work, kwargs={'nest_req':
                                                            request.json})
         thread.start()
 

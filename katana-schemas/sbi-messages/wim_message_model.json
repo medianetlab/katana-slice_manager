@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+
+  "type": "object",
+  "description": "Schema of the message from Katana to WIM",
+  "properties": {
+    "network_DL_throughput": {
+      "type": "object",
+      "description": "The achievable data rate in downlink for the whole network slice (and not per user).",
+      "properties": {
+        "guaranteed": {
+          "type": "number",
+          "description": "kbps"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "kbps"
+        }
+      }
+    },
+    "network_UL_throughput": {
+      "type": "object",
+      "description": "The achievable data rate in uplink for the whole network slice (and not per user).",
+      "properties": {
+        "guaranteed": {
+          "type": "number",
+          "description": "kbps"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "kbps"
+        }
+      }
+    },
+    "mtu": {
+      "type": "number",
+      "description": "Bytes"
+    },
+    "end_points": {
+      "type": "object",
+      "description": "The physical nodes that are part of the slice and must be interconnected",
+      "properties":{
+        "vims":{
+          "type": "array",
+          "description": "A list of VIMS that are part of the slice",
+          "items":{
+            "type": "string",
+            "description": "VIM id"
+          }
+        },
+        "pdus":{
+          "type": "array",
+          "description": "A list of PDUs that are part of the slice",
+          "items":{
+            "type": "string",
+            "description": "PDU id"
+          }
+        },
+        "probes":{
+          "type": "array",
+          "description": "A list of probes that are part of the slice",
+          "items":{
+            "type": "string",
+            "description": "Probe id"
+          }
+        }
+      }
+    }
+  }
+}

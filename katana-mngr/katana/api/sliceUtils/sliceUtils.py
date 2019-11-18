@@ -19,18 +19,26 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-NEST_KEYS = ("sst", "sd", "coverage", "nsd_list", "shared",
-             "network_DL_throughput", "ue_DL_throughput",
-             "network_UL_throughput", "ue_UL_throughput",
-             "group_communication_support", "mtu", "number_of_terminals",
-             "positional_support", "radio_spectrum", "device_velocity",
-             "terminal_density", "probe_list")
+NEST_KEYS_OBJ = ("sst", "sd", "shared", "network_DL_throughput",
+                 "ue_DL_throughput", "network_UL_throughput",
+                 "ue_UL_throughput", "group_communication_support", "mtu",
+                 "number_of_terminals", "positional_support",
+                 "device_velocity", "terminal_density")
+
+NEST_KEYS_LIST = ("coverage", "ns_list", "radio_spectrum", "probe_list")
 
 
-def do_work(nest):
+def do_work(nest_req):
     """
     Creates the network slice
     """
+
+    # Recreate the NEST with None options where missiong
+    nest = {"_id": nest_req["_id"], "created_at": nest_req["created_at"]}
+    for nest_key in NEST_KEYS_OBJ:
+        nest[nest_key] = nest_req.get(nest_key, None)
+    for nest_key in NEST_KEYS_LIST:
+        nest[nest_key] = nest_req.get(nest_key, [])
 
     # **** STEP-1: Placement ****
     nest['status'] = 'Placement'
@@ -38,39 +46,41 @@ def do_work(nest):
     logger.info("Status: Placement")
     placement_start_time = time.time()
 
-    # Recreate the NEST with None options where missiong
-    new_nest = {}
-    for nest_key in NEST_KEYS:
-        new_nest[nest_key] = nest.get(nest_key, None)
-
     # Find the supported sst based on the sst and the sd value (if defined)
-    find_data = {"sst": new_nest["sst"], "sd": new_nest["sd"]}
+    find_data = {"sst": nest["sst"], "sd": nest["sd"]}
     sst = mongoUtils.find("sst", find_data)
 
     # Make the NS and PNF list
     # Initiate the lists
     ns_list = sst.get("ns_list", []) + nest.get("ns_list", [])
     pnf_list = sst.get("pnf_list", [])
+    ems_messages = {}
     for_ems_list = []
+    vim_list = []
+    pdu_list = []
 
     # Get the NSs and PNFsfrom the supported sst
     for ns in ns_list:
         if not ns["placement"]:
             ns["placement"] = ["core"]
         else:
-            ns["placement"] = new_nest["coverage"]
+            ns["placement"] = nest["coverage"]
         ems = ns.get("ems-id", None)
         if ems:
-            for_ems_list.append({"type": "ns", "name": ns["ns-name"], "ip": [],
-                                 "location": ns["placement"], "ems": ems})
+            ems_messages[ems] = ems_messages.get(ems, {"func_list": []})
+            ems_messages[ems]["func_list"].append(
+                {"type": "ns", "name": ns["ns-name"], "ip": [],
+                 "location": ns["placement"]})
 
     for pnf in pnf_list:
         pdu = mongoUtils.find("pdu", {"id": pnf["pdu-id"]})
+        pdu_list.append(pdu["id"])
         ems = pnf.get("ems-id", None)
         if ems:
-            for_ems_list.append({"type": "pnf", "name": pnf["pnf-name"],
-                                 "ip": pdu["ip"], "location": pdu["location"],
-                                 "ems": ems})
+            ems_messages[ems] = ems_messages.get(ems, {"func_list": []})
+            ems_messages[ems]["func_list"].append(
+                {"type": "pnf", "name": pnf["pnf-name"], "ip": [pdu["ip"]],
+                 "location": [pdu["location"]]})
 
     # Find the details for each NS
     pop_list = []
@@ -95,33 +105,54 @@ def do_work(nest):
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)
             else:
-                # ERROR HANDLING: The ns is not optional and the nsd is not on the NFVO - stop and return
-                logger.error("NSD not found")
+                # ERROR HANDLING: The ns is not optional and the nsd is not
+                # on the NFVO - stop and return
+                logger.error(f"NSD {ns['nsd-id']} not found on\
+OSM{ns['nfvo-id']}")
                 return
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
         ns["nsd-info"] = nsd
     ns_list = [ns for ns in ns_list if ns not in pop_list]
 
     # Select the VIMs for each NS acording to location
-    vim_list = []
     for ns in ns_list:
         ns["vims"] = []
         for location in ns["placement"]:
             get_vim = list(mongoUtils.find_all('vim', {"location": location}))
-            logger.debug(f"Get vim = {get_vim}")
             if not get_vim:
                 # ERROR HANDLING: There is no VIM at that location
                 logger.error("VIM not found")
                 return
             # TODO: Check the available resources and select vim
             # Temporary use the first element
-            selected_vim = get_vim[0]
+            selected_vim = get_vim[0]["id"]
             ns["vims"].append(selected_vim)
             if selected_vim not in vim_list:
                 vim_list.append(selected_vim)
 
-    logger.debug(ns_list)
+    # Create the information for the EMS, WIM MON
+    end_points = {"vims": vim_list, "pdus": pdu_list,
+                  "probes": nest["probe_list"]}
+    wim_data = {"network_DL_throughput": nest["network_DL_throughput"],
+                "network_UL_throughput": nest["network_UL_throughput"],
+                "mtu": nest["mtu"], "end_points": end_points}
+    # TODO: Should be more data for each EMS
+    ems_data = {"ue_DL_throughput": nest["ue_DL_throughput"],
+                "ue_UL_throughput": nest["ue_UL_throughput"],
+                "group_communication_support":
+                nest["group_communication_support"],
+                "number_of_terminals": nest["number_of_terminals"],
+                "positional_support": nest["positional_support"],
+                "radio_spectrum": nest["radio_spectrum"],
+                "device_velocity": nest["device_velocity"],
+                "terminal_density": nest["terminal_density"]}
+    for ems in ems_messages.values():
+        ems.update(ems_data)
+
+    logger.debug(wim_data)
+    logger.debug(ems_messages)
     return
+
     # Select NFVO - Assume that there is only one registered
     nfvo_list = list(mongoUtils.index('nfvo'))
     nfvo = pickle.loads(nfvo_list[0]['nfvo'])
