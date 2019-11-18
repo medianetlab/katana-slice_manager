@@ -234,9 +234,34 @@ OSM{ns['nfvo-id']}")
     logger.info("Status: Activation")
     # *** STEP-3a: Cloud ***
     # Instantiate NS
-    # nest['deployment_time']['NS_Deployment_Time'] = {}
-    # for ns in ns_list:
-    #     ns_start_time = time.time()
+    nest['deployment_time']['NS_Deployment_Time'] = {}
+    for ns in ns_list:
+        ns_start_time = time.time()
+        target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+        target_nfvo_obj = pickle.loads(
+            mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+        for site in ns["placement"]:
+            nfvo_inst_ns = target_nfvo_obj.instantiateNs(
+                ns["ns-name"],
+                ns["nsd-id"],
+                site["nfvo_vim"]
+            )
+            site["nfvo_inst_ns"] = nfvo_inst_ns
+
+    # Get the nsr for each service and wait for the activation
+    for ns in ns_list:
+        target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+        target_nfvo_obj = pickle.loads(
+            mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+        for site in ns["placement"]:
+            insr = target_nfvo_obj.getNsr(site["nfvo_inst_ns"])
+            while (insr["operational-status"] != "running" or
+                   insr["config-status"] != "configured"):
+                time.sleep(10)
+                insr = target_nfvo_obj.getNsr(site["nfvo_inst_ns"])
+            nest['deployment_time']['NS_Deployment_Time'][ns['ns-name']] =\
+                format(time.time() - ns_start_time, '.4f')
+            logger.debug("{} IS RUNNING".format(site))
     # **************** HERE *******************************************************
     return
 
