@@ -75,3 +75,9 @@ class Wim():
             logger.exception("Timeout Error:", errt)
         except requests.exceptions.RequestException as err:
             logger.exception("Error:", err)
+
+    def del_slice(self, wsd):
+        """
+        Delete the transport network slice
+        """
+        logger.info("Deleting Transport Network Slice")

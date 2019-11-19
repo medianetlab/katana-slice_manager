@@ -53,3 +53,9 @@ class Ems():
             logger.exception("Timeout Error:", errt)
         except requests.exceptions.RequestException as err:
             logger.exception("Error:", err)
+
+    def del_slice(self, emsd):
+        """
+        Delete a configured radio slice
+        """
+        logger.info("Deleting Radio Slice Configuration")

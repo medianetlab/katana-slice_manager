@@ -315,3 +315,30 @@ NFVO repository")
                 break
             else:
                 self.getToken()
+
+    # def checkNsLife(self, nsId):
+    #     """
+    #     Checks if an NS is running
+    #     """
+    #     osm_url = f"https://{self.ip}:9999/osm/nslcm/v1/ns_instances/{nsId}"
+    #     # Get the NSR from NS ID in json format
+    #     while True:
+    #         headers = {
+    #             'Content-Type': 'application/json',
+    #             'Accept': 'application/json',
+    #             'Authorization': f'Bearer {self.token}',
+    #         }
+    #         response = requests.get(osm_url, headers=headers, verify=False)
+    #         if (response.status_code != 401):
+    #             status = response.json()
+    #             break
+    #         else:
+    #             self.getToken()
+    #     return (nsr)
+
+    # def getVnfrId(self, nsr):
+    #     """
+    #     Retrieve list of VNFrIDS from NSR
+    #     """
+    #     vnfrId_list = nsr['constituent-vnfr-ref']
+    #     return (vnfrId_list)

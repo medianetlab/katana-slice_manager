@@ -146,7 +146,7 @@ OSM{ns['nfvo-id']}")
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
 
-    # **** STEP-2: Provisioning ****
+    # **** STEP-2: Resource Provisioning ****
     nest['status'] = 'Provisioning'
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Provisioning")
@@ -176,7 +176,7 @@ OSM{ns['nfvo-id']}")
         # Register the tenant to the mongo db
         target_vim["tenants"] = target_vim.get("tenants", [])
         target_vim["tenants"].append({nest["_id"]: tenant_project_name})
-        mongoUtils.update("vim", target_vim[_id], target_vim)
+        mongoUtils.update("vim", target_vim["_id"], target_vim)
 
         # STEP-2a-ii: Αdd the new VIM tenant to NFVO
         if target_vim["type"] == "openstack":
@@ -198,7 +198,7 @@ OSM{ns['nfvo-id']}")
                 # Register the tenant to the mongo db
                 target_nfvo["tenants"] = target_nfvo.get("tenants", [])
                 target_nfvo["tenants"].append({nest["_id"]: vim_id})
-                mongoUtils.update("nfvo", target_nfvo[_id], target_nfvo)
+                mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
                 for site in ns["placement"]:
                     if site["vim"] == vim:
                         site["nfvo_vim"] = vim_id
@@ -215,15 +215,16 @@ OSM{ns['nfvo-id']}")
         target_wim_obj = pickle.loads(
             mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
         target_wim_obj.create_slice(wim_data)
+        nest["wim_data"] = wim_data
         target_wim["slice"] = target_wim.get("slice", [])
-        target_wim["slice"].append({nest[_id]: end_points})
-        mongoUtils.update("wim", target_wim[_id], target_wim)
+        target_wim["slice"].append({nest["_id"]: end_points})
+        mongoUtils.update("wim", target_wim["_id"], target_wim)
         nest['deployment_time']['WAN_Deployment_Time'] =\
             format(time.time() - wan_start_time, '.4f')
     nest['deployment_time']['Provisioning_Time'] =\
         format(time.time() - prov_start_time, '.4f')
 
-    # **** STEP-3: Activation ****
+    # **** STEP-3: Slice Activation Phase****
     nest['status'] = 'Activation'
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Activation")
@@ -268,7 +269,7 @@ OSM{ns['nfvo-id']}")
 
     mongoUtils.update("slice", nest['_id'], nest)
 
-    # *** STEP-3b: Radio ***
+    # *** STEP-3b: Radio Slice Configuration ***
     if (mongoUtils.count('ems') <= 0):
         logger.warning('There is no registered EMS')
     else:
@@ -305,7 +306,7 @@ OSM{ns['nfvo-id']}")
             # Find the EMS
             target_ems = mongoUtils.find("ems", {"id": ems_id})
             if not target_ems:
-                # ERROR HANDLING: There is no VIM at that location
+                # ERROR HANDLING: There is no such EMS
                 logger.error("EMS {} not found - No configuration".
                              format(ems_id))
                 continue
@@ -314,6 +315,7 @@ OSM{ns['nfvo-id']}")
             ems_message.update(ems_data)
             # Send the message
             ems.conf_radio(ems_message)
+        nest["ems_data"] = ems_messages
         nest['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
 
@@ -335,36 +337,83 @@ def delete_slice(slice_json):
     mongoUtils.update("slice", slice_json['_id'], slice_json)
     logger.info("Status: Terminating")
 
-    # Select NFVO - Assume that there is only one registered
-    nfvo_list = list(mongoUtils.index('nfvo'))
-    nfvo = pickle.loads(nfvo_list[0]['nfvo'])
+    # *** Step-1: Radio Slice Configuration ***
+    ems_messages = slice_json.get("ems_data", None)
+    if ems_messages:
+        for ems_id, ems_message in ems_messages.items():
+            # Find the EMS
+            target_ems = mongoUtils.find("ems", {"id": ems_id})
+            if not target_ems:
+                # ERROR HANDLING: There is no such EMS
+                logger.error("EMS {} not found - No configuration".
+                             format(ems_id))
+                continue
+            target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
+            ems.del_radio(ems_message)
 
-    # Stop all the Network Services
-    try:
-        for ins_name, ins_id in slice_json["running_ns"].items():
-            nfvo.deleteNs(ins_id)
+    # *** Step-2: WAN Slice ***
+    wim_data = slice_json.get("wim_data", None)
+    if wim_data:
+        # Select WIM - Assume that there is only one registered
+        wim_list = list(mongoUtils.index('wim'))
+        target_wim = wim_list[0]
+        target_wim_id = target_wim["id"]
+        target_wim_obj = pickle.loads(
+            mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
+        target_wim_obj.del_slice(wim_data)
+        target_wim["slice"] = [_slice for _slice in target_wim["slice"] if
+                               _slice != wim_data]
 
-        time.sleep(15)
+    # *** Step-3: Cloud ***
+    # ns_list = slice_json["network functions"]["ns_list"]
+    # remove_vims = {}
+    # for ns in ns_list:
+    #     # Get the NFVO
+    #     nfvo_id = ns["nfvo-id"]
+    #     target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+    #     target_nfvo_obj = pickle.loads(
+    #         mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+    #     # Stop the NS
+    #     for site in ns["placement"]:
+    #         target_nfvo_obj.deleteNs(site["nfvo_inst_ns"])
+    #         remove_vims["nfvo_id"] = remove_vims.get("nfvo_id", [])
+    #         remove_vims["nfvo_id"].append(site["nfvo_vim"])
+    #         while True:
+    #             target_nfvo_obj.getNsr(site["nfvo_inst_ns"])
 
-        for ivim in slice_json["vim_list"]:
-            # Remove vims from the nfvo
-            nfvo_vim_id = slice_json["nfvo_vim_id"][ivim]
-            nfvo.deleteVim(nfvo_vim_id)
-            # Delete VIM Project, user and Security group
-            selected_vim = mongoUtils.get("vim", ivim)
-            ivim_obj = pickle.loads(selected_vim["vim"])
-            slice_id = slice_json["_id"]
-            ivim_obj.delete_proj_user(selected_vim["tenants"]
-                                      [slice_json["_id"]])
-            # Remove the tenant from the registered vim
-            selected_vim["tenants"].pop(slice_json["_id"])
-            mongoUtils.update("vim", ivim, selected_vim)
-    except KeyError:
-        logger.info("No running services")
 
-    result = mongoUtils.delete("slice", slice_json["_id"])
-    if result == 1:
-        return slice_json["_id"]
-    elif result == 0:
-        return 'Error: Slice with slice_json["_id"]: {} could not be deleted'.\
-            format(slice_json["_id"])
+    # return
+    # #**************************************************************************************** HERE *********************************************************8
+    # # Select NFVO - Assume that there is only one registered
+    # nfvo_list = list(mongoUtils.index('nfvo'))
+    # nfvo = pickle.loads(nfvo_list[0]['nfvo'])
+
+    # # Stop all the Network Services
+    # try:
+    #     for ins_name, ins_id in slice_json["running_ns"].items():
+    #         nfvo.deleteNs(ins_id)
+
+    #     time.sleep(15)
+
+    #     for ivim in slice_json["vim_list"]:
+    #         # Remove vims from the nfvo
+    #         nfvo_vim_id = slice_json["nfvo_vim_id"][ivim]
+    #         nfvo.deleteVim(nfvo_vim_id)
+    #         # Delete VIM Project, user and Security group
+    #         selected_vim = mongoUtils.get("vim", ivim)
+    #         ivim_obj = pickle.loads(selected_vim["vim"])
+    #         slice_id = slice_json["_id"]
+    #         ivim_obj.delete_proj_user(selected_vim["tenants"]
+    #                                   [slice_json["_id"]])
+    #         # Remove the tenant from the registered vim
+    #         selected_vim["tenants"].pop(slice_json["_id"])
+    #         mongoUtils.update("vim", ivim, selected_vim)
+    # except KeyError:
+    #     logger.info("No running services")
+
+    # result = mongoUtils.delete("slice", slice_json["_id"])
+    # if result == 1:
+    #     return slice_json["_id"]
+    # elif result == 0:
+    #     return 'Error: Slice with slice_json["_id"]: {} could not be deleted'.\
+    #         format(slice_json["_id"])
