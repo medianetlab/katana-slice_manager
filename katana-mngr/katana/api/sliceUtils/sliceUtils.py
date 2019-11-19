@@ -141,17 +141,6 @@ OSM{ns['nfvo-id']}")
     wim_data = {"network_DL_throughput": nest["network_DL_throughput"],
                 "network_UL_throughput": nest["network_UL_throughput"],
                 "mtu": nest["mtu"], "end_points": end_points}
-    ems_data = {"ue_DL_throughput": nest["ue_DL_throughput"],
-                "ue_UL_throughput": nest["ue_UL_throughput"],
-                "group_communication_support":
-                nest["group_communication_support"],
-                "number_of_terminals": nest["number_of_terminals"],
-                "positional_support": nest["positional_support"],
-                "radio_spectrum": nest["radio_spectrum"],
-                "device_velocity": nest["device_velocity"],
-                "terminal_density": nest["terminal_density"]}
-    for ems in ems_messages.values():
-        ems.update(ems_data)
 
     nest["network functions"] = {"ns_list": ns_list, "pnf_list": pnf_list}
     nest['deployment_time']['Placement_Time'] = format(
@@ -187,6 +176,7 @@ OSM{ns['nfvo-id']}")
         # Register the tenant to the mongo db
         target_vim["tenants"] = target_vim.get("tenants", [])
         target_vim["tenants"].append({nest["_id"]: tenant_project_name})
+        mongoUtils.update("vim", target_vim[_id], target_vim)
 
         # STEP-2a-ii: Αdd the new VIM tenant to NFVO
         if target_vim["type"] == "openstack":
@@ -208,6 +198,7 @@ OSM{ns['nfvo-id']}")
                 # Register the tenant to the mongo db
                 target_nfvo["tenants"] = target_nfvo.get("tenants", [])
                 target_nfvo["tenants"].append({nest["_id"]: vim_id})
+                mongoUtils.update("nfvo", target_nfvo[_id], target_nfvo)
                 for site in ns["placement"]:
                     if site["vim"] == vim:
                         site["nfvo_vim"] = vim_id
@@ -224,6 +215,9 @@ OSM{ns['nfvo-id']}")
         target_wim_obj = pickle.loads(
             mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
         target_wim_obj.create_slice(wim_data)
+        target_wim["slice"] = target_wim.get("slice", [])
+        target_wim["slice"].append({nest[_id]: end_points})
+        mongoUtils.update("wim", target_wim[_id], target_wim)
         nest['deployment_time']['WAN_Deployment_Time'] =\
             format(time.time() - wan_start_time, '.4f')
     nest['deployment_time']['Provisioning_Time'] =\
@@ -297,7 +291,16 @@ OSM{ns['nfvo-id']}")
                             {ivnf["vnf_name"]: [{vdu["vm_name"]:
                              vdu["mgmt_ip"]} for vdu in ivnf["vnf-vdus"]]})
                     ems_messages[ems]["conf_ns_list"].append(data)
-        # Send the messages
+        # Create and send the messages
+        ems_data = {"ue_DL_throughput": nest["ue_DL_throughput"],
+                    "ue_UL_throughput": nest["ue_UL_throughput"],
+                    "group_communication_support":
+                    nest["group_communication_support"],
+                    "number_of_terminals": nest["number_of_terminals"],
+                    "positional_support": nest["positional_support"],
+                    "radio_spectrum": nest["radio_spectrum"],
+                    "device_velocity": nest["device_velocity"],
+                    "terminal_density": nest["terminal_density"]}
         for ems_id, ems_message in ems_messages.items():
             # Find the EMS
             target_ems = mongoUtils.find("ems", {"id": ems_id})
@@ -307,6 +310,8 @@ OSM{ns['nfvo-id']}")
                              format(ems_id))
                 continue
             target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
+            # Create the message
+            ems_message.update(ems_data)
             # Send the message
             ems.conf_radio(ems_message)
         nest['deployment_time']['Radio_Configuration_Time']\
