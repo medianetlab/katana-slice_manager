@@ -35,7 +35,12 @@ def do_work(nest_req):
 
     # Recreate the NEST with None options where missiong
     nest = {"_id": nest_req["_id"], "created_at": nest_req["created_at"],
-            "deployment_time": {}}
+            "deployment_time": {"Placement_Time": None,
+                                "Provisioning_Time": None,
+                                "WAN_Deployment_Time": None,
+                                "NS_Deployment_Time": None,
+                                "Radio_Configuration_Time": None,
+                                "Slice_Deployment_Time": None}}
     for nest_key in NEST_KEYS_OBJ:
         nest[nest_key] = nest_req.get(nest_key, None)
     for nest_key in NEST_KEYS_LIST:
@@ -55,10 +60,10 @@ def do_work(nest_req):
     # Initiate the lists
     ns_list = sst.get("ns_list", []) + nest.get("ns_list", [])
     pnf_list = sst.get("pnf_list", [])
-    ems_messages = {}
     for_ems_list = []
     vim_list = []
     pdu_list = []
+    ems_messages = {}
 
     # Get the NSs and PNFsfrom the supported sst
     for ns in ns_list:
@@ -68,21 +73,16 @@ def do_work(nest_req):
             ns["placement"] = []
             for location in nest["coverage"]:
                 ns["placement"].append({"location": location})
-        ems = ns.get("ems-id", None)
-        if ems:
-            ems_messages[ems] = ems_messages.get(ems, {"func_list": []})
-            ems_messages[ems]["func_list"].append(
-                {"type": "ns", "name": ns["ns-name"], "ip": [],
-                 "ns-placement": ns["placement"]})
 
     for pnf in pnf_list:
         pdu = mongoUtils.find("pdu", {"id": pnf["pdu-id"]})
         pdu_list.append(pdu["id"])
         ems = pnf.get("ems-id", None)
         if ems:
-            ems_messages[ems] = ems_messages.get(ems, {"func_list": []})
-            ems_messages[ems]["func_list"].append(
-                {"type": "pnf", "name": pnf["pnf-name"], "ip": [pdu["ip"]],
+            ems_messages[ems] = ems_messages.get(ems, {"conf_ns_list": [],
+                                                       "conf_pnf_list": []})
+            ems_messages[ems]["conf_pnf_list"].append(
+                {"name": pnf["pnf-name"], "ip": pdu["ip"],
                  "pdu-location": pdu["location"]})
 
     # Find the details for each NS
@@ -121,7 +121,8 @@ OSM{ns['nfvo-id']}")
     for ns in ns_list:
         ns["vims"] = []
         for site in ns["placement"]:
-            get_vim = list(mongoUtils.find_all('vim', {"location": site["location"]}))
+            get_vim = list(mongoUtils.find_all('vim', {"location":
+                           site["location"]}))
             if not get_vim:
                 # ERROR HANDLING: There is no VIM at that location
                 logger.error("VIM not found")
@@ -261,73 +262,57 @@ OSM{ns['nfvo-id']}")
                 insr = target_nfvo_obj.getNsr(site["nfvo_inst_ns"])
             nest['deployment_time']['NS_Deployment_Time'][ns['ns-name']] =\
                 format(time.time() - ns_start_time, '.4f')
-            logger.debug("{} IS RUNNING".format(site))
-    # **************** HERE *******************************************************
-    return
+            # Get the IPs of the instantiated NS
+            site["vnfs"] = []
+            vnfr_id_list = target_nfvo_obj.getVnfrId(insr)
+            for ivnfr_id in vnfr_id_list:
+                vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
+                vnf_name = vnfr["vnfd-ref"]
+                site["vnfs"].append(
+                    {"vnf_name": vnf_name,
+                     "vnf-vdus": target_nfvo_obj.getIPs(vnfr)})
 
-    # **** STEP-3: Activation ****
-    nest['status'] = 'Activation'
     mongoUtils.update("slice", nest['_id'], nest)
-    logger.info("Status: Activation")
-    # *** STEP-3a: Cloud ***
-    # Instantiate NS
-    nest['deployment_time']['NS_Deployment_Time'] = {}
-    ns_id_dict = {}
-    for num, ins in enumerate(new_ns_list):
-        ns_start_time = time.time()
-        slice_vim_id = nfvo_vim_id_dict[placement_list[ins["name"]]["vim"]]
-        ns_id_dict[ins["name"]] = nfvo.instantiateNs(
-            ins["name"],
-            ins["id"],
-            slice_vim_id
-        )
-    nest["running_ns"] = ns_id_dict
-    # Get the nsr for each service and wait for the activation
-    nsr_dict = {}
-    for num, ins in enumerate(new_ns_list):
-        nsr_dict[ins["name"]] = nfvo.getNsr(ns_id_dict[ins["name"]])
-        while nsr_dict[ins["name"]]['operational-status'] != 'running':
-            time.sleep(10)
-            nsr_dict[ins["name"]] = nfvo.getNsr(ns_id_dict[ins["name"]])
-        nest['deployment_time']['NS_Deployment_Time'][ins['name']] =\
-            format(time.time() - ns_start_time, '.4f')
-
-    # Get the IPs for any radio delployed service
-    for ns_name, nsr in nsr_dict.items():
-        vnfr_id_list = nfvo.getVnfrId(nsr)
-        nsr = {}
-        for ivnfr_id in vnfr_id_list:
-            vnfr = nfvo.getVnfr(ivnfr_id)
-            vnf_name = vnfr["vnfd-ref"]
-            nsr[vnf_name] = nfvo.getIPs(vnfr)
-        placement_list[ns_name]["vnfr"] = nsr
-    mongoUtils.update("slice", nest['_id'], nest)
-    logger.debug(f"****** placement_list ******")
-    for mynsd, nsd_value in placement_list.items():
-        logger.debug(f"{mynsd} --> {nsd_value}")
 
     # *** STEP-3b: Radio ***
-    radio_component_list = []
-    for radio_ns in radio_nsd_list:
-        radio_component_list.append(placement_list[radio_ns]["vnfr"])
     if (mongoUtils.count('ems') <= 0):
         logger.warning('There is no registered EMS')
     else:
-        # Select NFVO - Assume that there is only one registered
-        ems_list = list(mongoUtils.index('ems'))
-        ems = pickle.loads(ems_list[0]['ems'])
-        radio_start_time = time.time()
-        emsd = {
-            "sst": nest["nsi"]["type"],
-            "location": nest["nsi"]["radio-ref"]["location"],
-            "nsr_list": radio_component_list
-        }
-        logger.debug("**** EMS *****")
-        logger.debug(emsd)
-        ems.conf_radio(emsd)
+        # Add the management IPs for the NS sent ems in ems_messages:
+        for ns in ns_list:
+            try:
+                ems = ns["ems-id"]
+            except KeyError:
+                continue
+            else:
+                radio_start_time = time.time()
+                ems_messages[ems] = ems_messages.get(
+                    ems, {"conf_ns_list": [], "conf_pnf_list": []})
+                for site in ns["placement"]:
+                    data = {"name": ns["ns-name"],
+                            "location": site["location"],
+                            "vnf_list": []}
+                    for ivnf in site["vnfs"]:
+                        data["vnf_list"].append(
+                            {ivnf["vnf_name"]: [{vdu["vm_name"]:
+                             vdu["mgmt_ip"]} for vdu in ivnf["vnf-vdus"]]})
+                    ems_messages[ems]["conf_ns_list"].append(data)
+        # Send the messages
+        for ems_id, ems_message in ems_messages.items():
+            # Find the EMS
+            target_ems = mongoUtils.find("ems", {"id": ems_id})
+            if not target_ems:
+                # ERROR HANDLING: There is no VIM at that location
+                logger.error("EMS {} not found - No configuration".
+                             format(ems_id))
+                continue
+            target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
+            # Send the message
+            ems.conf_radio(ems_message)
         nest['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
 
+    # *** STEP-4: Finalize ***
     logger.info("Status: Running")
     nest['status'] = 'Running'
     nest['deployment_time']['Slice_Deployment_Time'] =\
