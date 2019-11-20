@@ -70,6 +70,7 @@ class WimView(FlaskView):
         mongoUtils.add('wim_obj', obj_json)
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
+        request.json['slices'] = {}
         return mongoUtils.add('wim', request.json)
 
     def delete(self, uuid):

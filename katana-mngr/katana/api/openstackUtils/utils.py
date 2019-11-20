@@ -175,8 +175,8 @@ class Openstack():
             project_domain_name=self.project_domain_name,
         )
         self.openstack_authorize(conn)
-        user_name = tenant["sliceUserName"]
-        proj_name = tenant["sliceProjectName"]
+        user_name = tenant
+        proj_name = tenant
 
         # Find Project and User
         project = conn.identity.find_project(proj_name, ignore_missing=False)
@@ -197,8 +197,8 @@ class Openstack():
             try:
                 conn.delete_security_group(sec_group.id)
             except openstack.exceptions.ResourceNotFound as e:
-                logger.exception("Failed. Security group trying to delete, doesn't\
-                    exist", e)
+                logger.exception(
+                    "Failed. Security group trying to delete, doesn'texist", e)
 
     def set_quotas(self, conn, name, **kwargs):
         """
