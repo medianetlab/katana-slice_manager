@@ -39,21 +39,25 @@ class WimView(FlaskView):
         for iwim in wim_data:
             return_data.append(dict(_id=iwim['_id'],
                                created_at=iwim['created_at']))
-        return dumps(return_data)
+        return dumps(return_data), 200
 
     # @route('/all/') #/wim/all
     def all(self):
         """
         Same with index(self) above, but returns all wim details
         """
-        return dumps(mongoUtils.index("wim"))
+        return dumps(mongoUtils.index("wim")), 200
 
     def get(self, uuid):
         """
         Returns the details of specific wim,
         used by: `katana wim inspect [uuid]`
         """
-        return dumps((mongoUtils.get("wim", uuid)))
+        data = (mongoUtils.get("wim", uuid))
+        if data:
+            return dumps(data), 200
+        else:
+            return "Not Found", 404
 
     def post(self):
         """
@@ -71,21 +75,23 @@ class WimView(FlaskView):
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
         request.json['slices'] = {}
-        return mongoUtils.add('wim', request.json)
+        return mongoUtils.add('wim', request.json), 201
 
     def delete(self, uuid):
         """
         Delete a specific wim.
         used by: `katana wim rm [uuid]`
         """
-        # TODO: Check if there is anything running by this wim before delete
-        mongoUtils.delete("wim_obj", uuid)
-        result = mongoUtils.delete("wim", uuid)
-        if result:
-            return uuid
+        wim = mongoUtils.get("wim", uuid)
+        if wim:
+            if wim["slices"]:
+                return "Cannot delete wim {} - In use".format(uuid), 400
+            mongoUtils.delete("wim_obj", uuid)
+            mongoUtils.delete("wim", uuid)
+            return "Deleted WIM {}".format(uuid), 200
         else:
             # if uuid is not found, return error
-            return "Error: No such wim: {}".format(uuid)
+            return "Error: No such wim: {}".format(uuid), 404
 
     def put(self, uuid):
         """

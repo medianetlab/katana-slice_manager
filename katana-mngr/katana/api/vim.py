@@ -118,10 +118,12 @@ class VimView(FlaskView):
         Delete a specific vim.
         used by: `katana vim rm [uuid]`
         """
-        # TODO: Check if there is anything running by this ems before delete
-        mongoUtils.delete("vim_obj", uuid)
-        result = mongoUtils.delete("vim", uuid)
-        if result:
+        vim = mongoUtils.get("vim", uuid)
+        if vim:
+            if vim["tenants"]:
+                return "Cannot delete vim {} - In use".format(uuid), 400
+            mongoUtils.delete("vim_obj", uuid)
+            mongoUtils.delete("vim", uuid)
             return "Deleted VIM {}".format(uuid), 200
         else:
             # if uuid is not found, return error

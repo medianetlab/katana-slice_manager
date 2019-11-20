@@ -110,9 +110,10 @@ class NFVOView(FlaskView):
         Delete a specific nfvo.
         used by: `katana nfvo rm [uuid]`
         """
-        # TODO: Check if there is anything running by this ems before delete
-        del_nfvo = mongoUtils.find("nfvo", uuid)
+        del_nfvo = mongoUtils.get("nfvo", uuid)
         if del_nfvo:
+            if del_nfvo["tenants"]:
+                return "Cannot delete nfvo {} - In use".format(uuid), 400
             mongoUtils.delete("nfvo_obj", uuid)
             mongoUtils.delete_all("nsd", {"nfvo_id": del_nfvo["id"]})
             mongoUtils.delete_all("vnfd", {"nfvoid": del_nfvo["id"]})
