@@ -100,6 +100,7 @@ def do_work(nest_req):
                 # ERROR HANDLING: There is no OSM for that ns - stop and return
                 logger.error("There is no NFVO with id {}"
                              .format(ns["nfvo-id"]))
+                delete_slice(nest)
                 return
             nfvo = pickle.loads(nfvo_obj_json["obj"])
             osmUtils.bootstrapNfvo(nfvo)
@@ -110,6 +111,7 @@ def do_work(nest_req):
             else:
                 # ERROR HANDLING: The ns is not optional and the nsd is not
                 # on the NFVO - stop and return
+                delete_slice(nest)
                 logger.error(f"NSD {ns['nsd-id']} not found on\
 OSM{ns['nfvo-id']}")
                 return
@@ -126,6 +128,7 @@ OSM{ns['nfvo-id']}")
             if not get_vim:
                 # ERROR HANDLING: There is no VIM at that location
                 logger.error("VIM not found")
+                delete_slice(nest)
                 return
             # TODO: Check the available resources and select vim
             # Temporary use the first element
@@ -354,59 +357,78 @@ def delete_slice(slice_json):
     if wim_data:
         # Select WIM - Assume that there is only one registered
         wim_list = list(mongoUtils.index('wim'))
-        target_wim = wim_list[0]
-        target_wim_id = target_wim["id"]
-        target_wim_obj = pickle.loads(
-            mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
-        target_wim_obj.del_slice(wim_data)
-        del target_wim["slices"][slice_json["_id"]]
-        mongoUtils.update("wim", target_wim["_id"], target_wim)
+        if wim_list:
+            target_wim = wim_list[0]
+            target_wim_id = target_wim["id"]
+            target_wim_obj = pickle.loads(
+                mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
+            target_wim_obj.del_slice(wim_data)
+            del target_wim["slices"][slice_json["_id"]]
+            mongoUtils.update("wim", target_wim["_id"], target_wim)
+        else:
+            logger.warning("Cannot find WIM - WAN Slice will not be deleted")
 
     # *** Step-3: Cloud ***
-    ns_list = slice_json["network functions"]["ns_list"]
-    remove_vims = {}
-    nfvo_list = []
-    for ns in ns_list:
-        # Get the NFVO
-        nfvo_id = ns["nfvo-id"]
-        target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
-        target_nfvo_obj = pickle.loads(
-            mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
-        if (nfvo_id not in nfvo_list):
-            nfvo_list.append(nfvo_id)
-        # Stop the NS
-        for site in ns["placement"]:
-            target_nfvo_obj.deleteNs(site["nfvo_inst_ns"])
-            while True:
-                if target_nfvo_obj.checkNsLife(site["nfvo_inst_ns"]):
-                    break
-                time.sleep(5)
-    # Delete the new tenants from the NFVO
-    for nfvo_id in nfvo_list:
-        # Get the NFVO
-        target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
-        target_nfvo_obj = pickle.loads(
-            mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
-        # Delete the VIM
-        vim_list = target_nfvo["tenants"][slice_json["_id"]]
-        for vim in vim_list:
-            target_nfvo_obj.deleteVim(vim)
-        del target_nfvo["tenants"][slice_json["_id"]]
-        mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+    nf = slice_json.get("network functions", None)
+    if nf:
+        ns_list = nf["ns_list"]
+        vim_error_list = []
+        remove_vims = {}
+        nfvo_list = []
+        for ns in ns_list:
+            # Get the NFVO
+            nfvo_id = ns["nfvo-id"]
+            target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+            if not target_nfvo:
+                logger.warning(
+                    "NFVO with id {} was not found - NSs won't terminate"
+                    .format(nfvo_id))
+                vim_error_list += ns["vims"]
+                continue
+            target_nfvo_obj = pickle.loads(
+                mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+            if (nfvo_id not in nfvo_list):
+                nfvo_list.append(nfvo_id)
+            # Stop the NS
+            for site in ns["placement"]:
+                target_nfvo_obj.deleteNs(site["nfvo_inst_ns"])
+                while True:
+                    if target_nfvo_obj.checkNsLife(site["nfvo_inst_ns"]):
+                        break
+                    time.sleep(5)
 
-    # Delete the tenants from every vim
-    vim_list = slice_json["vim_list"]
-    for vim in vim_list:
-        # Get the VIM
-        target_vim = mongoUtils.find("vim", {"id": vim})
-        target_vim_obj = pickle.loads(
-            mongoUtils.find("vim_obj", {"id": vim})["obj"])
-        target_vim_obj.delete_proj_user(
-            target_vim["tenants"][slice_json["_id"]])
-        del target_vim["tenants"][slice_json["_id"]]
-        mongoUtils.update("vim", target_vim["_id"], target_vim)
+        # Delete the new tenants from the NFVO
+        for nfvo_id in nfvo_list:
+            # Get the NFVO
+            target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+            target_nfvo_obj = pickle.loads(
+                mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+            # Delete the VIM
+            vim_list = target_nfvo["tenants"][slice_json["_id"]]
+            for vim in vim_list:
+                target_nfvo_obj.deleteVim(vim)
+            del target_nfvo["tenants"][slice_json["_id"]]
+            mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+
+        # Delete the tenants from every vim
+        vim_list = slice_json["vim_list"]
+        if len(vim_error_list) > 0:
+            logger.debug("NFVO Error: Tenant won't be deleted on vims {}".
+                         format(vim_error_list))
+            vim_list = [vim for vim in vim_list if vim not in vim_error_list]
+        for vim in vim_list:
+            # Get the VIM
+            target_vim = mongoUtils.find("vim", {"id": vim})
+            if not target_vim:
+                logger.warning(
+                    "VIM with id {} was not found - Tenant won't be deleted"
+                    .format(vim))
+                continue
+            target_vim_obj = pickle.loads(
+                mongoUtils.find("vim_obj", {"id": vim})["obj"])
+            target_vim_obj.delete_proj_user(
+                target_vim["tenants"][slice_json["_id"]])
+            del target_vim["tenants"][slice_json["_id"]]
+            mongoUtils.update("vim", target_vim["_id"], target_vim)
 
     mongoUtils.delete("slice", slice_json["_id"])
-
-    return
-    #**************************************************************************************** HERE *********************************************************8
