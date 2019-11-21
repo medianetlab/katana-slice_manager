@@ -61,7 +61,7 @@
     "sst": {
       "type": "number",
       "enum": [1, 2, 3],
-      "description": "1: embb, 2: urllc, 3: iot"
+      "description": "Slice/Service Type - Refers to the expected Network Slice behaviour - 1: embb, 2: urllc, 3: iot"
     },
     "sd": {
       "type": "number",

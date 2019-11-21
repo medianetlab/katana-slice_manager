@@ -35,6 +35,7 @@ def gst_to_nest(gst):
     """
     Function that translates the gst to nest
     """
+    nest = {}
     # *** Check if there are references for  slice, ns_des, test_des***
 
     # *** Recreate the GST ***
@@ -89,3 +90,17 @@ def gst_to_nest(gst):
             if tot > max_match:
                 max_match = tot
                 max_pos = i
+
+    selected_slice = sst_list[max_pos]
+    nest["sst_id"] = selected_slice["_id"]
+
+    # *** Check which locations are not covered by the supported sst ***
+    remove_locations = []
+    for location in gst["coverage"]:
+        if location not in selected_slice["supported_locations"]:
+            remove_locations.append(location)
+            logger.warning("Location {} is not supported for that type of sst".
+                           format(location))
+    nest["coverage"] = [location for location in gst["coverage"] if
+                        location not in remove_locations]
+
