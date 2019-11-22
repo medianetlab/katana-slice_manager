@@ -16,19 +16,24 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
+GST_FIELDS = ("slice_descriptor", "service_descriptor", "test_descriptor")
 
-GST_KEYS_OBJ = ("slice_des", "delay_tolerance", "network_DL_throughput",
-                "ue_DL_throughput", "network_UL_throughput",
-                "ue_UL_throughput", "deterministic_communication",
-                "group_communication_support", "isolation_level",
-                "mtu", "mission_critical_support", "mmtel_support",
-                "nb_iot", "number_of_connections", "number_of_terminals",
-                "positional_support", "simultaneous_nsi", "nonIP_traffic",
-                "device_velocity", "terminal_density", "ns_des_id",
-                "test_des_id", "performance_monitoring",
+SLICE_DES_OBJ = ("slice_des", "delay_tolerance", "network_DL_throughput",
+                 "ue_DL_throughput", "network_UL_throughput",
+                 "ue_UL_throughput", "deterministic_communication",
+                 "group_communication_support", "isolation_level",
+                 "mtu", "mission_critical_support", "mmtel_support",
+                 "nb_iot", "number_of_connections", "number_of_terminals",
+                 "positional_support", "simultaneous_nsi", "nonIP_traffic",
+                 "device_velocity", "terminal_density")
+SLICE_DES_LIST = ("coverage", "radio_spectrum", "qos")
+
+SERVICE_DES_OBJ = ("ns_des_id")
+SERVICE_DES_LIST = ("ns_list")
+
+TEST_DES_OBJ = ("test_des_id", "performance_monitoring",
                 "performance_prediction")
-GST_KEYS_LIST = ("coverage", "radio_spectrum", "qos", "ns_list",
-                 "probe_list")
+TEST_DES_LIST = ("probe_list")
 
 
 def gst_to_nest(gst):
@@ -36,25 +41,32 @@ def gst_to_nest(gst):
     Function that translates the gst to nest
     """
     nest = {}
-    # *** Check if there are references for  slice, ns_des, test_des***
+    for field in GST_FIELDS:
+        gst[field] = gst.get(field, None)
 
+    # ****** STEP 1: Slice Descriptor ******
+    if not gst["slice_descriptor"]:
+        logger.error("No Slice Descriptor given - Exit")
+        return
+    gst_slice_des = gst["slice_descriptor"]
+    # *** Check if there are references for slice ***
     # *** Recreate the GST ***
-    for gst_key in GST_KEYS_OBJ:
-        gst[gst_key] = gst.get(gst_key, None)
-    for gst_key in GST_KEYS_LIST:
-        gst[gst_key] = gst.get(gst_key, [])
+    for gst_key in SLICE_DES_OBJ:
+        gst_slice_des[gst_key] = gst_slice_des.get(gst_key, None)
+    for gst_key in SLICE_DES_LIST:
+        gst_slice_des[gst_key] = gst_slice_des.get(gst_key, [])
 
     # *** Calculate the type of the slice (sst) ***
     # Based on the Supported Slices inputs will determine sst and sd values
-    if gst["delay_tolerance"]:
-        if gst["nb_iot"]:
+    if gst_slice_des["delay_tolerance"]:
+        if gst_slice_des["nb_iot"]:
             # MIoT
             sst = 3
         else:
             # eMBB
             sst = 1
     else:
-        if gst["nb_iot"]:
+        if gst_slice_des["nb_iot"]:
             # TBD
             pass
         else:
@@ -84,7 +96,7 @@ def gst_to_nest(gst):
         max_match = 0
         for i, _slice in enumerate(sst_list):
             tot = 0
-            for location in gst["coverage"]:
+            for location in gst_slice_des["coverage"]:
                 if location in _slice["supported_locations"]:
                     tot += 1
             if tot > max_match:
@@ -96,11 +108,49 @@ def gst_to_nest(gst):
 
     # *** Check which locations are not covered by the supported sst ***
     remove_locations = []
-    for location in gst["coverage"]:
+    for location in gst_slice_des["coverage"]:
         if location not in selected_slice["supported_locations"]:
             remove_locations.append(location)
             logger.warning("Location {} is not supported for that type of sst".
                            format(location))
-    nest["coverage"] = [location for location in gst["coverage"] if
+    nest["coverage"] = [location for location in gst_slice_des["coverage"] if
                         location not in remove_locations]
 
+    # Values to be copied to NEST
+    KEYS_TO_BE_COPIED = ("network_DL_throughput", "ue_DL_throughput",
+                         "network_UL_throughput", "ue_UL_throughput",
+                         "group_communication_support", "mtu",
+                         "number_of_terminals", "positional_support",
+                         "radio_spectrum", "device_velocity",
+                         "terminal_density")
+    for key in KEYS_TO_BE_COPIED:
+        nest[key] = gst_slice_des[key]
+
+    # Create the shared value
+    nest["shared"] = {"isolation": gst_slice_des["isolation_level"],
+                      "simultaneous_nsi": gst_slice_des["simultaneous_nsi"]}
+
+    # ****** STEP 2: Service Descriptor ******
+    if gst["service_descriptor"]:
+        gst_service_des = gst["service_descriptor"]
+        # *** Check if there are references for service ***
+        # *** Recreate the GST ***
+        for gst_key in SERVICE_DES_OBJ:
+            gst_service_des[gst_key] = gst_service_des.get(gst_key, None)
+        for gst_key in SERVICE_DES_LIST:
+            gst_service_des[gst_key] = gst_service_des.get(gst_key, [])
+        # Create the NS field on Nest
+        nest["ns_list"] = gst_service_des["ns_list"]
+
+    # ****** STEP 3: Service Descriptor ******
+    if gst["test_descriptor"]:
+        gst_test_des = gst["test_descriptor"]
+        # *** Check if there are references for service ***
+        # *** Recreate the GST ***
+        for gst_key in TEST_DES_OBJ:
+            gst_test_des[gst_key] = gst_test_des.get(gst_key, None)
+        for gst_key in TEST_DES_LIST:
+            gst_test_des[gst_key] = gst_test_des.get(gst_key, [])
+
+        # Create the Probe field on Nest
+        nest["probe_list"] = gst_test_des["probe_list"]

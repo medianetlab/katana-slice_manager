@@ -4,16 +4,13 @@
   "type": "object",
   "description": "The file that Katana will use for slice creation. It will be created by the slice mapping process based on the received GST",
   "properties": {
-// *************************************************************************
-    "sst": {
+// ************************************************************************* DONE
+    "sst_id": {
       "type": "string",
       "description": "Slice/Service Type - Refers to the expected Network Slice behaviour"
     },
-    "sd": {
-      "type": "string",
-      "description": "Service Differentiator - Optional information that complements the Slice/Service type(s) to differentiate amongst multiple Network Slices of the same SST"
 // Will look for the sst in the database - Done
-// **************************************************************************
+// ************************************************************************** DONE
     },
     "coverage": {
       "type": "array",
@@ -23,7 +20,7 @@
         "description": " The location name for each site in the slice"
       }
 // Will be used for the placement - Done
-// ***************************************************************************
+// *************************************************************************** DONE
     },
     "ns_list": {
       "type": "array",
@@ -53,7 +50,7 @@
       }
     },
 // Will be used for the extra Network Service Creation - Done
-// ****************************************************************************
+// **************************************************************************** DONE
     "shared": {
       "type": "object",
       "description": " A network slice instance may be fully or partly, logically and/or physically, isolated from another network slice instance",
@@ -71,7 +68,7 @@
       }
     },
 // Currently nothing - will be used later for sharing - TBI in future release
-// *****************************************************************************
+// ***************************************************************************** DONE
     "network_DL_throughput": {
       "type": "object",
       "description": "The achievable data rate in downlink for the whole network slice (and not per user).",
@@ -129,26 +126,26 @@
       }
     },
 // Will be forwared to WIM/EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "group_communication_support": {
       "type": "number",
       "enum": [0, 1, 2, 3],
       "description": "0: not available 1: Single Cell Point to Multipoint (SCPTM) 2: Broadcast/Multicast 3: Broadcast/Multicast + SC-PTM"
     },
 // Will be forwared to EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "mtu": {
       "type": "number",
       "description": "Bytes"
     },
 // Will be forwared to WIM - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "number_of_terminals": {
       "type": "number",
       "description": "This attribute describes the maximum number of concurrent terminals supported by the network slice."
     },
 // Will be forwared to EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "positional_support": {
       "type": "object",
       "description": "This attribute describes if the network slice provides geo-localization methods or supporting methods.",
@@ -173,7 +170,7 @@
       }
     },
 // Will be forwared to EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "radio_spectrum": {
       "type": "array",
       "description": "Defines the radio spectrum supported by the network slice.",
@@ -183,20 +180,20 @@
       }
     },
 // Will be forwared to EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "device_velocity": {
       "type": "number",
       "enum": [1, 2, 3, 4],
       "description": "1: Stationary: 0 km/h 2: Pedestrian: 0 km/h to 10 km/h 3: Vehicular: 10 km/h to 120 km/h 4: High speed vehicular: 120 km/h to 500 km/h"
     },
 // Will be forwared to EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "terminal_density": {
       "type": "number",
       "description": "maximum number of connected and/or accessible devices per unit area (per km2) supported by the network slice [Number/km^2]"
     },
 // Will be forwared to EMS - Done
-// *****************************************************************************
+// ***************************************************************************** DONE
     "probe_list": {
       "type": "array",
       "description": "A list of probe ids to be included in the slice",
