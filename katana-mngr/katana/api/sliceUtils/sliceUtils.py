@@ -65,7 +65,6 @@ def do_work(nest_req):
     # Initiate the lists
     ns_list = sst.get("ns_list", []) + nest.get("ns_list", [])
     pnf_list = sst.get("pnf_list", [])
-    for_ems_list = []
     vim_list = []
     pdu_list = []
     ems_messages = {}
@@ -295,8 +294,9 @@ OSM{ns['nfvo-id']}")
                             "vnf_list": []}
                     for ivnf in site["vnfs"]:
                         data["vnf_list"].append(
-                            {ivnf["vnf_name"]: [{vdu["vm_name"]:
-                             vdu["mgmt_ip"]} for vdu in ivnf["vnf-vdus"]]})
+                            {"vnf_name": ivnf["vnf_name"],
+                             "vdu_list": [{vdu["vm_name"]: vdu["mgmt_ip"]}
+                                          for vdu in ivnf["vnf-vdus"]]})
                     ems_messages[ems]["conf_ns_list"].append(data)
         # Create and send the messages
         ems_data = {"ue_DL_throughput": nest["ue_DL_throughput"],
@@ -320,7 +320,7 @@ OSM{ns['nfvo-id']}")
             # Create the message
             ems_message.update(ems_data)
             # Send the message
-            ems.conf_radio(ems_message)
+            target_ems_obj.conf_radio(ems_message)
         nest["ems_data"] = ems_messages
         nest['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
@@ -355,7 +355,7 @@ def delete_slice(slice_json):
                              format(ems_id))
                 continue
             target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
-            ems.del_radio(ems_message)
+            target_ems_obj.del_radio(ems_message)
 
     # *** Step-2: WAN Slice ***
     wim_data = slice_json.get("wim_data", None)

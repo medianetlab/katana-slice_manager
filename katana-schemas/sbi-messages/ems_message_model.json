@@ -81,36 +81,68 @@
       "type": "number",
       "description": "Maximum number of connected and/or accessible devices per unit area (per km2) supported by the network slice [Number/km^2]"
     },
-    "func_list": {
+    "conf_ns_list": {
       "type": "array",
-      "description": "A list of VNFs and PNFs on which the EMS must run D1 & D2 configuration",
+      "description": "A list of the NSs on which the EMS must run D1 & D2 configuration",
       "items": {
         "type": "object",
-        "description": "A function to be configured by the EMS",
-        "properties":{
-          "type":{
+        "description": "A NS",
+        "properties": {
+          "name": {
             "type": "string",
-            "description": "ns or pnf"
-          },
-          "name":{
-            "type": "string",
-            "description": "Name of the ns or pnf"
-          },
-          "ip":{
-            "type": "array",
-            "description": "A list of management IPs",
-            "items": {
-              "type": "string",
-              "description": "IP"
-            }
+            "description": "The name of the Network Service"
           },
           "location": {
+            "type": "string",
+            "description": "The location of the Network Service"
+          },
+          "vnf_list": {
             "type": "array",
-            "description": "A list of locations of the function",
+            "description": "A list of VNFs that compose the NS",
             "items": {
-              "type": "string",
-              "description": "Location"
+              "type": "object",
+              "description": "A VNF",
+              "properties": {
+                "vnf_name": {
+                  "type": "string",
+                  "description": "The name of the VNF"
+                },
+                "mgmt_ip": {
+                  "type": "string",
+                  "description": "The management IP of the VNF of the VNF"
+                },
+                "vdu_IP_list": {
+                  "type": "array",
+                  "description": "The list of the VDUs that compose the VNF",
+                  "items": {
+                    "type": "string",
+                    "description": "A VDU IP"
+                  }
+                }
+              }
             }
+          }
+        }
+      }
+    },
+    "conf_pnf_list": {
+      "type": "array",
+      "description": "A list of the PNFs on which the EMS must run D1 & D2 configuration",
+      "items": {
+        "type": "object",
+        "description": "A PNF",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the PNF"
+          },
+          "mgmt_ip": {
+            "type": "string",
+            "description": "The management IP of the PNF"
+          },
+          "pdu-location": {
+            "type": "string",
+            "description": "The locations of the PDU which will host the PNF"
           }
         }
       }
