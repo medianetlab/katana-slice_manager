@@ -1,5 +1,4 @@
 import requests
-import json
 import logging
 from katana.api.mongoUtils import mongoUtils
 
@@ -174,18 +173,14 @@ class Osm():
         """
         Retrieve a list of IPs from a VNFR
         """
-        ips = []
-        mgmt_ip = "None"
-        vm_name = "None"
-        vnf_info = []
+        vnf_name = vnfr["vnfd-ref"]
+        mgmt_ip = vnfr["ip-address"]
+        vdu_ips = []
         for i in vnfr['vdur']:
             for ip in i['interfaces']:
-                ips.append(ip['ip-address'])
-            vnf_info.append(dict(vm_name=i["vdu-id-ref"], ip_list=ips,
-                                 mgmt_ip=i["ip-address"]))
-            ips = []
-            mgmt_ip = "None"
-            vm_name = "None"
+                vdu_ips.append(ip['ip-address'])
+        vnf_info = {"vnf_name": vnf_name, "mgmt_ip": mgmt_ip,
+                    "vdu_ips": vdu_ips}
         return vnf_info
 
     def deleteNs(self, nsId):
