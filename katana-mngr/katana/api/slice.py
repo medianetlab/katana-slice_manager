@@ -45,14 +45,18 @@ class SliceView(FlaskView):
             return_data.append(dict(_id=islice['_id'],
                                     created_at=islice['created_at'],
                                     status=islice['status']))
-        return dumps(return_data)
+        return dumps(return_data), 200
 
     def get(self, uuid):
         """
         Returns the details of specific slice,
         used by: `katana slice inspect [uuid]`
         """
-        return dumps((mongoUtils.get("slice", uuid)))
+        data = (mongoUtils.get("slice", uuid))
+        if data:
+            return dumps(data), 200
+        else:
+            return "Not Found", 404
 
     @route('/<uuid>/time')
     def show_time(self, uuid):
@@ -60,18 +64,21 @@ class SliceView(FlaskView):
         Returns deployment time of a slice
         """
         islice = mongoUtils.get("slice", uuid)
-        return dumps(islice["deployment_time"])
+        if islice:
+            return dumps(islice["deployment_time"]), 200
+        else:
+            return "Not Found", 404
 
     def post(self):
         """
         Add a new slice. The request must provide the slice details.
         used by: `katana slice add -f [yaml file]`
         """
+        new_uuid = str(uuid.uuid4())
+        request.json['_id'] = new_uuid
         nest = slice_mapping.gst_to_nest(request.json)
         logger.debug(nest)
         return "Done", 200
-        new_uuid = str(uuid.uuid4())
-        request.json['_id'] = new_uuid
         request.json['status'] = 'init'
         request.json['created_at'] = time.time()  # unix epoch
         request.json['deployment_time'] = dict(
@@ -91,7 +98,7 @@ class SliceView(FlaskView):
                                                            request.json})
         thread.start()
 
-        return new_uuid
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -103,12 +110,12 @@ class SliceView(FlaskView):
         delete_json = mongoUtils.get("slice", uuid)
 
         if not delete_json:
-            return "Error: No such slice: {}".format(uuid)
+            return "Error: No such slice: {}".format(uuid), 404
         else:
             delete_thread = Thread(target=sliceUtils.delete_slice,
                                    kwargs={'slice_json': delete_json})
             delete_thread.start()
-            return "Deleting {0}".format(uuid)
+            return "Deleting {0}".format(uuid), 200
 
     # def put(self, uuid):
     #     """

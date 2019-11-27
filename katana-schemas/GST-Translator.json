@@ -3,7 +3,14 @@
             "type": "object",
             "description": "This is the schema for the core part of the new slice",
             "properties": {
-                "slice_des": {"type": "string"},
+                "slice_des_id": {
+                  "type": "string",
+                  "description": "Id of the slice descriptor which will be used as base for the gst"
+                },
+                "slice_des_ref": {
+                  "type": "string",
+                  "description": "Reference to an added slice descriptor which will be used as base for the gst"
+                },
 // # ***** Copy to the NEST - Will be used for placement *****  Todo: DONE
                 "coverage": {
                     "type": "array",

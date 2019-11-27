@@ -6,7 +6,14 @@
       "type": "object",
       "description": "This is the schema for the core part of the new slice",
       "properties": {
-        "slice_des": {"type": "string"},
+        "slice_des_id": {
+          "type": "string",
+          "description": "Id of the slice descriptor which will be used as base for the gst"
+        },
+        "slice_des_ref": {
+          "type": "string",
+          "description": "Reference to an added slice descriptor which will be used as base for the gst"
+        },
         "coverage": {
           "type": "array",
           "description": "A list with all the locations that are part of the slice",
@@ -240,7 +247,6 @@
       "type": "object",
       "description": "This is the schema for the Service Descriptor part of slice IM",
       "properties": {
-        "ns_des_id": {"type": "string"},
         "ns_list": {
           "type": "array",
           "description": "List of the NSD to be instantiated alongside the slice",
@@ -278,7 +284,6 @@
       "type": "object",
       "description": "This is the schema for the Test Descriptor part of slice IM",
       "properties": {
-        "test_des_id": {"type": "string"},
         "probe_list": {
           "type": "array",
           "description": "A list of probe ids to be included in the slice",

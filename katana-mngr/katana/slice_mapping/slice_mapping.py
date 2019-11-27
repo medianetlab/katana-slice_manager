@@ -18,21 +18,21 @@ logger.addHandler(stream_handler)
 
 GST_FIELDS = ("slice_descriptor", "service_descriptor", "test_descriptor")
 
-SLICE_DES_OBJ = ("slice_des", "delay_tolerance", "network_DL_throughput",
-                 "ue_DL_throughput", "network_UL_throughput",
-                 "ue_UL_throughput", "deterministic_communication",
-                 "group_communication_support", "isolation_level",
-                 "mtu", "mission_critical_support", "mmtel_support",
-                 "nb_iot", "number_of_connections", "number_of_terminals",
-                 "positional_support", "simultaneous_nsi", "nonIP_traffic",
+SLICE_DES_OBJ = ("slice_des_id", "slice_des_ref", "delay_tolerance",
+                 "network_DL_throughput", "ue_DL_throughput",
+                 "network_UL_throughput", "ue_UL_throughput",
+                 "deterministic_communication", "group_communication_support",
+                 "isolation_level", "mtu", "mission_critical_support",
+                 "mmtel_support", "nb_iot", "number_of_connections",
+                 "number_of_terminals", "positional_support",
+                 "simultaneous_nsi", "nonIP_traffic",
                  "device_velocity", "terminal_density")
 SLICE_DES_LIST = ("coverage", "radio_spectrum", "qos")
 
-SERVICE_DES_OBJ = ("ns_des_id",)
+SERVICE_DES_OBJ = ()
 SERVICE_DES_LIST = ("ns_list",)
 
-TEST_DES_OBJ = ("test_des_id", "performance_monitoring",
-                "performance_prediction")
+TEST_DES_OBJ = ("performance_monitoring", "performance_prediction")
 TEST_DES_LIST = ("probe_list",)
 
 
@@ -40,7 +40,7 @@ def gst_to_nest(gst):
     """
     Function that translates the gst to nest
     """
-    nest = {}
+    nest = {"_id": gst["_id"]}
     for field in GST_FIELDS:
         gst[field] = gst.get(field, None)
 
@@ -56,8 +56,8 @@ def gst_to_nest(gst):
         gst_slice_des[gst_key] = gst_slice_des.get(gst_key, [])
 
     # *** Check if there are references for slice ***
-    if gst_slice_des["slice_des"]:
-        gst_slice = mongoUtils.get("gst_slice",
+    if gst_slice_des["slice_des_ref"]:
+        gst_slice = mongoUtils.get("slice_des_ref",
                                    gst_slice_des["slice_descriptor"])
         if gst_slice:
             for gst_key, gst_value in gst_slice.items():
@@ -148,12 +148,6 @@ def gst_to_nest(gst):
             gst_service_des[gst_key] = gst_service_des.get(gst_key, None)
         for gst_key in SERVICE_DES_LIST:
             gst_service_des[gst_key] = gst_service_des.get(gst_key, [])
-        # *** Check if there are references for service ***
-        if gst_service_des["ns_des_id"]:
-            gst_ns = mongoUtils.get("gst_ns", gst_service_des["ns_des_id"])
-            if gst_ns:
-                for gst_key, gst_value in gst_ns.items():
-                    gst_service_des[gst_key] = gst_value
         # Create the NS field on Nest
         nest["ns_list"] = gst_service_des["ns_list"]
 
@@ -165,15 +159,8 @@ def gst_to_nest(gst):
             gst_test_des[gst_key] = gst_test_des.get(gst_key, None)
         for gst_key in TEST_DES_LIST:
             gst_test_des[gst_key] = gst_test_des.get(gst_key, [])
-
-        # *** Check if there are references for service ***
-        if gst_test_des["test_des_id"]:
-            gst_test = mongoUtils.get("gst_test", gst_slice_des["test_des_id"])
-            if gst_test:
-                for gst_key, gst_value in gst_test.items():
-                    gst_test_des[gst_key] = gst_value
-
         # Create the Probe field on Nest
         nest["probe_list"] = gst_test_des["probe_list"]
 
+    mongoUtils.add("gst", gst)
     return nest

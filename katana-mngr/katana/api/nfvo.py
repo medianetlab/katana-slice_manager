@@ -11,8 +11,6 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
-import ast
-import base64
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -85,11 +83,11 @@ class NFVOView(FlaskView):
             try:
                 osm.getToken()
             except ConnectTimeout as e:
-                logger.exception("It is time for ... Time out")
+                logger.exception("Connection Timeout: {}".format(e))
                 response = dumps({'error': 'Unable to connect to NFVO'})
                 return (response, 400)
             except ConnectionError as e:
-                logger.exception("Unable to connect")
+                logger.exception("Connection Error: {}".format(e))
                 response = dumps({'error': 'Unable to connect to NFVO'})
                 return (response, 400)
             else:
