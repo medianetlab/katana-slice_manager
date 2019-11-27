@@ -64,7 +64,6 @@ class PduView(FlaskView):
         Delete a specific pdu.
         used by: `katana pdu rm [uuid]`
         """
-        # TODO: Check if there is anything running by this ems before delete
         result = mongoUtils.delete("pdu", uuid)
         if result:
             return "Deleted PDU {}".format(uuid), 200

@@ -1,5 +1,6 @@
 from katana.api.mongoUtils import mongoUtils
 import logging
+import uuid
 
 
 # Logging Parameters
@@ -57,11 +58,12 @@ def gst_to_nest(gst):
 
     # *** Check if there are references for slice ***
     if gst_slice_des["slice_des_ref"]:
-        gst_slice = mongoUtils.get("slice_des_ref",
-                                   gst_slice_des["slice_descriptor"])
-        if gst_slice:
-            for gst_key, gst_value in gst_slice.items():
-                gst_slice_des[gst_key] = gst_value
+        ref_slice = mongoUtils.find("slice_des_ref", {"slice_des_id":
+                                    gst_slice_des["slice_des_ref"]})
+        if ref_slice:
+            for key, value in gst_slice_des.items():
+                if not value:
+                    gst_slice_des[key] = ref_slice[key]
 
     # *** Calculate the type of the slice (sst) ***
     # Based on the Supported Slices inputs will determine sst and sd values
@@ -163,4 +165,7 @@ def gst_to_nest(gst):
         nest["probe_list"] = gst_test_des["probe_list"]
 
     mongoUtils.add("gst", gst)
+    new_uuid = str(uuid.uuid4())
+    gst["slice_descriptor"]["_id"] = new_uuid
+    mongoUtils.add("slice_des_ref", gst["slice_descriptor"])
     return nest
