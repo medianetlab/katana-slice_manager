@@ -2,6 +2,7 @@ from flask import request
 from flask_classful import FlaskView, route
 from katana.api.mongoUtils import mongoUtils
 from katana.api.sliceUtils import sliceUtils
+from katana.slice_mapping import slice_mapping
 
 import uuid
 from bson.json_util import dumps
@@ -66,6 +67,9 @@ class SliceView(FlaskView):
         Add a new slice. The request must provide the slice details.
         used by: `katana slice add -f [yaml file]`
         """
+        nest = slice_mapping.gst_to_nest(request.json)
+        logger.debug(nest)
+        return "Done", 200
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['status'] = 'init'

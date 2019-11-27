@@ -28,12 +28,12 @@ SLICE_DES_OBJ = ("slice_des", "delay_tolerance", "network_DL_throughput",
                  "device_velocity", "terminal_density")
 SLICE_DES_LIST = ("coverage", "radio_spectrum", "qos")
 
-SERVICE_DES_OBJ = ("ns_des_id")
-SERVICE_DES_LIST = ("ns_list")
+SERVICE_DES_OBJ = ("ns_des_id",)
+SERVICE_DES_LIST = ("ns_list",)
 
 TEST_DES_OBJ = ("test_des_id", "performance_monitoring",
                 "performance_prediction")
-TEST_DES_LIST = ("probe_list")
+TEST_DES_LIST = ("probe_list",)
 
 
 def gst_to_nest(gst):
@@ -49,12 +49,19 @@ def gst_to_nest(gst):
         logger.error("No Slice Descriptor given - Exit")
         return
     gst_slice_des = gst["slice_descriptor"]
-    # *** Check if there are references for slice ***
     # *** Recreate the GST ***
     for gst_key in SLICE_DES_OBJ:
         gst_slice_des[gst_key] = gst_slice_des.get(gst_key, None)
     for gst_key in SLICE_DES_LIST:
         gst_slice_des[gst_key] = gst_slice_des.get(gst_key, [])
+
+    # *** Check if there are references for slice ***
+    if gst_slice_des["slice_des"]:
+        gst_slice = mongoUtils.get("gst_slice",
+                                   gst_slice_des["slice_descriptor"])
+        if gst_slice:
+            for gst_key, gst_value in gst_slice.items():
+                gst_slice_des[gst_key] = gst_value
 
     # *** Calculate the type of the slice (sst) ***
     # Based on the Supported Slices inputs will determine sst and sd values
@@ -94,6 +101,7 @@ def gst_to_nest(gst):
     if len(sst_list) > 1:
         # Check the sst supported locations against coverage
         max_match = 0
+        max_pos = 0
         for i, _slice in enumerate(sst_list):
             tot = 0
             for location in gst_slice_des["coverage"]:
@@ -103,7 +111,9 @@ def gst_to_nest(gst):
                 max_match = tot
                 max_pos = i
 
-    selected_slice = sst_list[max_pos]
+        selected_slice = sst_list[max_pos]
+    else:
+        selected_slice = sst_list[0]
     nest["sst_id"] = selected_slice["_id"]
 
     # *** Check which locations are not covered by the supported sst ***
@@ -133,24 +143,37 @@ def gst_to_nest(gst):
     # ****** STEP 2: Service Descriptor ******
     if gst["service_descriptor"]:
         gst_service_des = gst["service_descriptor"]
-        # *** Check if there are references for service ***
         # *** Recreate the GST ***
         for gst_key in SERVICE_DES_OBJ:
             gst_service_des[gst_key] = gst_service_des.get(gst_key, None)
         for gst_key in SERVICE_DES_LIST:
             gst_service_des[gst_key] = gst_service_des.get(gst_key, [])
+        # *** Check if there are references for service ***
+        if gst_service_des["ns_des_id"]:
+            gst_ns = mongoUtils.get("gst_ns", gst_service_des["ns_des_id"])
+            if gst_ns:
+                for gst_key, gst_value in gst_ns.items():
+                    gst_service_des[gst_key] = gst_value
         # Create the NS field on Nest
         nest["ns_list"] = gst_service_des["ns_list"]
 
     # ****** STEP 3: Service Descriptor ******
     if gst["test_descriptor"]:
         gst_test_des = gst["test_descriptor"]
-        # *** Check if there are references for service ***
         # *** Recreate the GST ***
         for gst_key in TEST_DES_OBJ:
             gst_test_des[gst_key] = gst_test_des.get(gst_key, None)
         for gst_key in TEST_DES_LIST:
             gst_test_des[gst_key] = gst_test_des.get(gst_key, [])
 
+        # *** Check if there are references for service ***
+        if gst_test_des["test_des_id"]:
+            gst_test = mongoUtils.get("gst_test", gst_slice_des["test_des_id"])
+            if gst_test:
+                for gst_key, gst_value in gst_test.items():
+                    gst_test_des[gst_key] = gst_value
+
         # Create the Probe field on Nest
         nest["probe_list"] = gst_test_des["probe_list"]
+
+    return nest
