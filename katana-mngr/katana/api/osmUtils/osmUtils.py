@@ -275,16 +275,6 @@ class Osm():
                 new_nsd = {}
                 for osm_nsd in osm_nsd_list:
                     new_nsd["id"] = osm_nsd["_id"]
-                    nsd_networks = osm_nsd["vld"]
-                    new_nsd["vim_networks"] = []
-                    for vld in nsd_networks:
-                        try:
-                            new_nsd["vim_networks"].append(
-                                vld["vim-network-name"])
-                        except KeyError:
-                            logger.warning(f"No vim networks for {vld['id']}")
-                        except e:
-                            logger.exception(e)
                     new_nsd["vnfd_list"] = []
                     new_nsd["flavor"] = {"memory-mb": 0,
                                          "vcpu-count": 0,

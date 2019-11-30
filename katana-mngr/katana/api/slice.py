@@ -77,11 +77,9 @@ class SliceView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         nest = slice_mapping.gst_to_nest(request.json)
-        logger.debug(nest)
-        return "Done", 200
-        request.json['status'] = 'init'
-        request.json['created_at'] = time.time()  # unix epoch
-        request.json['deployment_time'] = dict(
+        nest['status'] = 'init'
+        nest['created_at'] = time.time()  # unix epoch
+        nest['deployment_time'] = dict(
             Slice_Deployment_Time='N/A',
             Placement_Time='N/A',
             Provisioning_Time='N/A',
@@ -94,8 +92,7 @@ class SliceView(FlaskView):
         # https://stackoverflow.com/questions/48994440/execute-a-function-after-flask-returns-response
         # might be replaced with Celery...
 
-        thread = Thread(target=sliceUtils.do_work, kwargs={'nest_req':
-                                                           request.json})
+        thread = Thread(target=sliceUtils.do_work, kwargs={'nest_req': nest})
         thread.start()
 
         return new_uuid, 201

@@ -31,7 +31,8 @@ class Slice_desView(FlaskView):
         slice_des_data = mongoUtils.index("slice_des_ref")
         return_data = []
         for islicedes in slice_des_data:
-            return_data.append(dict(_id=islicedes['_id']))
+            return_data.append(dict(_id=islicedes['_id'],
+                               slice_des_id=islicedes["slice_des_id"]))
         return dumps(return_data), 200
 
     def get(self, uuid):

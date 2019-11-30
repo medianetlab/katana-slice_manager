@@ -33,8 +33,6 @@ def do_work(nest_req):
     Creates the network slice
     """
 
-    logger.debug(nest_req)
-    return
     # Recreate the NEST with None options where missiong
     nest = {"_id": nest_req["_id"], "created_at": nest_req["created_at"],
             "deployment_time": {"Placement_Time": None,
