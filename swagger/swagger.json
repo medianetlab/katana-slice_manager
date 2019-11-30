@@ -12,7 +12,7 @@
       "url":"http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   },
-  "host":"localhost:8000",
+  "host":"katanaSM:8000",
   "basePath":"/api",
   "tags":[ 
     { 
@@ -1824,76 +1824,99 @@
     "slice_inspect":{ 
       "type":"object",
       "properties":{ 
-        "nsi":{ 
+        "gst":{ 
           "$ref":"#/definitions/gst"
         },
         "created_at":{ 
           "type":"string",
           "format":"date-time"
         },
-        "nfvo_vim_id":{ 
-          "type":"string"
+        "deployment_time":{ 
+          "$ref":"#/definitions/time"
         },
-        "placement":{ 
-          "type":"object",
-          "properties":{ 
-            "<NSi_name>":{ 
-              "type":"object",
-              "properties":{ 
-                "requirements":{ 
-                  "type":"object",
-                  "properties":{ 
-                    "memory-mb":{ 
-                      "type":"number"
-                    },
-                    "storage-mb":{ 
-                      "type":"number"
-                    },
-                    "vcpu-count":{ 
-                      "type":"number"
-                    }
-                  }
-                },
-                "vim":{ 
-                  "type":"string"
-                },
-                "vim_net":{ 
-                  "type":"array",
-                  "items":{ 
-                    "type":"string"
-                  }
-                },
-                "vnfr":{ 
-                  "type":"object",
-                  "properties":{ 
-                    "<VNFi_name>":{ 
-                      "type":"array",
-                      "items":{ 
-                        "type":"object",
-                        "properties":{ 
-                          "ip_list":{ 
-                            "type":"array",
-                            "items":{ 
-                              "type":"string"
-                            }
-                          },
-                          "mgmt_ip":{ 
-                            "type":"string"
-                          },
-                          "vm_name":{ 
-                            "type":"string"
-                          }
+        "status":{
+          "type": "string",
+          "description": "Init, Peovisioning, Activation, Running or Terminating"
+        },
+        "network_functions": {
+          "type": "object",
+          "description": "All the NSs and PNFs that are part of the slice",
+          "properties": {
+            "ns_list": {
+              "type": "array",
+              "description": "All the NSs that are part of the slice",
+              "items": {
+                "type": "object",
+                "description": "A NS",
+                "properties": {
+                  "nfvo-id": {"type": "string"},
+                  "nsd-id": {"type": "string"},
+                  "ns-name": {"type": "string"},
+                  "placement": {},
+                  "ems-id": {"type": "string"},
+                  "optional": {"type": "boolean"},
+                  "nsd-info" : {
+                    "type": "object",
+                    "description": "Information about the NS Descriptor",
+                    "properties": {
+                      "_id": {"type": "string"},
+                      "id": {"type": "string"},
+                      "vnfd_list": {
+                        "type": "array",
+                        "description": "The list of VNFDs in the NSD",
+                        "items": {
+                          "type": "string",
+                          "description": "A VNFD"
                         }
-                      }
+                      },
+                      "flavor": {
+                        "type": "object",
+                        "description": "The NS requirements",
+                        "properties": {
+                          "memory-mb": {"type": "number"},
+                          "vcpu-count": {"type": "number"},
+                          "storage-gb": {"type": "number"}
+                        }
+                      },
+                      "nfvo-id": {"type": "string"}  
                     }
+                  },
+                  "vims": {
+                    "type": "array",
+                    "description": "A list of VIMs where the NS will be deployed",
+                    "items": {"type": "string"}
                   }
-                },
-                "deployment_time":{ 
-                  "$ref":"#/definitions/time"
+                }
+              }
+            },
+            "pnf_list": {
+              "type": "array",
+              "description": "A list of PNFs",
+              "items": {
+                "type": "object",
+                "description": "A PNF",
+                "properties": {
+                  "ems-id": {"type": "string"},
+                  "pnf-name": {"type": "string"},
+                  "pdu-id": {"type": "string"},
+                  "optional": {"type": "boolean"}
                 }
               }
             }
           }
+        },
+        "vim_list": {
+          "type": "array",
+          "description": "A list of VIMs where the NS will be deployed",
+          "items": {"type": "string"}
+        },
+        "wim_data": {
+          "type": "object",
+          "description": "The message to be sent to the WIM"
+        },
+        "ems_data": {
+          "type": "object",
+          "description": "The message to be sent to the EMS"
         }
       }
     },

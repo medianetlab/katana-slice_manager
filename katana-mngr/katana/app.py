@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
+from flask_cors import CORS
 from katana.api.db import DBView
 from katana.api.vim import VimView
 from katana.api.wim import WimView
@@ -19,6 +20,9 @@ def create_app():
     :return: Flask app
     """
     app = Flask(__name__, instance_relative_config=True)
+
+    # Enable CORS for the app
+    CORS(app)
 
     app.config.from_object('config.settings')
     app.config.from_pyfile('settings.py', silent=True)
