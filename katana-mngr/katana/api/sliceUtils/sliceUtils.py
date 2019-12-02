@@ -78,7 +78,15 @@ def do_work(nest_req):
 
     for pnf in pnf_list:
         pdu = mongoUtils.find("pdu", {"id": pnf["pdu-id"]})
+        if not pdu:
+            # ERROR HANDLING: The ns is not optional and the nsd is not
+            # on the NFVO - stop and return
+            delete_slice(nest)
+            logger.error(f"PDU {pnf['pdu-id']} not found")
+            return
         pdu_list.append(pdu["id"])
+        pdu["tenants"].append(nest["_id"])
+        mongoUtils.update("pdu", pdu["_id"], pdu)
         ems = pnf.get("ems-id", None)
         if ems:
             ems_messages[ems] = ems_messages.get(ems, {"conf_ns_list": [],
@@ -86,6 +94,7 @@ def do_work(nest_req):
             ems_messages[ems]["conf_pnf_list"].append(
                 {"name": pnf["pnf-name"], "ip": pdu["ip"],
                  "pdu-location": pdu["location"]})
+    nest["pdu_list"] = pdu_list
 
     # Find the details for each NS
     pop_list = []
@@ -114,8 +123,8 @@ def do_work(nest_req):
                 # ERROR HANDLING: The ns is not optional and the nsd is not
                 # on the NFVO - stop and return
                 delete_slice(nest)
-                logger.error(f"NSD {ns['nsd-id']} not found on\
-OSM{ns['nfvo-id']}")
+                logger.error(f"NSD {ns['nsd-id']} not found on \
+OSM {ns['nfvo-id']}")
                 return
         nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"]})
         ns["nsd-info"] = nsd
@@ -346,6 +355,15 @@ def delete_slice(slice_json):
                 continue
             target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
             target_ems_obj.del_radio(ems_message)
+
+    # Release PDUs
+    try:
+        for ipdu in slice_json["pdu_list"]:
+            pdu = mongoUtils.find("pdu", {"id": ipdu})
+            pdu["tenants"].remove(slice_json["_id"])
+            mongoUtils.update("pdu", pdu["_id"], pdu)
+    except (KeyError, ValueError):
+        logger.info("No PDU on the slice")
 
     # *** Step-2: WAN Slice ***
     wim_data = slice_json.get("wim_data", None)

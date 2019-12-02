@@ -20,19 +20,35 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-class GstView(FlaskView):
+class ResourcesView(FlaskView):
     route_prefix = '/api/'
 
     def index(self):
         """
-        Returns a list of GST and their details,
-        used by: `katana gst ls`
+        Returns the available resources on platform,
+        used by: `katana resource ls`
         """
-        gst_data = mongoUtils.index("gst")
-        return_data = []
-        for gst in gst_data:
-            return_data.append(dict(_id=gst['_id']))
-        return dumps(return_data), 200
+        # Get VIMs
+        vims = []
+        for vim in mongoUtils.index("vim"):
+            # TODO: Get resources from monitoring module
+            max_resources = None
+            avail_resources = None
+            vims.append({"name": vim["name"], "id": vim["id"],
+                         "location": vim["location"], "type": vim["type"],
+                         "tenants": vim["tenants"],
+                         "max_resources": max_resources,
+                         "avail_resources": avail_resources})
+        # Get PDUs
+        pdus = []
+        for pdu in mongoUtils.index("pdu"):
+            pdus.append({"name": pdu["name"], "id": pdu["id"],
+                         "location": pdu["location"],
+                         "tenants": pdu["tenants"]})
+
+        resources = {"VIMs": vims,
+                     "PDUs": pdus}
+        return dumps(resources), 200
 
     def get(self, uuid):
         """

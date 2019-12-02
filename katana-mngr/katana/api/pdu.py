@@ -57,6 +57,7 @@ class PduView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
+        request.json["tenants"] = []
         return mongoUtils.add('pdu', request.json), 201
 
     def delete(self, uuid):
@@ -90,4 +91,5 @@ class PduView(FlaskView):
             data = request.json
             data['_id'] = new_uuid
             data['created_at'] = time.time()  # unix epoch
+            data["tenants"] = []
             return "Created " + str(mongoUtils.add('pdu', data)), 201
