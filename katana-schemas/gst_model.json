@@ -2,17 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
 
   "definitions": {
-    "slice_descriptor":{
+    "base_slice_descriptor":{
       "type": "object",
       "description": "This is the schema for the core part of the new slice",
       "properties": {
-        "slice_des_id": {
+        "base_slice_des_id": {
           "type": "string",
           "description": "Id of the slice descriptor which will be used as base for the gst"
         },
-        "slice_des_ref": {
+        "base_slice_des_ref": {
           "type": "string",
-          "description": "Reference to an added slice descriptor which will be used as base for the gst"
+          "description": "Optional - Reference to an added slice descriptor which will be used as base for the gst"
         },
         "coverage": {
           "type": "array",
@@ -336,9 +336,9 @@
 
   "type": "object",
   "properties": {
-    "slice_descriptor": { "$ref": "#/definitions/slice_descriptor" },
+    "base_slice_descriptor": { "$ref": "#/definitions/base_slice_descriptor" },
     "service_descriptor": { "$ref": "#/definitions/service_descriptor" },
     "test_descriptor": { "$ref": "#/definitions/test_descriptor" }
   },
-  "required": ["slice_descriptor"]
+  "required": ["base_slice_descriptor"]
 }

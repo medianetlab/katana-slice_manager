@@ -28,11 +28,12 @@ class Slice_desView(FlaskView):
         Returns a list of Slice Descriptors and their details,
         used by: `katana slice_des ls`
         """
-        slice_des_data = mongoUtils.index("slice_des_ref")
+        slice_des_data = mongoUtils.index("base_slice_des_ref")
         return_data = []
         for islicedes in slice_des_data:
-            return_data.append(dict(_id=islicedes['_id'],
-                               slice_des_id=islicedes["slice_des_id"]))
+            return_data.append(dict(
+                _id=islicedes['_id'],
+                base_slice_des_id=islicedes["base_slice_des_id"]))
         return dumps(return_data), 200
 
     def get(self, uuid):
@@ -40,7 +41,7 @@ class Slice_desView(FlaskView):
         Returns the details of specific Slice Descriptor,
         used by: `katana slice_des inspect [uuid]`
         """
-        data = (mongoUtils.get("slice_des_ref", uuid))
+        data = (mongoUtils.get("base_slice_des_ref", uuid))
         if data:
             return dumps(data), 200
         else:
@@ -51,7 +52,7 @@ class Slice_desView(FlaskView):
         Delete a specific Slice Descriptor.
         used by: `katana slice_des rm [uuid]`
         """
-        result = mongoUtils.delete("slice_des", uuid)
+        result = mongoUtils.delete("base_slice_des_ref", uuid)
         if result:
             return "Deleted Slice Descriptor {}".format(uuid), 200
         else:

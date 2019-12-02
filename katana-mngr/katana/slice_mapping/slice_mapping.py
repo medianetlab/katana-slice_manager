@@ -17,9 +17,9 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
-GST_FIELDS = ("slice_descriptor", "service_descriptor", "test_descriptor")
+GST_FIELDS = ("base_slice_descriptor", "service_descriptor", "test_descriptor")
 
-SLICE_DES_OBJ = ("slice_des_id", "slice_des_ref", "delay_tolerance",
+SLICE_DES_OBJ = ("base_slice_des_id", "base_slice_des_ref", "delay_tolerance",
                  "network_DL_throughput", "ue_DL_throughput",
                  "network_UL_throughput", "ue_UL_throughput",
                  "deterministic_communication", "group_communication_support",
@@ -46,10 +46,10 @@ def gst_to_nest(gst):
         gst[field] = gst.get(field, None)
 
     # ****** STEP 1: Slice Descriptor ******
-    if not gst["slice_descriptor"]:
-        logger.error("No Slice Descriptor given - Exit")
-        return
-    gst_slice_des = gst["slice_descriptor"]
+    if not gst["base_slice_descriptor"]:
+        logger.error("No Base Slice Descriptor given - Exit")
+        return "GST Error: No Base Slice Descriptor given", 400
+    gst_slice_des = gst["base_slice_descriptor"]
     # *** Recreate the GST ***
     for gst_key in SLICE_DES_OBJ:
         gst_slice_des[gst_key] = gst_slice_des.get(gst_key, None)
@@ -57,9 +57,9 @@ def gst_to_nest(gst):
         gst_slice_des[gst_key] = gst_slice_des.get(gst_key, [])
 
     # *** Check if there are references for slice ***
-    if gst_slice_des["slice_des_ref"]:
-        ref_slice = mongoUtils.find("slice_des_ref", {"slice_des_id":
-                                    gst_slice_des["slice_des_ref"]})
+    if gst_slice_des["base_slice_des_ref"]:
+        ref_slice = mongoUtils.find("base_slice_des_ref", {"base_slice_des_id":
+                                    gst_slice_des["base_slice_des_ref"]})
         if ref_slice:
             for key, value in gst_slice_des.items():
                 if not value:
@@ -166,6 +166,6 @@ def gst_to_nest(gst):
 
     mongoUtils.add("gst", gst)
     new_uuid = str(uuid.uuid4())
-    gst["slice_descriptor"]["_id"] = new_uuid
-    mongoUtils.add("slice_des_ref", gst["slice_descriptor"])
-    return nest
+    gst["base_slice_descriptor"]["_id"] = new_uuid
+    mongoUtils.add("base_slice_des_ref", gst["base_slice_descriptor"])
+    return nest, 0

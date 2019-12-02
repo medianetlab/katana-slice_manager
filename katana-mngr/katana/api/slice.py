@@ -76,7 +76,9 @@ class SliceView(FlaskView):
         """
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
-        nest = slice_mapping.gst_to_nest(request.json)
+        nest, error_code = slice_mapping.gst_to_nest(request.json)
+        if error_code:
+            return nest, error_code
         nest['status'] = 'init'
         nest['created_at'] = time.time()  # unix epoch
         nest['deployment_time'] = dict(

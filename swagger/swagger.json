@@ -2,7 +2,7 @@
   "swagger":"2.0",
   "info":{ 
     "description":"This is Katana Slice Manager Swagger for documenting Katana's NBI REST APIs. You can find more about Katana Slice Manager at [Katana Github page](https://github.com/medianetlab/katana-slice_manager).",
-    "title":"Katana Swagger",
+    "title":"Katana",
     "version":"1.0.0",
     "contact":{ 
       "email":"thmanagnostopoulos@iit.demokritos.gr"
@@ -72,8 +72,8 @@
       "description": "Read the GST given to the SM"
     },
     {
-      "name":"Slice Descriptors",
-      "description": "Create, Read, Update and Delete Slice Descriptors that will be included in the GST"
+      "name":"Base Slice Descriptors",
+      "description": "Create, Read, Update and Delete Base Slice Descriptors that will be included in the GST"
     },
     {
       "name": "Supported SST",
@@ -125,7 +125,7 @@
           "application/yaml"
         ],
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -206,7 +206,7 @@
         ],
         "summary":"Deletes the given slice",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -307,7 +307,7 @@
           "application/yaml"
         ],
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -382,7 +382,7 @@
         ],
         "summary":"Deletes the given VIM",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -414,7 +414,7 @@
         ],
         "summary":"Updates the given VIM",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -494,7 +494,7 @@
           "application/yaml"
         ],
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -569,7 +569,7 @@
         ],
         "summary":"Deletes the given NFVO",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -601,7 +601,7 @@
         ],
         "summary":"Updates the given NFVO",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -681,7 +681,7 @@
           "application/yaml"
         ],
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -756,7 +756,7 @@
         ],
         "summary":"Deletes the given WIM",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -788,7 +788,7 @@
         ],
         "summary":"Updates the given WIM",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -868,7 +868,7 @@
           "application/yaml"
         ],
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -943,7 +943,7 @@
         ],
         "summary":"Deletes the given EMS",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -976,7 +976,7 @@
         ],
         "summary":"Updates the given EMS",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -1056,7 +1056,7 @@
           "application/yaml"
         ],
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -1131,7 +1131,7 @@
         ],
         "summary": "Add or update a supported PDU on the platform",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{
           "200":{ 
@@ -1182,7 +1182,7 @@
         ],
         "summary":"Deletes the given PDU",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "parameters":[ 
           { 
@@ -1268,7 +1268,7 @@
         ],
         "summary": "Add a supported SST on the platform",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{ 
           "201":{ 
@@ -1343,7 +1343,7 @@
         ],
         "summary": "Add or update a supported SST on the platform",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{
           "200":{ 
@@ -1394,7 +1394,7 @@
         ],
         "summary": "Delete a supported SST on the platform",
         "produces":[ 
-          "application/json"
+          "string"
         ],
         "responses":{
           "200":{ 
@@ -1423,18 +1423,280 @@
           }
         ]
       }
+    },
+    "/gst": {
+      "get": {
+        "tags": [
+          "Generic Slice Template"
+        ],
+        "summary": "Returns a list of the received GSTs for slice instantiation",
+        "produces": [
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{
+              "type": "array",
+              "description": "A list of received GSTs",
+              "items": {
+                "type": "string",
+                "description": "GST Database ID"
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      }
+    },
+    "/gst/{gst_id}": {
+      "get": {
+        "tags": [
+          "Generic Slice Template"
+        ],
+        "summary": "Return Info about a specific GST",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{ 
+              "$ref":"#/definitions/gst"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "404":{
+            "description":"Not Found"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "name":"gst_id",
+            "in":"path",
+            "description":"ID of GST",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      }
+    },
+    "/base_slice_des": {
+      "get": {
+        "tags": [
+          "Base Slice Descriptors"
+        ],
+        "summary": "Returns a list of the base slice descriptors that are part of the GST",
+        "produces": [
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{
+              "type": "array",
+              "description": "A list of the base slice descriptors",
+              "items": {
+                "type": "object",
+                "description": "A list of base slice descriptors",
+                "properties": {
+                  "DB_ID": {"type": "string"},
+                  "Slice_des_ID": {"type": "string"}
+                }
+              }
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Base Slice Descriptors"
+        ],
+        "summary": "Defines a new Base Slice Descriptor for the platform",
+        "produces":[ 
+          "string"
+        ],
+        "responses":{ 
+          "201":{ 
+            "description":"Created",
+            "schema":{ 
+              "type":"string",
+              "description": "The uuid of the new base slice descriptor"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"Base Slice Descriptor",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/base_slice_des"
+            }
+          }
+        ]
+      }
+    },
+    "/base_slice_des/{id}": {
+      "get": {
+        "tags": [
+          "Base Slice Descriptors"
+        ],
+        "summary": "Return Info about a specific base slice descriptor",
+        "produces":[ 
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{ 
+              "$ref":"#/definitions/base_slice_des"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "404":{
+            "description":"Not Found"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "name":"id",
+            "in":"path",
+            "description":"ID of base_slice_des",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Base Slice Descriptors"
+        ],
+        "summary": "Add or update a base slice descriptor",
+        "produces":[ 
+          "string"
+        ],
+        "responses":{
+          "200":{ 
+            "description":"Modified"
+          }, 
+          "201":{ 
+            "description":"Created",
+            "schema":{ 
+              "type":"string",
+              "description": "The uuid of the new base slice descriptor"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "404":{
+            "description":"Not Found"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "in":"body",
+            "name":"body",
+            "description":"SST Parameters",
+            "required":true,
+            "schema":{ 
+              "$ref":"#/definitions/base_slice_des"
+            }
+          },
+          { 
+            "name":"id",
+            "in":"path",
+            "description":"ID of base_slice_des",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Base Slice Descriptors"
+        ],
+        "summary": "Delete a base slice descriptor",
+        "produces":[ 
+          "string"
+        ],
+        "responses":{
+          "200":{ 
+            "description":"Deleted"
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "404":{
+            "description":"Not Found"
+          },
+          "405":{ 
+            "description":"Invalid Input"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[
+          { 
+            "name":"id",
+            "in":"path",
+            "description":"ID of base_slice_des",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      }
     }
   },
   "definitions":{ 
-    "slice_descriptor":{
+    "base_slice_des":{
       "type": "object",
       "description": "This is the schema for the core part of the new slice",
       "properties": {
-        "slice_des_id": {
+        "base_slice_des_id": {
           "type": "string",
           "description": "Id of the slice descriptor which will be used as base for the gst"
         },
-        "slice_des_ref": {
+        "base_slice_des_ref": {
           "type": "string",
           "description": "Reference to an added slice descriptor which will be used as base for the gst"
         },
@@ -1758,7 +2020,7 @@
     "gst":{ 
       "type": "object",
       "properties": {
-        "slice_descriptor": { "$ref": "#/definitions/slice_descriptor" },
+        "base_slice_descriptor": { "$ref": "#/definitions/base_slice_des" },
         "service_descriptor": { "$ref": "#/definitions/service_descriptor" },
         "test_descriptor": { "$ref": "#/definitions/test_descriptor" }
       }
@@ -1795,6 +2057,7 @@
     },
     "time":{ 
       "type":"object",
+      "description": "The Slice Deployment time",
       "properties":{ 
         "NS_Deployment_Time":{ 
           "type":"object",
@@ -1965,8 +2228,8 @@
           "description": "A description for the VIM"
         },
         "config": {
-            "type": "object",
-            "description": "Unique parameters regarding the VIM operation - example: Security group"
+          "type": "object",
+          "description": "Optional parameters regarding the VIM operation - example: Security group"
         }
       }
     },
@@ -2122,17 +2385,18 @@
             }
           }
         },
-        "Radio-Elements": {
+        "PDUs": {
           "type": "array",
-          "description": "A list of all the available radio elements",
+          "description": "A list of all the available PDUs",
           "items": {
             "type": "object",
-            "description": "A radio element",
+            "description": "A PDU",
             "properties": {
               "name": {"type": "string"},
               "type": {"type": "string"},
+              "description": {"type": "string"},
               "location": {"type": "string"},
-              "available": {"type": "boolean"}
+              "in_use": {"type": "boolean"}
             }
           }
         }
