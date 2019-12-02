@@ -22,16 +22,16 @@ def ls():
         r = requests.get(url, timeout=3)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        print(console_formatter("DB_ID", "ID/Ref ID"))
+        print(console_formatter("DB_ID", "Base SD ID"))
         for i in range(len(json_data)):
             try:
                 print(console_formatter(
                     json_data[i]["_id"],
-                    json_data[i]["slice_des_id"]))
+                    json_data[i]["base_slice_des_id"]))
             except KeyError:
                 print(console_formatter(
                     json_data[i]["_id"],
-                    json_data[i]["slice_des_ref"]))
+                    json_data[i]["base_slice_des_ref"]))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
     except requests.exceptions.ConnectionError as errc:
@@ -99,9 +99,9 @@ def add(file):
 @click.argument('id')
 def rm(id):
     """
-    Remove supported EMS
+    Remove a Base Slice Descriptor
     """
-    url = "http://localhost:8000/api/ems/"+id
+    url = "http://localhost:8000/api/slice_des/"+id
     r = None
     try:
         r = requests.delete(url, timeout=3)
@@ -119,16 +119,16 @@ def rm(id):
 
 @click.command()
 @click.option('-f', '--file', required=True, type=str,
-              help='yaml file with EMS details')
+              help='yaml file with Base Slice Descriptor details')
 @click.argument('id')
 def update(file, id):
     """
-    Update EMS
+    Update Base Slice Descriptor
     """
     with open(file, 'r') as stream:
         data = yaml.load(stream)
 
-    url = "http://localhost:8000/api/ems/"+id
+    url = "http://localhost:8000/api/slice_des/"+id
     r = None
     try:
         r = requests.put(url, json=json.loads(json.dumps(data)), timeout=3)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask_classful import FlaskView
+from flask import request
 import logging
+import uuid
 from bson.json_util import dumps
-
 from katana.api.mongoUtils import mongoUtils
 
 # Logging Parameters
@@ -36,6 +37,16 @@ class Slice_desView(FlaskView):
                 base_slice_des_id=islicedes["base_slice_des_id"]))
         return dumps(return_data), 200
 
+    def post(self):
+        """
+        Add a new base slice descriptor. The request must provide the base
+        slice descriptor details. Used by: `katana slice_des add -f [file]`
+        """
+        new_uuid = str(uuid.uuid4())
+        data = request.json
+        data['_id'] = new_uuid
+        return str(mongoUtils.add('base_slice_des_id', data)), 201
+
     def get(self, uuid):
         """
         Returns the details of specific Slice Descriptor,
@@ -46,6 +57,26 @@ class Slice_desView(FlaskView):
             return dumps(data), 200
         else:
             return "Not Found", 404
+
+    def put(self, uuid):
+        """
+        Add or update a new base slice descriptor.
+        The request must provide the service details.
+        used by: `katana slice_des update -f [yaml file]`
+        """
+        data = request.json
+        data['_id'] = uuid
+        old_data = mongoUtils.get("base_slice_des_ref", uuid)
+
+        if old_data:
+            mongoUtils.update("base_slice_des_ref", uuid, data)
+            return f"Modified {uuid}", 200
+        else:
+            new_uuid = uuid
+            data = request.json
+            data['_id'] = new_uuid
+            return "Created " + str(mongoUtils.add(
+                'base_slice_des_ref', data)), 201
 
     def delete(self, uuid):
         """

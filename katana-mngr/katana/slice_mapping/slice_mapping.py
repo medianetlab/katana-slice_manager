@@ -62,8 +62,11 @@ def gst_to_nest(gst):
                                     gst_slice_des["base_slice_des_ref"]})
         if ref_slice:
             for key, value in gst_slice_des.items():
-                if not value:
-                    gst_slice_des[key] = ref_slice[key]
+                try:
+                    if not value:
+                        gst_slice_des[key] = ref_slice[key]
+                except KeyError:
+                    continue
 
     # *** Calculate the type of the slice (sst) ***
     # Based on the Supported Slices inputs will determine sst and sd values
@@ -165,7 +168,11 @@ def gst_to_nest(gst):
         nest["probe_list"] = gst_test_des["probe_list"]
 
     mongoUtils.add("gst", gst)
-    new_uuid = str(uuid.uuid4())
-    gst["base_slice_descriptor"]["_id"] = new_uuid
-    mongoUtils.add("base_slice_des_ref", gst["base_slice_descriptor"])
+    if not mongoUtils.find(
+            "base_slice_des_ref",
+            {"base_slice_des_id": gst["base_slice_descriptor"]
+                ["base_slice_des_id"]}):
+        new_uuid = str(uuid.uuid4())
+        gst["base_slice_descriptor"]["_id"] = new_uuid
+        mongoUtils.add("base_slice_des_ref", gst["base_slice_descriptor"])
     return nest, 0
