@@ -62,11 +62,10 @@ NFVO. Deleting slice")
                     delete_slice(request_json)
                     return "Error: NSD was not found int the NFVO"
             try:
-                logger.debug(new_ns["radio"])
                 if new_ns["radio"]:
                     radio_nsd_list.append(new_ns["name"])
             except KeyError:
-                logger.debug("No radio for this NS")
+                logger.info("No radio for this NS")
             placement_list[new_ns["name"]] = {"requirements": nsd["flavor"],
                                               "vim_net": nsd["vim_networks"]}
             # Find the NS in the registered NSs
@@ -216,12 +215,13 @@ will be created')
             ins["id"],
             slice_vim_id
         )
+        time.sleep(7)
     request_json["running_ns"] = ns_id_dict
     # Get the nsr for each service and wait for the activation
     nsr_dict = {}
     for num, ins in enumerate(new_ns_list):
         nsr_dict[ins["name"]] = nfvo.getNsr(ns_id_dict[ins["name"]])
-        while nsr_dict[ins["name"]]['operational-status'] != 'running':
+        while nsr_dict[ins["name"]]['operational-status'] != 'running' or nsr_dict[ins["name"]]['config-status'] != 'configured':
             time.sleep(10)
             nsr_dict[ins["name"]] = nfvo.getNsr(ns_id_dict[ins["name"]])
         request_json['deployment_time']['NS_Deployment_Time'][ins['name']] =\
@@ -237,9 +237,6 @@ will be created')
             nsr[vnf_name] = nfvo.getIPs(vnfr)
         placement_list[ns_name]["vnfr"] = nsr
     mongoUtils.update("slice", request_json['_id'], request_json)
-    logger.debug(f"****** placement_list ******")
-    for mynsd, nsd_value in placement_list.items():
-        logger.debug(f"{mynsd} --> {nsd_value}")
 
     # *** STEP-3b: Radio ***
     radio_component_list = []
@@ -257,8 +254,6 @@ will be created')
             "location": request_json["nsi"]["radio-ref"]["location"],
             "nsr_list": radio_component_list
         }
-        logger.debug("**** EMS *****")
-        logger.debug(emsd)
         ems.conf_radio(emsd)
         request_json['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
@@ -288,6 +283,7 @@ def delete_slice(slice_json):
     try:
         for ins_name, ins_id in slice_json["running_ns"].items():
             nfvo.deleteNs(ins_id)
+            time.sleep(5)
 
         time.sleep(15)
 
