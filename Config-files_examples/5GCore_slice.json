@@ -1,0 +1,49 @@
+{
+  "nsi": {
+    "id": "NCSRD_5GCore_embb",
+    "name": "NCSRD_5GCore_embb",
+    "short-name": "NCSRD_5GCore_embb",
+    "description": "NCSRD_5GCore_embb",
+    "type": "embb",
+    "nsd-ref": [
+      {
+        "id": "f27602a7-173d-4ead-ac7e-79bfbdfdaf44",
+        "name": "5GCore_GW_nsd",
+        "short-name": "5GCore_GW_nsd",
+        "radio-conf": true
+      },
+      {
+        "id": "c4cd0f24-f31e-4aa7-b888-1f11bcfaf099",
+        "name": "5GCore_MME-HSS_nsd",
+        "short-name": "5GCore_MME_HSS_nsd"
+      },
+      {
+        "id": "551b27ec-4903-4877-ac46-96e91a1e0d7a",
+        "name": "5GCore_PCRF_nsd",
+        "short-name": "5GCore_PCRF_nsd"
+      },
+    ],
+    "wim-ref": {
+      "endpoint-segment": [
+        {
+          "service_id": "enodeb",
+          "service_name": "enodeb",
+          "ip": "10.201.0.101"
+        },
+        {
+          "service_id": "internet",
+          "service_name": "enodeb"
+        }
+      ],
+      "topology": "ELAN",
+      "bidirectional": true,
+      "link_params": {
+        "bw": "N",
+        "latency": "N"
+      }
+    },
+    "radio-ref": {
+      "location": "minilab"
+    }
+  }
+}
