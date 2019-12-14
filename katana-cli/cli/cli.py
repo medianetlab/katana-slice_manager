@@ -45,6 +45,7 @@ class CLI(click.MultiCommand):
 @click.command(cls=CLI)
 def cli():
     """
-    katana-cli is a command-line tool that interacts with the katana slice manager
+    katana-cli is a command-line tool that interacts with the katana
+    slice manager
     """
     pass

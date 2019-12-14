@@ -52,11 +52,31 @@ class ResourcesView(FlaskView):
 
     def get(self, uuid):
         """
-        Returns the details of specific GST,
-        used by: `katana gst inspect [uuid]`
+        Returns the available resources on platform,
+        used by: `katana resource location <location>`
         """
-        data = (mongoUtils.get("gst", uuid))
-        if data:
-            return dumps(data), 200
-        else:
-            return "Not Found", 404
+        # Get VIMs
+        vims = []
+        filter_data = {}
+        logger.debug(uuid)
+        if uuid:
+            filter_data["location"] = uuid
+        for vim in mongoUtils.find_all("vim", data=filter_data):
+            # TODO: Get resources from monitoring module
+            max_resources = None
+            avail_resources = None
+            vims.append({"name": vim["name"], "id": vim["id"],
+                         "location": vim["location"], "type": vim["type"],
+                         "tenants": vim["tenants"],
+                         "max_resources": max_resources,
+                         "avail_resources": avail_resources})
+        # Get PDUs
+        pdus = []
+        for pdu in mongoUtils.find_all("pdu", data=filter_data):
+            pdus.append({"name": pdu["name"], "id": pdu["id"],
+                         "location": pdu["location"],
+                         "tenants": pdu["tenants"]})
+
+        resources = {"VIMs": vims,
+                     "PDUs": pdus}
+        return dumps(resources), 200
