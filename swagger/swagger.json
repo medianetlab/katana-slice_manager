@@ -1234,6 +1234,40 @@
         }
       }
     },
+    "/resources/{location}": {
+      "get": {
+        "tags":[ 
+          "Resources"
+        ],
+        "summary":"Returns information about the platform resources on the specified location",
+        "produces":[
+          "application/json"
+        ],
+        "responses":{ 
+          "200":{ 
+            "description":"Successful Operation",
+            "schema":{ 
+              "$ref":"#/definitions/resources"
+            }
+          },
+          "400":{ 
+            "description":"Bad Request"
+          },
+          "500":{ 
+            "description":"Server Error"
+          }
+        },
+        "parameters":[ 
+          { 
+            "name":"location",
+            "in":"path",
+            "description":"Specific location of the platform",
+            "required":true,
+            "type":"string"
+          }
+        ]
+      }
+    },
     "/sst": {
       "get": {
         "tags": [
@@ -2364,8 +2398,13 @@
             "description": "A VIM",
             "properties": {
               "name": {"type": "string"},
+              "id": {"type": "string"},
               "type": {"type": "string"},
               "location": {"type": "string"},
+              "tenants": {
+                "type": "object",
+                "description": "Tenants created on the VIM"
+              },
               "max_resources":{
                 "type": "object",
                 "properties": {
@@ -2393,10 +2432,16 @@
             "description": "A PDU",
             "properties": {
               "name": {"type": "string"},
-              "type": {"type": "string"},
-              "description": {"type": "string"},
+              "id": {"type": "string"},
               "location": {"type": "string"},
-              "in_use": {"type": "boolean"}
+              "tenants": {
+                "type": "array",
+                "description": "A list of Tenants using the PDU",
+                "items": {
+                  "type": "string",
+                  "description": "Tenant id"
+                }
+              }
             }
           }
         }

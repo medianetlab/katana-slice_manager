@@ -116,7 +116,7 @@ class Openstack():
                                          description=description)
         return user
 
-    def combine_proj_user(self, conn, project, user):
+    def combine_proj_user(self, conn, project, user, vim_admin_user):
         """
         Compbines newly created project and user
         """
@@ -126,7 +126,8 @@ class Openstack():
         conn.identity.assign_project_role_to_user(project, user, heatrole)
         # Add admin user to the project, in order to create the MAC Addresses
         adminrole = conn.identity.find_role("admin")
-        admin_user = conn.identity.find_user("admin", ignore_missing=False)
+        admin_user = conn.identity.find_user(vim_admin_user,
+                                             ignore_missing=False)
         conn.identity.assign_project_role_to_user(project, admin_user,
                                                   adminrole)
         conn.identity.assign_project_role_to_user(project, admin_user,
@@ -242,7 +243,7 @@ class Openstack():
         user = self.create_user(conn, tenant_project_user, "password")
 
         # assigns some needed roles
-        self.combine_proj_user(conn, project, user)
+        self.combine_proj_user(conn, project, user, self.username)
 
         # creates the security group and rules
         sec_group = self.create_sec_group(conn, tenant_project_name, project)
