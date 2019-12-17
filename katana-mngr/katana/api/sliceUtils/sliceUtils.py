@@ -64,6 +64,7 @@ def do_work(nest_req):
     ns_list = sst.get("ns_list", []) + nest.get("ns_list", [])
     pnf_list = sst.get("pnf_list", [])
     vim_list = []
+    vim_dict = {}
     pdu_list = []
     ems_messages = {}
 
@@ -145,6 +146,13 @@ OSM {ns['nfvo-id']}")
             # Temporary use the first element
             selected_vim = get_vim[0]["id"]
             ns["vims"].append(selected_vim)
+            try:
+                vim_dict[selected_vim]["ns_list"].append(ns["ns-name"])
+                if ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
+                    vim_dict[selected_vim]["nfvo_list"].append(ns["nfvo-id"])
+            except KeyError:
+                vim_dict[selected_vim] = {"ns_list": [ns["ns-name"]],
+                                          "nfvo_list": [ns["nfvo-id"]]}
             site["vim"] = selected_vim
             if selected_vim not in vim_list:
                 vim_list.append(selected_vim)
@@ -157,7 +165,7 @@ OSM {ns['nfvo-id']}")
                 "mtu": nest["mtu"], "end_points": end_points}
 
     nest["network functions"] = {"ns_list": ns_list, "pnf_list": pnf_list}
-    nest["vim_list"] = vim_list
+    nest["vim_list"] = vim_dict
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
 
@@ -169,7 +177,7 @@ OSM {ns['nfvo-id']}")
 
     # *** STEP-2a: Cloud ***
     # *** STEP-2a-i: Create the new tenant/project on the VIM ***
-    for num, vim in enumerate(vim_list):
+    for num, (vim, vim_info) in enumerate(vim_dict.items()):
         target_vim = mongoUtils.find("vim", {"id": vim})
         target_vim_obj = pickle.loads(
             mongoUtils.find("vim_obj", {"id": vim})["obj"])
@@ -199,24 +207,22 @@ OSM {ns['nfvo-id']}")
         elif target_vim["type"] == "opennebula":
             config_param = selected_vim['config']
 
-        for ns in ns_list:
-            if vim in ns["vims"]:
-                target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
-                target_nfvo_obj = pickle.loads(
-                    mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
-                vim_id = target_nfvo_obj.addVim(
-                    tenant_project_name, target_vim['password'],
-                    target_vim['type'], target_vim['auth_url'],
-                    target_vim['username'],
-                    config_param)
-                # Register the tenant to the mongo db
-                target_nfvo["tenants"][nest["_id"]] =\
-                    target_nfvo["tenants"].get(nest["_id"], [])
-                target_nfvo["tenants"][nest["_id"]].append(vim_id)
-                mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
-                for site in ns["placement"]:
-                    if site["vim"] == vim:
-                        site["nfvo_vim"] = vim_id
+        for nfvo_id in vim_info["nfvo_list"]:
+            target_nfvo = mongoUtils.find("nfvo", {"id": nfvo_id})
+            target_nfvo_obj = pickle.loads(
+                mongoUtils.find("nfvo_obj", {"id": nfvo_id})["obj"])
+            vim_id = target_nfvo_obj.addVim(
+                tenant_project_name, target_vim['password'],
+                target_vim['type'], target_vim['auth_url'],
+                target_vim['username'],
+                config_param)
+            vim_info["nfvo_vim_account"] = vim_info.get("nfvo_vim_account", {})
+            vim_info["nfvo_vim_account"][nfvo_id] = vim_id
+            # Register the tenant to the mongo db
+            target_nfvo["tenants"][nest["_id"]] =\
+                target_nfvo["tenants"].get(nest["_id"], [])
+            target_nfvo["tenants"][nest["_id"]].append(vim_id)
+            mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
 
     # *** STEP-2b: WAN ***
     if (mongoUtils.count('wim') <= 0):
@@ -251,12 +257,17 @@ OSM {ns['nfvo-id']}")
         target_nfvo_obj = pickle.loads(
             mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
         for site in ns["placement"]:
+            selected_vim = site["vim"]
+            nfvo_vim_account = \
+                vim_dict[selected_vim]["nfvo_vim_account"][ns["nfvo-id"]]
             nfvo_inst_ns = target_nfvo_obj.instantiateNs(
                 ns["ns-name"],
                 ns["nsd-id"],
-                site["nfvo_vim"]
+                nfvo_vim_account
             )
             site["nfvo_inst_ns"] = nfvo_inst_ns
+            time.sleep(4)
+        time.sleep(2)
 
     # Get the nsr for each service and wait for the activation
     for ns in ns_list:

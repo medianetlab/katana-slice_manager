@@ -24,6 +24,10 @@
       "type": "string",
       "description": "The admin password"
     },
+    "tenantname": {
+      "type": "string",
+      "description": "NFVO's Tenant name"
+    },
     "type": {
       "type": "string",
       "description": "NFVO's type"
