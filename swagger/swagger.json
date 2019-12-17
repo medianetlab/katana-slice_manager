@@ -2446,11 +2446,30 @@
                       },
                       "description": "Information about the NS Descriptor"
                     },
-                    "vims": {
-                      "type": "array",
-                      "description": "A list of VIMs where the NS will be deployed",
-                      "items": {
-                        "type": "string"
+                    "vim_list": {
+                      "type": "object",
+                      "description": "A dictionary of VIMs where the NS will be deployed",
+                      "properties": {
+                        "<VIM_name>":{
+                          "type": "object",
+                          "description": "A VIM",
+                          "properties": {
+                            "ns_list": {
+                              "type": "array",
+                              "description": "List of NS names",
+                              "items": {"type": "string"}
+                            },
+                            "nfvo_list": {
+                              "type": "array",
+                              "description": "List of NS names",
+                              "items": {"type": "string"}
+                            },
+                            "nfvo_vim_account": {
+                              "type": "object",
+                              "description": "VIM account id for each NFVO"
+                            }
+                          }
+                        }
                       }
                     }
                   },
