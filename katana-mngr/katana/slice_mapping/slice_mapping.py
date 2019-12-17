@@ -98,7 +98,7 @@ def gst_to_nest(gst):
             else:
                 logger.error("There are no supported eMBB slices")
                 # TODO: Error Handling
-                return
+                return "Error: There are no supported slices", 400
         else:
             break
 
