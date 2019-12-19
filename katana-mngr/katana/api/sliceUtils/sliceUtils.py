@@ -394,8 +394,8 @@ def delete_slice(slice_json):
 
     # *** Step-3: Cloud ***
     nf = slice_json.get("network functions", None)
-    if nf:
-        ns_list = nf["ns_list"]
+    ns_list = nf["ns_list"]
+    try:
         vim_error_list = []
         for ns in ns_list:
             # Get the NFVO
@@ -416,7 +416,11 @@ def delete_slice(slice_json):
                     if target_nfvo_obj.checkNsLife(site["nfvo_inst_ns"]):
                         break
                     time.sleep(5)
+    except KeyError as e:
+        logger.warning(
+            f"Error, not all NSs started or terminated correctly {e}")
 
+    try:
         vim_dict = slice_json["vim_list"]
         for vim, vim_info in vim_dict.items():
             # Delete the new tenants from the NFVO
@@ -427,7 +431,9 @@ def delete_slice(slice_json):
                     mongoUtils.find("nfvo_obj", {"id": nfvo})["obj"])
                 # Delete the VIM and update nfvo db
                 target_nfvo_obj.deleteVim(vim_account)
-                del target_nfvo["tenants"][slice_json["_id"]]
+                target_nfvo["tenants"][slice_json["_id"]].remove(vim_account)
+                if len(target_nfvo["tenants"][slice_json["_id"]]) == 0:
+                    del target_nfvo["tenants"][slice_json["_id"]]
                 mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
             # Delete the tenants from every vim
             if vim not in vim_error_list:
@@ -444,5 +450,8 @@ def delete_slice(slice_json):
                     target_vim["tenants"][slice_json["_id"]])
                 del target_vim["tenants"][slice_json["_id"]]
                 mongoUtils.update("vim", target_vim["_id"], target_vim)
+    except KeyError as e:
+        logger.warning(
+            f"Error, not all tenants created or removed correctly {e}")
 
     mongoUtils.delete("slice", slice_json["_id"])
