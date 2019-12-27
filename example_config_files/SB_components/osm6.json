@@ -1,0 +1,12 @@
+{
+  "id": "OSM6",
+  "name": "Athens OSM6",
+  "nfvoip": "10.200.64.53",
+  "nfvousername": "*****",
+  "nfvopassword": "*****",
+  "tenantname": "*****",
+  "type": "OSM",
+  "version": "6",
+  "description": "NCSRD OSM Release 6",
+  "config": {}
+}

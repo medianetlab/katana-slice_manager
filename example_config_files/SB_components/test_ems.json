@@ -1,0 +1,7 @@
+{
+  "id": "test_ems",
+  "name": "test_ems",
+  "description": "Test EMS",
+  "url": "https://jsonplaceholder.typicode.com",
+  "type": "Test_EMS"
+}

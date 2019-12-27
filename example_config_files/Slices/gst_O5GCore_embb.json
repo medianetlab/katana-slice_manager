@@ -1,0 +1,11 @@
+{
+    "base_slice_descriptor": {
+        "base_slice_des_id": "O5GCore",
+        "delay_tolerance": true,
+        "network_DL_throughput": 10,
+        "ue_DL_throughput": 20,
+        "network_UL_throughput": 50,
+        "ue_UL_throughput": 60,
+        "mtu": 1500
+    }
+}
