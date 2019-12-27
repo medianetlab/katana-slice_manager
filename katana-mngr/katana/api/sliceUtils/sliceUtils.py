@@ -48,6 +48,7 @@ def do_work(nest_req):
 
     # **** STEP-1: Placement ****
     nest['status'] = 'Placement'
+    nest["phase"] = 0
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Placement")
     placement_start_time = time.time()
