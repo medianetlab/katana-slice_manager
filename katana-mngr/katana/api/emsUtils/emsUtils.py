@@ -44,6 +44,7 @@ class Ems():
         try:
             r = requests.post(url, json=json.loads(json.dumps(data)),
                               timeout=360, headers=headers)
+            logger.info(r.json())
             r.raise_for_status()
         except requests.exceptions.HTTPError as errh:
             logger.exception("Http Error:", errh)

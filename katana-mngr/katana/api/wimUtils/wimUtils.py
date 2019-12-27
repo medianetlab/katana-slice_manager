@@ -40,6 +40,7 @@ class Wim():
         try:
             r = requests.post(url, json=json.loads(json.dumps(data)),
                               timeout=10)
+            logger.info(r.json())
             r.raise_for_status()
         except requests.exceptions.HTTPError as errh:
             logger.exception("Http Error:", errh)
@@ -66,6 +67,7 @@ class Wim():
         try:
             r = requests.post(url, headers=headers,
                               json=json.loads(json.dumps(data)), timeout=10)
+            logger.info(r.json())
             r.raise_for_status()
         except requests.exceptions.HTTPError as errh:
             logger.exception("Http Error:", errh)

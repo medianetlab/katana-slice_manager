@@ -63,10 +63,14 @@ def gst_to_nest(gst):
         if ref_slice:
             for key, value in gst_slice_des.items():
                 try:
-                    if not value:
+                    if value is None:
                         gst_slice_des[key] = ref_slice[key]
                 except KeyError:
                     continue
+        else:
+            logger.error("slice_descriptor {} not found".
+                         format(gst_slice_des["base_slice_des_ref"]))
+            return "Error: referenced slice_descriptor not found", 400
 
     # *** Calculate the type of the slice (sst) ***
     # Based on the Supported Slices inputs will determine sst and sd values
@@ -80,10 +84,14 @@ def gst_to_nest(gst):
     else:
         if gst_slice_des["nb_iot"]:
             # TBD
-            pass
+            sst = 1
         else:
             # uRLLC
-            sst = 2
+            if len(gst_slice_des["coverage"]) > 0:
+                sst = 2
+            else:
+                logger.warning("No edge location - embb placement")
+                sst = 1
 
     # Get the supported slices list
     while True:
@@ -97,7 +105,6 @@ def gst_to_nest(gst):
                 sst = 1
             else:
                 logger.error("There are no supported eMBB slices")
-                # TODO: Error Handling
                 return "Error: There are no supported slices", 400
         else:
             break

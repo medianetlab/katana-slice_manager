@@ -67,7 +67,6 @@ def do_work(nest_req):
     vim_dict = {}
     pdu_list = []
     ems_messages = {}
-
     # Get the NSs and PNFsfrom the supported sst
     for ns in ns_list:
         if not ns["placement"]:
@@ -224,6 +223,8 @@ OSM {ns['nfvo-id']}")
             target_nfvo["tenants"][nest["_id"]].append(vim_id)
             mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
 
+    nest['phase'] = 1
+    mongoUtils.update("slice", nest['_id'], nest)
     # *** STEP-2b: WAN ***
     if (mongoUtils.count('wim') <= 0):
         logger.warning('There is no registered WIM')
@@ -246,6 +247,7 @@ OSM {ns['nfvo-id']}")
 
     # **** STEP-3: Slice Activation Phase****
     nest['status'] = 'Activation'
+    nest['phase'] = 2
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Activation")
     # *** STEP-3a: Cloud ***
@@ -289,18 +291,20 @@ OSM {ns['nfvo-id']}")
                 vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
                 site["vnfs"].append(target_nfvo_obj.getIPs(vnfr))
 
+    nest['phase'] = 3
+    mongoUtils.update("slice", nest['_id'], nest)
     # *** STEP-3b: Radio Slice Configuration ***
     if (mongoUtils.count('ems') <= 0):
         logger.warning('There is no registered EMS')
     else:
         # Add the management IPs for the NS sent ems in ems_messages:
+        radio_start_time = time.time()
         for ns in ns_list:
             try:
                 ems = ns["ems-id"]
             except KeyError:
                 continue
             else:
-                radio_start_time = time.time()
                 ems_messages[ems] = ems_messages.get(
                     ems, {"conf_ns_list": [], "conf_pnf_list": []})
                 for site in ns["placement"]:
@@ -326,7 +330,8 @@ OSM {ns['nfvo-id']}")
                 logger.error("EMS {} not found - No configuration".
                              format(ems_id))
                 continue
-            target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
+            target_ems_obj = pickle.loads(
+                mongoUtils.find("ems_obj", {"id": ems_id})["obj"])
             # Create the message
             ems_message.update(ems_data)
             # Send the message
@@ -338,6 +343,7 @@ OSM {ns['nfvo-id']}")
     # *** STEP-4: Finalize ***
     logger.info("Status: Running")
     nest['status'] = 'Running'
+    nest['phase'] = 4
     nest['deployment_time']['Slice_Deployment_Time'] =\
         format(time.time() - nest['created_at'], '.4f')
     mongoUtils.update("slice", nest['_id'], nest)
@@ -354,18 +360,23 @@ def delete_slice(slice_json):
     logger.info("Status: Terminating")
 
     # *** Step-1: Radio Slice Configuration ***
-    ems_messages = slice_json.get("ems_data", None)
-    if ems_messages:
-        for ems_id, ems_message in ems_messages.items():
-            # Find the EMS
-            target_ems = mongoUtils.find("ems", {"id": ems_id})
-            if not target_ems:
-                # ERROR HANDLING: There is no such EMS
-                logger.error("EMS {} not found - No configuration".
-                             format(ems_id))
-                continue
-            target_ems_obj = mongoUtils.find("ems_obj", {"id": ems_id})
-            target_ems_obj.del_radio(ems_message)
+    if slice_json['phase'] >= 4:
+        ems_messages = slice_json.get("ems_data", None)
+        if ems_messages:
+            for ems_id, ems_message in ems_messages.items():
+                # Find the EMS
+                target_ems = mongoUtils.find("ems", {"id": ems_id})
+                if not target_ems:
+                    # ERROR HANDLING: There is no such EMS
+                    logger.error("EMS {} not found - No configuration".
+                                 format(ems_id))
+                    continue
+                target_ems_obj = pickle.loads(
+                    mongoUtils.find("ems_obj", {"id": ems_id})["obj"])
+                target_ems_obj.del_slice(ems_message)
+    else:
+        logger.warning("Something went wrong with EMS configuration during \
+slice creation")
 
     # Release PDUs
     try:
