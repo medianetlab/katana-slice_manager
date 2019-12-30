@@ -1,8 +1,6 @@
-import os
 import requests
 import json
 import yaml
-import subprocess
 
 import click
 import datetime
@@ -95,7 +93,8 @@ def deployment_time(uuid):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str, help='yaml file with slice details')
+@click.option('-f', '--file', required=True, type=str,
+              help='yaml file with slice details')
 def add(file):
     """
     Add new slice
@@ -144,7 +143,8 @@ def rm(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str, help='yaml file with slice details')
+@click.option('-f', '--file', required=True, type=str,
+              help='yaml file with slice details')
 @click.argument('id')
 def update(file, id):
     """

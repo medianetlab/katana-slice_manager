@@ -34,6 +34,7 @@ class PduView(FlaskView):
         return_data = []
         for ipdu in pdu_data:
             return_data.append(dict(_id=ipdu['_id'],
+                               pdu_id=ipdu['id'],
                                created_at=ipdu['created_at'],
                                location=ipdu['location']))
         return dumps(return_data)

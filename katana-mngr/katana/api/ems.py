@@ -38,6 +38,7 @@ class EmsView(FlaskView):
         return_data = []
         for iems in ems_data:
             return_data.append(dict(_id=iems['_id'],
+                               ems_id=iems['id'],
                                created_at=iems['created_at']))
         return dumps(return_data), 200
 

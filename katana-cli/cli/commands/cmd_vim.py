@@ -26,13 +26,14 @@ def ls():
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
         # click.echo(json.dumps(json_data, indent=2))
-        print(console_formatter("VIM_ID", "CREATED AT", "TYPE"))
+        print(console_formatter("DB_ID", "VIM_ID", "TYPE", "CREATED AT"))
         for i in range(len(json_data)):
             print(console_formatter(
                 json_data[i]["_id"],
+                json_data[i]["vim_id"],
+                json_data[i]["type"],
                 datetime.datetime.fromtimestamp(json_data[i]["created_at"])
-                .strftime('%Y-%m-%d %H:%M:%S'),
-                json_data[i]["type"]
+                .strftime('%Y-%m-%d %H:%M:%S')
                 )
             )
     except requests.exceptions.HTTPError as errh:
@@ -156,9 +157,10 @@ cli.add_command(rm)
 cli.add_command(update)
 
 
-def console_formatter(uuid, created_at, vimtype):
-    return '{0: <40}{1: <25}{2: <20}'.format(
+def console_formatter(uuid, vim_id, vimtype, created_at):
+    return '{0: <40}{1: <20}{2: <20}{3: <25}'.format(
         uuid,
-        created_at,
-        vimtype
+        vim_id,
+        vimtype,
+        created_at
     )

@@ -39,6 +39,7 @@ class NFVOView(FlaskView):
         return_data = []
         for infvo in nfvo_data:
             return_data.append(dict(_id=infvo['_id'],
+                               nfvo_id=infvo['id'],
                                created_at=infvo['created_at'],
                                type=infvo['type']))
         return dumps(return_data), 200

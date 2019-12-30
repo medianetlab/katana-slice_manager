@@ -38,6 +38,7 @@ class WimView(FlaskView):
         return_data = []
         for iwim in wim_data:
             return_data.append(dict(_id=iwim['_id'],
+                               wim_id=iwim['id'],
                                created_at=iwim['created_at']))
         return dumps(return_data), 200
 

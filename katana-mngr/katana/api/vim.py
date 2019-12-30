@@ -38,6 +38,7 @@ class VimView(FlaskView):
         return_data = []
         for ivim in vim_data:
             return_data.append(dict(_id=ivim['_id'],
+                               vim_id=ivim['id'],
                                created_at=ivim['created_at'],
                                type=ivim['type']))
         return dumps(return_data), 200
