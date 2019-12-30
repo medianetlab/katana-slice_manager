@@ -1,0 +1,17 @@
+{
+    "base_slice_descriptor": {
+        "base_slice_des_id": "5GCore_embb",
+        "delay_tolerance": true
+    },
+    "service_descriptor":{
+        "ns_list": [
+            {
+                "nfvo-id": "OSM5",
+                "nsd-id": "a9ac7f6e-9b44-4f99-860b-db4c94794b4d",
+                "ns-name": "Amarisoft_vEPC",
+                "placement": 0,
+                "optional": false
+            }
+        ]
+    }
+}
