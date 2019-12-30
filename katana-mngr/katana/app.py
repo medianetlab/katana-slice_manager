@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
 from flask_cors import CORS
-from katana.api.db import DBView
 from katana.api.vim import VimView
 from katana.api.wim import WimView
 from katana.api.nfvo import NFVOView
@@ -28,7 +27,6 @@ def create_app():
     app.config.from_object('config.settings')
     app.config.from_pyfile('settings.py', silent=True)
 
-    DBView.register(app, trailing_slash=False)
     VimView.register(app, trailing_slash=False)
     WimView.register(app, trailing_slash=False)
     EmsView.register(app, trailing_slash=False)
