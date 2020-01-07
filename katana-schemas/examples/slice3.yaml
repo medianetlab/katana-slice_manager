@@ -1,9 +1,0 @@
----
-_comment: In this GST all slice, all slice, service and test descriptor are declared
-  with a reference to previously on-boarded descriptors
-slice_descriptor:
-  slice_des: embb_ncsrd1
-service_descriptor:
-  ns_des_id: proxy-firewall
-test_descriptor:
-  test_des_id: test1

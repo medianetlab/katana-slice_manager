@@ -1,4 +1,4 @@
-# katana Slice Manager version 1.0.0
+# katana Slice Manager version 2.0.0
 
 ## Quick Start
 
@@ -32,20 +32,3 @@ Stop Katana service, and clean any associated data:
 ````
 # ./clear.sh
 ````
-
-## New in version 1.0.0
-### New Features
-- Enhanced placement algorithm
-- swagger-ui tool for NBI REST APIs documentation
-- Beta-version of the katana-ui
-
-### Changes
-- docker-compose files
-- data basees
-
-### Bugs Fixed
-- Bug on the EMS integration
-
-
-## Documentation
-Visit the Wiki page of the repository
