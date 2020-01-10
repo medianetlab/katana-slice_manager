@@ -23,3 +23,6 @@ pymongo==3.7.2
 
 # Flask CORS
 flask-cors
+
+# Kafka
+kafka-python==1.4.7
