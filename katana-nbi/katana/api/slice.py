@@ -1,18 +1,14 @@
 from flask import request
 from flask_classful import FlaskView, route
-from katana.api.mongoUtils import mongoUtils
-from katana.api.sliceUtils import sliceUtils
+from katana.utils.mongoUtils import mongoUtils
 from katana.slice_mapping import slice_mapping
+from katana.utils.kafkaUtils import kafkaUtils
 
 import uuid
+import json
 from bson.json_util import dumps
-from threading import Thread
-import time
 import logging
 import urllib3
-import json
-
-from kafka import KafkaProducer, KafkaAdminClient, admin, errors
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -27,33 +23,6 @@ stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
-
-# Create the kafka producer
-tries = 3
-exit = False
-while not exit:
-    try:
-        producer = KafkaProducer(
-            bootstrap_servers=["kafka:19092"],
-            value_serializer=lambda m: json.dumps(m).encode('ascii'))
-    except errors.NoBrokersAvailable as KafkaError:
-        if tries > 0:
-            tries -= 1
-            time.sleep(5)
-        else:
-            logger.error(KafkaError)
-    else:
-        exit = True
-        tries = 3
-
-# Create the Kafka topic
-try:
-    topic = admin.NewTopic(name="slice", num_partitions=1,
-                           replication_factor=1)
-    broker = KafkaAdminClient(bootstrap_servers="kafka:19092")
-    broker.create_topics([topic])
-except errors.TopicAlreadyExistsError:
-    print("Exists already")
 
 
 class SliceView(FlaskView):
@@ -104,33 +73,18 @@ class SliceView(FlaskView):
         Add a new slice. The request must provide the slice details.
         used by: `katana slice add -f [yaml file]`
         """
-        slice_message = {"action": "add", "message": request.json}
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
-        producer.send("slice", value=slice_message)
-        # **************************************************************************************
-        return "END"
 
+        # Get the NEST from the Slice Mapping process
         nest, error_code = slice_mapping.gst_to_nest(request.json)
         if error_code:
             return nest, error_code
-        nest['status'] = 'init'
-        nest['created_at'] = time.time()  # unix epoch
-        nest['deployment_time'] = dict(
-            Slice_Deployment_Time='N/A',
-            Placement_Time='N/A',
-            Provisioning_Time='N/A',
-            NS_Deployment_Time='N/A',
-            WAN_Deployment_Time='N/A',
-            Radio_Configuration_Time='N/A')
-        mongoUtils.add("slice", request.json)
-        # background work
-        # temp hack from:
-        # https://stackoverflow.com/questions/48994440/execute-a-function-after-flask-returns-response
-        # might be replaced with Celery...
 
-        thread = Thread(target=sliceUtils.do_work, kwargs={'nest_req': nest})
-        thread.start()
+        # Send the message to katana-mngr
+        producer, _ = kafkaUtils.create_producer()
+        slice_message = {"action": "add", "message": nest}
+        producer.send("slice", value=slice_message)
 
         return new_uuid, 201
 
@@ -140,15 +94,17 @@ class SliceView(FlaskView):
         used by: `katana slice rm [uuid]`
         """
 
-        # check if slice uuid exists
+        # Check if slice uuid exists
         delete_json = mongoUtils.get("slice", uuid)
+        logger.debug(type(delete_json))
 
         if not delete_json:
             return "Error: No such slice: {}".format(uuid), 404
         else:
-            delete_thread = Thread(target=sliceUtils.delete_slice,
-                                   kwargs={'slice_json': delete_json})
-            delete_thread.start()
+            # Send the message to katana-mngr
+            producer, _ = kafkaUtils.create_producer()
+            slice_message = {"action": "delete", "message": delete_json}
+            producer.send("slice", value=slice_message)
             return "Deleting {0}".format(uuid), 200
 
     # def put(self, uuid):

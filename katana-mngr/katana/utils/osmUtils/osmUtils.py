@@ -1,6 +1,7 @@
 import requests
 import logging
-from katana.api.mongoUtils import mongoUtils
+import uuid
+from katana.utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -252,6 +253,7 @@ class Osm():
                             vdu["vm-flavor"]["storage-gb"])
                     new_vnfd["mgmt"] = osm_vnfd["mgmt-interface"]["cp"]
                     new_vnfd["nfvo_id"] = self.nfvo_id
+                    new_vnfd["_id"] = str(uuid.uuid4())
                     mongoUtils.add("vnfd", new_vnfd)
                     new_vnfd = {}
                 break
@@ -294,6 +296,7 @@ NFVO repository")
                             new_nsd["flavor"]["storage-gb"] +=\
                                 reg_vnfd["flavor"]["storage-gb"]
                     new_nsd["nfvo_id"] = self.nfvo_id
+                    new_nsd["_id"] = str(uuid.uuid4())
                     mongoUtils.add("nsd", new_nsd)
                     new_nsd = {}
                 break

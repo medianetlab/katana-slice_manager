@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from flask import request
 from flask_classful import FlaskView
-from katana.api.osmUtils import osmUtils
-# from katana.api.tango5gUtils import tango5gUtils
+from katana.utils.osmUtils import osmUtils
+# from katana.utils.tango5gUtils import tango5gUtils
 from requests import ConnectionError, ConnectTimeout
 import uuid
-from katana.api.mongoUtils import mongoUtils
+from katana.utils.mongoUtils import mongoUtils
 from bson.json_util import dumps
 from bson.binary import Binary
 import pickle

@@ -8,8 +8,8 @@ import pickle
 import time
 import logging
 
-from katana.api.mongoUtils import mongoUtils
-from katana.api.emsUtils import emsUtils
+from katana.utils.mongoUtils import mongoUtils
+from katana.utils.emsUtils import emsUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

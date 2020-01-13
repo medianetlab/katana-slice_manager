@@ -1,5 +1,4 @@
-from sliceUtils import sliceUtils
-from slice_mapping import slice_mapping
+from katana.utils.sliceUtils import sliceUtils
 
 from kafka import KafkaConsumer, errors
 import json
@@ -21,6 +20,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
+# Create the Kafka Consumer
 tries = 3
 exit = False
 while not exit:
@@ -28,7 +28,7 @@ while not exit:
         consumer = KafkaConsumer(
             'slice',
             bootstrap_servers=['kafka:19092'],
-            auto_offset_reset='earliest',
+            auto_offset_reset='latest',
             enable_auto_commit=True,
             group_id='my-group',
             value_deserializer=lambda m: json.loads(m.decode('ascii')))
@@ -44,6 +44,14 @@ while not exit:
         exit = True
         tries = 3
 
+# Check for new messages
 for message in consumer:
     logger.debug(message.value)
-    logger.debug(type(message.value))
+    action = message.value["action"]
+    payload = message.value["message"]
+    # Add slice
+    if action == "add":
+        sliceUtils.add_slice(payload)
+    # Delete slice
+    elif action == "delete":
+        sliceUtils.delete_slice(payload)

@@ -1,8 +1,8 @@
-from katana.api.mongoUtils import mongoUtils
-from katana.api.osmUtils import osmUtils
+from katana.utils.mongoUtils import mongoUtils
 import pickle
 import time
 import logging
+import logging.handlers
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -28,10 +28,21 @@ NEST_KEYS_OBJ = ("sst_id", "shared", "network_DL_throughput",
 NEST_KEYS_LIST = ("coverage", "ns_list", "radio_spectrum", "probe_list")
 
 
-def do_work(nest_req):
+def add_slice(nest_req):
     """
     Creates the network slice
     """
+
+    nest_req['status'] = 'init'
+    nest_req['created_at'] = time.time()  # unix epoch
+    nest_req['deployment_time'] = dict(
+        Slice_Deployment_Time='N/A',
+        Placement_Time='N/A',
+        Provisioning_Time='N/A',
+        NS_Deployment_Time='N/A',
+        WAN_Deployment_Time='N/A',
+        Radio_Configuration_Time='N/A')
+    mongoUtils.add("slice", nest_req)
 
     # Recreate the NEST with None options where missiong
     nest = {"_id": nest_req["_id"], "created_at": nest_req["created_at"],
@@ -115,7 +126,7 @@ def do_work(nest_req):
                 delete_slice(nest)
                 return
             nfvo = pickle.loads(nfvo_obj_json["obj"])
-            osmUtils.bootstrapNfvo(nfvo)
+            bootstrapNfvo(nfvo)
             nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"],
                                   "nfvo_id": ns["nfvo-id"]})
             if not nsd and ns.get("optional", False):
@@ -467,3 +478,11 @@ slice creation")
             f"Error, not all tenants created or removed correctly {e}")
 
     mongoUtils.delete("slice", slice_json["_id"])
+
+
+def bootstrapNfvo(nfvo_obj):
+    """
+    Reads info from NSDs/VNFDs in the NFVO and stores them in mongodb
+    """
+    nfvo_obj.readVnfd()
+    nfvo_obj.readNsd()

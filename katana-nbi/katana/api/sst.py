@@ -6,7 +6,7 @@ from bson.json_util import dumps
 import time
 import logging
 
-from katana.api.mongoUtils import mongoUtils
+from katana.utils.mongoUtils import mongoUtils
 
 
 # Logging Parameters
