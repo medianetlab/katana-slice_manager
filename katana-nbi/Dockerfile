@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD python3 katana-mngr.py
+CMD gunicorn -b 0.0.0.0:8000 --access-logfile - --reload "katana.app:create_app()"

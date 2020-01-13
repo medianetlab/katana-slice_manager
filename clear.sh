@@ -14,5 +14,4 @@ file=katana-mngr/katana.log*
 rm -f $file
 
 # Remove Kafka data
-echo "Warning: Need root permission for removing Kafka and Zookeeper files"
-rm -rf zk-kafka/*
+rm -rf zk-kafka/* || echo "Warning: Need root permission for removing Kafka and Zookeeper files - Try again with sudo"
