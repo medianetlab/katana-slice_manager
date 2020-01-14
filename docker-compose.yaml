@@ -52,6 +52,8 @@ services:
       - "./katana-nbi:/katana"
     ports:
       - '8000:8000'
+    environment:
+      PYTHONWARNINGS: "ignore:Unverified HTTPS request"
     restart: always
     depends_on:
       - kafka
@@ -70,6 +72,8 @@ services:
     command: python3 katana-mngr.py
     volumes:
       - "./katana-mngr:/katana"
+    environment:
+      PYTHONWARNINGS: "ignore:Unverified HTTPS request"
     restart: always
     depends_on:
       - katana-nbi

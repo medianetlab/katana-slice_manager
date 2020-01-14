@@ -18,7 +18,6 @@ docker image rm confluentinc/cp-enterprise-kafka:5.3.2
 
 # Remove katana commands
 rm /usr/local/bin/katana
-rm /usr/local/bin/katana-logs
 
 # Remove the shared_utils from katana-nbi and katana-mngr containers
 for file in $(ls shared_utils/) ; do
