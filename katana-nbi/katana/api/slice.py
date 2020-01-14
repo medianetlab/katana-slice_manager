@@ -5,7 +5,6 @@ from katana.slice_mapping import slice_mapping
 from katana.utils.kafkaUtils import kafkaUtils
 
 import uuid
-import json
 from bson.json_util import dumps
 import logging
 import urllib3
@@ -82,7 +81,7 @@ class SliceView(FlaskView):
             return nest, error_code
 
         # Send the message to katana-mngr
-        producer, _ = kafkaUtils.create_producer()
+        producer = kafkaUtils.create_producer()
         slice_message = {"action": "add", "message": nest}
         producer.send("slice", value=slice_message)
 
@@ -96,13 +95,12 @@ class SliceView(FlaskView):
 
         # Check if slice uuid exists
         delete_json = mongoUtils.get("slice", uuid)
-        logger.debug(type(delete_json))
 
         if not delete_json:
             return "Error: No such slice: {}".format(uuid), 404
         else:
             # Send the message to katana-mngr
-            producer, _ = kafkaUtils.create_producer()
+            producer = kafkaUtils.create_producer()
             slice_message = {"action": "delete", "message": delete_json}
             producer.send("slice", value=slice_message)
             return "Deleting {0}".format(uuid), 200

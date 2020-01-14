@@ -1,8 +1,5 @@
 from katana.utils.sliceUtils import sliceUtils
-
-from kafka import KafkaConsumer, errors
-import json
-import time
+from katana.utils.kafkaUtils import kafkaUtils
 import logging
 import logging.handlers
 
@@ -20,33 +17,14 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
+# Create Kafka topic
+kafkaUtils.create_topic()
+
 # Create the Kafka Consumer
-tries = 3
-exit = False
-while not exit:
-    try:
-        consumer = KafkaConsumer(
-            'slice',
-            bootstrap_servers=['kafka:19092'],
-            auto_offset_reset='latest',
-            enable_auto_commit=True,
-            group_id='my-group',
-            value_deserializer=lambda m: json.loads(m.decode('ascii')))
-    except errors.NoBrokersAvailable as KafkaError:
-        if tries > 0:
-            tries -= 1
-            time.sleep(5)
-            logger.debug("One try is gone!!")
-        else:
-            logger.error(KafkaError)
-    else:
-        logger.debug(tries)
-        exit = True
-        tries = 3
+consumer = kafkaUtils.create_consumer()
 
 # Check for new messages
 for message in consumer:
-    logger.debug(message.value)
     action = message.value["action"]
     payload = message.value["message"]
     # Add slice

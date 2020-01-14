@@ -1,4 +1,4 @@
-from kafka import KafkaProducer, KafkaAdminClient, admin, errors
+from kafka import KafkaConsumer, KafkaProducer, KafkaAdminClient, admin, errors
 import time
 import logging
 import json
@@ -17,39 +17,90 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
-producer, topic = None, None
+# NOTE: It is required to have global parameters for kafka objects
+consumer, producer, topic = None, None, None
+
+
+def create_consumer():
+    global consumer
+
+    # Create the kafka consumer
+    tries = 3
+    exit = False
+    while not exit:
+        try:
+            consumer = KafkaConsumer(
+                'slice',
+                bootstrap_servers=['kafka:19092'],
+                auto_offset_reset='latest',
+                enable_auto_commit=True,
+                group_id='my-group',
+                value_deserializer=lambda m: json.loads(m.decode('ascii')))
+        except errors.NoBrokersAvailable as KafkaError:
+            if tries > 0:
+                tries -= 1
+                logger.warning("Kafka not ready yet. Tries remaining: {0}".
+                               format(tries))
+                time.sleep(5)
+            else:
+                logger.error(KafkaError)
+        else:
+            logger.info("New consumer")
+            exit = True
+            tries = 3
+    return consumer
 
 
 def create_producer():
-    global producer, topic
+    global producer
 
-    if not producer or not topic:
-        # Create the kafka producer
-        tries = 3
-        exit = False
-        while not exit:
-            try:
-                logger.debug("New producer")
-                producer = KafkaProducer(
-                    bootstrap_servers=["kafka:19092"],
-                    value_serializer=lambda m: json.dumps(m).encode('ascii'))
-            except errors.NoBrokersAvailable as KafkaError:
-                if tries > 0:
-                    tries -= 1
-                    time.sleep(5)
-                else:
-                    logger.error(KafkaError)
-            else:
-                exit = True
-                tries = 3
-
-        # Create the Kafka topic
+    # Create the kafka producer
+    tries = 3
+    exit = False
+    while not exit:
         try:
-            topic = admin.NewTopic(name="slice", num_partitions=1,
-                                   replication_factor=1)
-            broker = KafkaAdminClient(bootstrap_servers="kafka:19092")
-            broker.create_topics([topic])
-        except errors.TopicAlreadyExistsError:
-            logger.warning("Topic exists already")
+            producer = KafkaProducer(
+                bootstrap_servers=["kafka:19092"],
+                value_serializer=lambda m: json.dumps(m).encode('ascii'))
+        except errors.NoBrokersAvailable as KafkaError:
+            if tries > 0:
+                tries -= 1
+                logger.warning("Kafka not ready yet. Tries remaining: {0}".
+                               format(tries))
+                time.sleep(5)
+            else:
+                logger.error(KafkaError)
+        else:
+            logger.info("New producer")
+            exit = True
+            tries = 3
+    return producer
 
-    return producer, topic
+
+def create_topic():
+    global topic
+
+    # Create the kafka topic
+    tries = 3
+    exit = False
+    while not exit:
+        try:
+            try:
+                topic = admin.NewTopic(name="slice", num_partitions=1,
+                                       replication_factor=1)
+                broker = KafkaAdminClient(bootstrap_servers="kafka:19092")
+                broker.create_topics([topic])
+            except errors.TopicAlreadyExistsError:
+                logger.warning("Topic exists already")
+        except errors.NoBrokersAvailable as KafkaError:
+            if tries > 0:
+                tries -= 1
+                logger.warning("Kafka not ready yet. Tries remaining: {0}".
+                               format(tries))
+                time.sleep(5)
+            else:
+                logger.error(KafkaError)
+        else:
+            logger.info("New topic")
+            exit = True
+            tries = 3
