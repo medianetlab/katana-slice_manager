@@ -84,7 +84,7 @@ services:
   katana-cli:
     build: ./katana-cli
     image: katana-cli
-    container_name: katana-cli-container
+    container_name: katana-cli
     command: >
       /bin/bash
     stdin_open: true
@@ -98,7 +98,7 @@ services:
 
   swagger:
     image: 'swaggerapi/swagger-ui'
-    container_name: swagger
+    container_name: katana-swagger
     restart: always
     environment:
       - SWAGGER_JSON=/my_swagger/swagger.json

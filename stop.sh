@@ -10,6 +10,6 @@ if [[ -L "$file" ]]; then
 fi
 
 # Remove the katana-log file
-file=katana-mngr/katana.log*
+file=katana-nbi/katana.log*
     rm -f $file
  

@@ -1,4 +1,4 @@
-FROM python:3.7.2-slim
+FROM python:3.7.4-slim
 
 ENV INSTALL_PATH /katana-cli
 RUN mkdir -p $INSTALL_PATH
