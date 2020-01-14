@@ -9,7 +9,7 @@ if [[ -L "$file" ]]; then
     rm -f $file
 fi
 
-# Remove the katana-log file
-file=katana-nbi/katana.log*
-    rm -f $file
- 
+# Remove the katana-log files
+file1=katana-nbi/katana.log*
+file2=katana-mngr/katana.log*
+rm -f $file1 $file2

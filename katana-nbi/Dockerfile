@@ -3,7 +3,7 @@ FROM python:3.7.4-slim
 RUN apt-get update && apt-get install -qq -y \
   build-essential libpq-dev --no-install-recommends
 
-ENV INSTALL_PATH /katana
+ENV INSTALL_PATH /katana-nbi
 RUN mkdir -p $INSTALL_PATH
 
 WORKDIR $INSTALL_PATH
