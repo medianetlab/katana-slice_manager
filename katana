@@ -15,12 +15,11 @@ case $key in
     dock_copy=true
     ;;
     logs)
-    printf "\n%s\n%s\n%s\n" "+----------------------------+" "|      katana-mngr logs      |" "+----------------------------+"
+    printf "\n\t\t\t%s\n\t\t\t%s\n\t\t\t%s\n" "+----------------------------+" "|      katana-mngr logs      |" "+----------------------------+"
     docker logs katana-mngr
-    printf "\n%s\n%s\n%s\n" "+---------------------------+" "|      katana-nbi logs      |" "+---------------------------+"
+    printf "\n\t\t\t%s\n\t\t\t%s\n\t\t\t%s\n" "+---------------------------+" "|      katana-nbi logs      |" "+---------------------------+"
     docker logs katana-nbi
-    printf "\n%s\n%s\n%s\n" "+---------------------------+" "|      katana-cli logs      |" "+---------------------------+"
-    docker logs katana-cli
+    printf "\n"
     exit 0
     ;;
     *)    # unknown option

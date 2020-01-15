@@ -3,6 +3,7 @@ from katana.utils.kafkaUtils import kafkaUtils
 import logging
 import logging.handlers
 
+
 # Logging Parameters
 logger = logging.getLogger(__name__)
 file_handler = logging.handlers.RotatingFileHandler(
@@ -25,6 +26,9 @@ consumer = kafkaUtils.create_consumer()
 
 # Check for new messages
 for message in consumer:
+    logger.debug(message)
+    # Commit the latest received message
+    consumer.commit()
     action = message.value["action"]
     payload = message.value["message"]
     # Add slice

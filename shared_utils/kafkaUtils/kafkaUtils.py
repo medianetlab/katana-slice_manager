@@ -32,9 +32,10 @@ def create_consumer():
             consumer = KafkaConsumer(
                 'slice',
                 bootstrap_servers=['kafka:19092'],
-                auto_offset_reset='latest',
+                auto_offset_reset='earliest',
                 enable_auto_commit=True,
-                group_id='my-group',
+                auto_commit_interval_ms=10000,
+                group_id='katana-mngr-group',
                 value_deserializer=lambda m: json.loads(m.decode('ascii')))
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
@@ -92,6 +93,8 @@ def create_topic():
                 broker.create_topics([topic])
             except errors.TopicAlreadyExistsError:
                 logger.warning("Topic exists already")
+            else:
+                logger.info("New topic")
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
                 tries -= 1
@@ -101,6 +104,5 @@ def create_topic():
             else:
                 logger.error(KafkaError)
         else:
-            logger.info("New topic")
             exit = True
             tries = 3
