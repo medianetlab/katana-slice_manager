@@ -1,4 +1,4 @@
-# katana Slice Manager version 2.0.0
+# katana Slice Manager version 2.1.0
 
 ## Quick Start
 
