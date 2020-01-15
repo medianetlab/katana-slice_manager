@@ -36,8 +36,8 @@ class SstView(FlaskView):
         return_data = []
         for iservice in sst_data:
             return_data.append(dict(_id=iservice['_id'],
-                               created_at=iservice['created_at'],
-                               sst=iservice['sst']))
+                               sst=iservice['sst'], name=iservice['name'],
+                               created_at=iservice['created_at']))
         return dumps(return_data), 200
 
     def get(self, uuid):

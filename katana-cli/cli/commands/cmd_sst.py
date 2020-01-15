@@ -25,11 +25,12 @@ def ls():
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
         # click.echo(json.dumps(json_data, indent=2))
-        print(console_formatter("SST_ID", "SST", "CREATED AT"))
+        print(console_formatter("SST_ID", "SST", "NAME", "CREATED AT"))
         for i in range(len(json_data)):
             print(console_formatter(
                 json_data[i]["_id"],
                 json_data[i]["sst"],
+                json_data[i]["name"],
                 datetime.datetime.fromtimestamp(json_data[i]["created_at"]).
                 strftime('%Y-%m-%d %H:%M:%S')))
 
@@ -154,9 +155,10 @@ cli.add_command(rm)
 cli.add_command(update)
 
 
-def console_formatter(uuid, serv_type, created_at):
-    return '{0: <40}{1: <25}{2: <20}'.format(
+def console_formatter(uuid, serv_type, name, created_at):
+    return '{0: <40}{1: <10}{2: <20}{3: <25}'.format(
         uuid,
         serv_type,
+        name,
         created_at
     )
