@@ -59,7 +59,7 @@ def add_slice(nest_req):
 
     # **** STEP-1: Placement ****
     nest['status'] = 'Placement'
-    nest["phase"] = 0
+    nest["configured_components"] = []
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Placement")
     placement_start_time = time.time()
@@ -107,6 +107,7 @@ def add_slice(nest_req):
                 {"name": pnf["pnf-name"], "ip": pdu["ip"],
                  "pdu-location": pdu["location"]})
     nest["pdu_list"] = pdu_list
+    nest["configured_components"].append("pdu_list")
 
     # Find the details for each NS
     pop_list = []
@@ -176,6 +177,7 @@ OSM {ns['nfvo-id']}")
                 "mtu": nest["mtu"], "end_points": end_points}
 
     nest["network functions"] = {"ns_list": ns_list, "pnf_list": pnf_list}
+    nest["configured_components"].append("nf")
     nest["vim_list"] = vim_dict
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
@@ -235,7 +237,6 @@ OSM {ns['nfvo-id']}")
             target_nfvo["tenants"][nest["_id"]].append(vim_id)
             mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
 
-    nest['phase'] = 1
     mongoUtils.update("slice", nest['_id'], nest)
     # *** STEP-2b: WAN ***
     if (mongoUtils.count('wim') <= 0):
@@ -254,12 +255,12 @@ OSM {ns['nfvo-id']}")
         mongoUtils.update("wim", target_wim["_id"], target_wim)
         nest['deployment_time']['WAN_Deployment_Time'] =\
             format(time.time() - wan_start_time, '.4f')
+        nest["configured_components"].append("wim")
     nest['deployment_time']['Provisioning_Time'] =\
         format(time.time() - prov_start_time, '.4f')
 
     # **** STEP-3: Slice Activation Phase****
     nest['status'] = 'Activation'
-    nest['phase'] = 2
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Activation")
     # *** STEP-3a: Cloud ***
@@ -303,7 +304,6 @@ OSM {ns['nfvo-id']}")
                 vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
                 site["vnfs"].append(target_nfvo_obj.getIPs(vnfr))
 
-    nest['phase'] = 3
     mongoUtils.update("slice", nest['_id'], nest)
     # *** STEP-3b: Radio Slice Configuration ***
     if (mongoUtils.count('ems') <= 0):
@@ -351,11 +351,11 @@ OSM {ns['nfvo-id']}")
         nest["ems_data"] = ems_messages
         nest['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
+        nest["configured_components"].append("ems")
 
     # *** STEP-4: Finalize ***
     logger.info("Status: Running")
     nest['status'] = 'Running'
-    nest['phase'] = 4
     nest['deployment_time']['Slice_Deployment_Time'] =\
         format(time.time() - nest['created_at'], '.4f')
     mongoUtils.update("slice", nest['_id'], nest)
@@ -372,7 +372,7 @@ def delete_slice(slice_json):
     logger.info("Status: Terminating")
 
     # *** Step-1: Radio Slice Configuration ***
-    if slice_json['phase'] >= 4:
+    if "ems" in slice_json["configured_components"]:
         ems_messages = slice_json.get("ems_data", None)
         if ems_messages:
             for ems_id, ems_message in ems_messages.items():
@@ -387,17 +387,16 @@ def delete_slice(slice_json):
                     mongoUtils.find("ems_obj", {"id": ems_id})["obj"])
                 target_ems_obj.del_slice(ems_message)
     else:
-        logger.warning("Something went wrong with EMS configuration during \
-slice creation")
+        logger.info("There was not EMS configuration")
 
     # Release PDUs
-    try:
+    if "pdu" in slice_json["configured_components"]:
         for ipdu in slice_json["pdu_list"]:
             pdu = mongoUtils.find("pdu", {"id": ipdu})
             pdu["tenants"].remove(slice_json["_id"])
             mongoUtils.update("pdu", pdu["_id"], pdu)
-    except (KeyError, ValueError):
-        logger.info("No PDU on the slice")
+    else:
+        logger.info("No PDUs on the slice")
 
     # *** Step-2: WAN Slice ***
     wim_data = slice_json.get("wim_data", None)
@@ -414,68 +413,74 @@ slice creation")
             mongoUtils.update("wim", target_wim["_id"], target_wim)
         else:
             logger.warning("Cannot find WIM - WAN Slice will not be deleted")
+    else:
+        logger.info("There was no WIM configuration")
 
     # *** Step-3: Cloud ***
-    nf = slice_json.get("network functions", None)
-    ns_list = nf["ns_list"]
-    try:
-        vim_error_list = []
-        for ns in ns_list:
-            # Get the NFVO
-            nfvo_id = ns["nfvo-id"]
-            target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
-            if not target_nfvo:
-                logger.warning(
-                    "NFVO with id {} was not found - NSs won't terminate"
-                    .format(nfvo_id))
-                vim_error_list += ns["vims"]
-                continue
-            target_nfvo_obj = pickle.loads(
-                mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
-            # Stop the NS
-            for site in ns["placement"]:
-                target_nfvo_obj.deleteNs(site["nfvo_inst_ns"])
-                while True:
-                    if target_nfvo_obj.checkNsLife(site["nfvo_inst_ns"]):
-                        break
-                    time.sleep(5)
-    except KeyError as e:
-        logger.warning(
-            f"Error, not all NSs started or terminated correctly {e}")
-
-    try:
-        vim_dict = slice_json["vim_list"]
-        for vim, vim_info in vim_dict.items():
-            # Delete the new tenants from the NFVO
-            for nfvo, vim_account in vim_info["nfvo_vim_account"].items():
+    if "nf" in slice_json["configured_components"]:
+        nf = slice_json["network functions"]
+        ns_list = nf["ns_list"]
+        try:
+            vim_error_list = []
+            for ns in ns_list:
                 # Get the NFVO
-                target_nfvo = mongoUtils.find("nfvo", {"id": nfvo})
-                target_nfvo_obj = pickle.loads(
-                    mongoUtils.find("nfvo_obj", {"id": nfvo})["obj"])
-                # Delete the VIM and update nfvo db
-                target_nfvo_obj.deleteVim(vim_account)
-                target_nfvo["tenants"][slice_json["_id"]].remove(vim_account)
-                if len(target_nfvo["tenants"][slice_json["_id"]]) == 0:
-                    del target_nfvo["tenants"][slice_json["_id"]]
-                mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
-            # Delete the tenants from every vim
-            if vim not in vim_error_list:
-                # Get the VIM
-                target_vim = mongoUtils.find("vim", {"id": vim})
-                if not target_vim:
+                nfvo_id = ns["nfvo-id"]
+                target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
+                if not target_nfvo:
                     logger.warning(
-                        "VIM id {} was not found - Tenant won't be deleted"
-                        .format(vim))
+                        "NFVO with id {} was not found - NSs won't terminate"
+                        .format(nfvo_id))
+                    vim_error_list += ns["vims"]
                     continue
-                target_vim_obj = pickle.loads(
-                    mongoUtils.find("vim_obj", {"id": vim})["obj"])
-                target_vim_obj.delete_proj_user(
-                    target_vim["tenants"][slice_json["_id"]])
-                del target_vim["tenants"][slice_json["_id"]]
-                mongoUtils.update("vim", target_vim["_id"], target_vim)
-    except KeyError as e:
-        logger.warning(
-            f"Error, not all tenants created or removed correctly {e}")
+                target_nfvo_obj = pickle.loads(
+                    mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
+                # Stop the NS
+                for site in ns["placement"]:
+                    target_nfvo_obj.deleteNs(site["nfvo_inst_ns"])
+                    while True:
+                        if target_nfvo_obj.checkNsLife(site["nfvo_inst_ns"]):
+                            break
+                        time.sleep(5)
+        except KeyError as e:
+            logger.warning(
+                f"Error, not all NSs started or terminated correctly {e}")
+
+        try:
+            vim_dict = slice_json["vim_list"]
+            for vim, vim_info in vim_dict.items():
+                # Delete the new tenants from the NFVO
+                for nfvo, vim_account in vim_info["nfvo_vim_account"].items():
+                    # Get the NFVO
+                    target_nfvo = mongoUtils.find("nfvo", {"id": nfvo})
+                    target_nfvo_obj = pickle.loads(
+                        mongoUtils.find("nfvo_obj", {"id": nfvo})["obj"])
+                    # Delete the VIM and update nfvo db
+                    target_nfvo_obj.deleteVim(vim_account)
+                    target_nfvo["tenants"][slice_json["_id"]].\
+                        remove(vim_account)
+                    if len(target_nfvo["tenants"][slice_json["_id"]]) == 0:
+                        del target_nfvo["tenants"][slice_json["_id"]]
+                    mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+                # Delete the tenants from every vim
+                if vim not in vim_error_list:
+                    # Get the VIM
+                    target_vim = mongoUtils.find("vim", {"id": vim})
+                    if not target_vim:
+                        logger.warning(
+                            "VIM id {} was not found - Tenant won't be deleted"
+                            .format(vim))
+                        continue
+                    target_vim_obj = pickle.loads(
+                        mongoUtils.find("vim_obj", {"id": vim})["obj"])
+                    target_vim_obj.delete_proj_user(
+                        target_vim["tenants"][slice_json["_id"]])
+                    del target_vim["tenants"][slice_json["_id"]]
+                    mongoUtils.update("vim", target_vim["_id"], target_vim)
+        except KeyError as e:
+            logger.warning(
+                f"Error, not all tenants created or removed correctly {e}")
+    else:
+        logger.info("No NFs on the slice")
 
     mongoUtils.delete("slice", slice_json["_id"])
 
