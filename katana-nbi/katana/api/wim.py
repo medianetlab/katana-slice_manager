@@ -9,7 +9,7 @@ import time
 import logging
 
 from katana.utils.mongoUtils import mongoUtils
-from katana.utils.wimUtils import wimUtils
+from katana.utils.wimUtils import odl_wimUtils, test_wimUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -39,6 +39,7 @@ class WimView(FlaskView):
         for iwim in wim_data:
             return_data.append(dict(_id=iwim['_id'],
                                wim_id=iwim['id'],
+                               wim_type=iwim['type'],
                                created_at=iwim['created_at']))
         return dumps(return_data), 200
 
@@ -68,7 +69,12 @@ class WimView(FlaskView):
         # TODO: Test connectivity with the WIM
         new_uuid = str(uuid.uuid4())
         # Create the object and store it in the object collection
-        wim = wimUtils.Wim(request.json['url'])
+        if request.json["type"] == "odl-wim":
+            wim = odl_wimUtils.Wim(request.json['url'])
+        elif request.json["type"] == "test-wim":
+            wim = test_wimUtils.Wim(request.json['url'])
+        else:
+            return "Error: Not supported WIM type", 400
         thebytes = pickle.dumps(wim)
         obj_json = {"_id": new_uuid, "id": request.json["id"],
                     "obj": Binary(thebytes)}

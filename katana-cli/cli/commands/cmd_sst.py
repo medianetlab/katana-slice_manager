@@ -25,7 +25,7 @@ def ls():
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
         # click.echo(json.dumps(json_data, indent=2))
-        print(console_formatter("SST_ID", "SST", "NAME", "CREATED AT"))
+        print(console_formatter("DB_ID", "SST", "NAME", "CREATED AT"))
         for i in range(len(json_data)):
             print(console_formatter(
                 json_data[i]["_id"],

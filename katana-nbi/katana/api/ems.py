@@ -9,7 +9,7 @@ import time
 import logging
 
 from katana.utils.mongoUtils import mongoUtils
-from katana.utils.emsUtils import emsUtils
+from katana.utils.emsUtils import amar_emsUtils, test_emsUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -39,6 +39,7 @@ class EmsView(FlaskView):
         for iems in ems_data:
             return_data.append(dict(_id=iems['_id'],
                                ems_id=iems['id'],
+                               ems_type=iems['type'],
                                created_at=iems['created_at']))
         return dumps(return_data), 200
 
@@ -68,7 +69,12 @@ class EmsView(FlaskView):
         # TODO: Test connectivity with the EMS
         new_uuid = str(uuid.uuid4())
         # Create the object and store it in the object collection
-        ems = emsUtils.Ems(request.json['url'])
+        if request.json["type"] == "amarisoft-ems":
+            ems = amar_emsUtils.Ems(request.json['url'])
+        elif request.json["type"] == "test-ems":
+            ems = test_emsUtils.Ems(request.json['url'])
+        else:
+            return "Error: Not supported EMS type", 400
         thebytes = pickle.dumps(ems)
         obj_json = {"_id": new_uuid, "id": request.json["id"],
                     "obj": Binary(thebytes)}
