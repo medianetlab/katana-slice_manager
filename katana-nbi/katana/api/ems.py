@@ -7,7 +7,7 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
-
+import pymongo
 from katana.utils.mongoUtils import mongoUtils
 from katana.utils.emsUtils import amar_emsUtils, test_emsUtils
 
@@ -83,10 +83,14 @@ class EmsView(FlaskView):
         thebytes = pickle.dumps(ems)
         obj_json = {"_id": new_uuid, "id": request.json["id"],
                     "obj": Binary(thebytes)}
+        try:
+            new_uuid = mongoUtils.add('ems', request.json), 201
+        except pymongo.errors.DuplicateKeyError:
+            return f"EMS with id {ems_id} already exists", 400
         mongoUtils.add('ems_obj', obj_json)
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
-        return mongoUtils.add('ems', request.json), 201
+        return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
         """
@@ -140,5 +144,9 @@ class EmsView(FlaskView):
             thebytes = pickle.dumps(ems)
             obj_json = {"_id": new_uuid, "id": data["id"],
                         "obj": Binary(thebytes)}
+            try:
+                new_uuid = mongoUtils.add('ems', data), 201
+            except pymongo.errors.DuplicateKeyError:
+                return f"EMS with id {ems_id} already exists", 400
             mongoUtils.add('ems_obj', obj_json)
-            return "Created " + str(mongoUtils.add('ems', data)), 201
+            return f"Created {new_uuid}", 201

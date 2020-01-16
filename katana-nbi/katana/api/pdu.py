@@ -5,6 +5,7 @@ from bson.json_util import dumps
 import logging
 import time
 import uuid
+import pymongo
 
 
 # Logging Parameters
@@ -64,7 +65,11 @@ class PduView(FlaskView):
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
         request.json["tenants"] = []
-        return mongoUtils.add('pdu', request.json), 201
+        try:
+            new_uuid = mongoUtils.add('pdu', request.json)
+        except pymongo.errors.DuplicateKeyError:
+            return f"PDU with id {pdu_id} already exists", 400
+        return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
         """
@@ -111,4 +116,8 @@ class PduView(FlaskView):
             data['_id'] = new_uuid
             data['created_at'] = time.time()  # unix epoch
             data["tenants"] = []
-            return "Created " + str(mongoUtils.add('pdu', data)), 201
+            try:
+                new_uuid = mongoUtils.add('pdu', data)
+            except pymongo.errors.DuplicateKeyError:
+                return f"PDU with id {pdu_id} already exists", 400
+            return f"Created {new_uuid}", 201

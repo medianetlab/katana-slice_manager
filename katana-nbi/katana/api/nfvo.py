@@ -11,6 +11,8 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
+import pymongo
+
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -101,10 +103,14 @@ class NFVOView(FlaskView):
                 thebytes = pickle.dumps(osm)
                 obj_json = {"_id": new_uuid, "id": request.json["id"],
                             "obj": Binary(thebytes)}
+                try:
+                    new_uuid = mongoUtils.add("nfvo", request.json)
+                except pymongo.errors.DuplicateKeyError:
+                    return f"NFVO with id {nfvo_id} already exists", 400
                 mongoUtils.add('nfvo_obj', obj_json)
                 # Get information regarding VNFDs and NSDs
                 osmUtils.bootstrapNfvo(osm)
-                return mongoUtils.add("nfvo", request.json), 201
+                return f"Created {new_uuid}", 201
         else:
             response = dumps({'error': 'This type nfvo is not supported'})
             return response, 400
@@ -183,10 +189,14 @@ class NFVOView(FlaskView):
                     thebytes = pickle.dumps(osm)
                     obj_json = {"_id": new_uuid, "id": data["id"],
                                 "obj": Binary(thebytes)}
+                    try:
+                        new_uuid = mongoUtils.add("nfvo", data)
+                    except pymongo.errors.DuplicateKeyError:
+                        return f"NFVO with id {nfvo_id} already exists", 400
                     mongoUtils.add('nfvo_obj', obj_json)
                     # Get information regarding VNFDs and NSDs
                     osmUtils.bootstrapNfvo(osm)
             else:
                 response = dumps({'error': 'This type nfvo is not supported'})
                 return response, 400
-            return "Created " + str(mongoUtils.add('nfvo', data)), 201
+            return f"Created {new_uuid}", 201

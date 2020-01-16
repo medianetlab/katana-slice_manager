@@ -10,6 +10,7 @@ from bson.binary import Binary
 import pickle
 import time
 import logging
+import pymongo
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -97,8 +98,6 @@ class VimView(FlaskView):
                 thebytes = pickle.dumps(new_vim)
                 obj_json = {"_id": new_uuid, "id": request.json["id"],
                             "obj": Binary(thebytes)}
-                mongoUtils.add("vim_obj", obj_json)
-                return mongoUtils.add("vim", request.json)
         elif request.json['type'] == "opennebula":
             try:
                 new_vim = opennebulaUtils.Opennebula(uuid=new_uuid,
@@ -113,11 +112,15 @@ class VimView(FlaskView):
                 thebytes = pickle.dumps(new_vim)
                 obj_json = {"_id": new_uuid, "id": request.json["id"],
                             "obj": Binary(thebytes)}
-                mongoUtils.add("vim_obj", obj_json)
-                return mongoUtils.add("vim", request.json)
         else:
             response = dumps({'error': 'This type VIM is not supported'})
             return response, 400
+        try:
+            new_uuid = mongoUtils.add("vim", request.json)
+        except pymongo.errors.DuplicateKeyError:
+            return f"VIM with id {vim_id} already exists", 400
+        mongoUtils.add("vim_obj", obj_json)
+        return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
         """
@@ -157,7 +160,6 @@ class VimView(FlaskView):
                 mongoUtils.update("vim", uuid, data)
             return f"Modified {uuid}", 200
         else:
-            new_uuid = uuid
             request.json['_id'] = new_uuid
             request.json['created_at'] = time.time()  # unix epoch
             request.json['tenants'] = {}
@@ -172,10 +174,10 @@ class VimView(FlaskView):
                 return f"Error: Required fields: {self.req_fields}", 400
             if request.json['type'] == "openstack":
                 try:
-                    new_vim = openstackUtils\
-                        .Openstack(uuid=new_uuid, auth_url=auth_url,
-                                   project_name=project_name, username=username,
-                                   password=password)
+                    new_vim = openstackUtils.\
+                        Openstack(uuid=new_uuid, auth_url=auth_url,
+                                  project_name=project_name, username=username,
+                                  password=password)
                     if new_vim.auth_error:
                         raise(AttributeError)
                 except AttributeError as e:
@@ -185,8 +187,6 @@ class VimView(FlaskView):
                     thebytes = pickle.dumps(new_vim)
                     obj_json = {"_id": new_uuid, "id": request.json["id"],
                                 "obj": Binary(thebytes)}
-                    mongoUtils.add("vim_obj", obj_json)
-                    return mongoUtils.add("vim", request.json)
             elif request.json['type'] == "opennebula":
                 try:
                     new_vim = opennebulaUtils.\
@@ -200,9 +200,12 @@ class VimView(FlaskView):
                     thebytes = pickle.dumps(new_vim)
                     obj_json = {"_id": new_uuid, "id": request.json["id"],
                                 "obj": Binary(thebytes)}
-                    mongoUtils.add("vim_obj", obj_json)
-                    return mongoUtils.add("vim", request.json)
             else:
                 response = dumps({'error': 'This type VIM is not supported'})
                 return response, 400
-            return "Created " + str(mongoUtils.add('vim', data)), 201
+            try:
+                new_uuid = mongoUtils.add("vim", request.json)
+            except pymongo.errors.DuplicateKeyError:
+                return f"VIM with id {vim_id} already exists", 400
+            mongoUtils.add("vim_obj", obj_json)
+            return f"Created {new_uuid}", 201

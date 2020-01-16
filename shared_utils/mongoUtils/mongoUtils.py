@@ -1,10 +1,15 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 
 
 client = MongoClient("mongodb://mongo")
 db = client.katana
 
-collection = db.vim
+# Initialize all collections and create indexes
+db.vim.create_index([('id', ASCENDING)], unique=True)
+db.nfvo.create_index([('id', ASCENDING)], unique=True)
+db.wim.create_index([('id', ASCENDING)], unique=True)
+db.ems.create_index([('id', ASCENDING)], unique=True)
+db.pdu.create_index([('id', ASCENDING)], unique=True)
 
 
 def index(collection_name):
