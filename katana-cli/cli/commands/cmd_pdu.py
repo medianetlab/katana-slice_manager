@@ -37,6 +37,7 @@ def ls():
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -63,6 +64,7 @@ def inspect(id):
             click.echo("Error: No such service: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -113,6 +115,7 @@ def rm(id):
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -141,6 +144,7 @@ def update(file, id):
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:

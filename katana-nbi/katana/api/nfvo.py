@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import request
+from flask import request, make_response, abort
 from flask_classful import FlaskView
 from katana.utils.osmUtils import osmUtils
 # from katana.utils.tango5gUtils import tango5gUtils
@@ -29,6 +29,7 @@ logger.addHandler(stream_handler)
 
 class NFVOView(FlaskView):
     route_prefix = '/api/'
+    req_fields = ["id", "nfvousername", "nfvopassword", "nfvoip", "tenantname"]
 
     def index(self):
         """
@@ -74,13 +75,17 @@ class NFVOView(FlaskView):
 
         if request.json['type'] == "OSM":
             # Create the NFVO object
-            osm_username = request.json['nfvousername']
-            osm_password = request.json['nfvopassword']
-            osm_ip = request.json['nfvoip']
-            osm_project_name = request.json['tenantname']
-            nfvo_id = request.json["id"]
-            osm = osmUtils.Osm(nfvo_id, osm_ip, osm_username,
-                               osm_password, osm_project_name)
+            try:
+                osm_username = request.json['nfvousername']
+                osm_password = request.json['nfvopassword']
+                osm_ip = request.json['nfvoip']
+                osm_project_name = request.json['tenantname']
+                nfvo_id = request.json["id"]
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            else:
+                osm = osmUtils.Osm(nfvo_id, osm_ip, osm_username,
+                                   osm_password, osm_project_name)
             try:
                 osm.getToken()
             except ConnectTimeout as e:
@@ -127,18 +132,61 @@ class NFVOView(FlaskView):
         Update the details of a specific nfvo.
         used by: `katana nfvo update -f [yaml file] [uuid]`
         """
-        # TODO: Validate what data should not change
         data = request.json
         data['_id'] = uuid
         old_data = mongoUtils.get("nfvo", uuid)
 
         if old_data:
             data["created_at"] = old_data["created_at"]
-            mongoUtils.update("nfvo", uuid, data)
+            data["tenants"] = old_data["tenants"]
+            try:
+                for entry in self.req_fields:
+                    if data[entry] != old_data[entry]:
+                        return "Cannot update field: " + entry, 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            else:
+                mongoUtils.update("nfvo", uuid, data)
             return f"Modified {uuid}", 200
         else:
             new_uuid = uuid
             data = request.json
             data['_id'] = new_uuid
             data['created_at'] = time.time()  # unix epoch
+            data['tenants'] = {}
+
+            if request.json['type'] == "OSM":
+                # Create the NFVO object
+                try:
+                    osm_username = request.json['nfvousername']
+                    osm_password = request.json['nfvopassword']
+                    osm_ip = request.json['nfvoip']
+                    osm_project_name = request.json['tenantname']
+                    nfvo_id = request.json["id"]
+                except KeyError:
+                    return f"Error: Required fields: {self.req_fields}", 400
+                else:
+                    osm = osmUtils.Osm(nfvo_id, osm_ip, osm_username,
+                                       osm_password, osm_project_name)
+                try:
+                    osm.getToken()
+                except ConnectTimeout as e:
+                    logger.exception("Connection Timeout: {}".format(e))
+                    response = dumps({'error': 'Unable to connect to NFVO'})
+                    return (response, 400)
+                except ConnectionError as e:
+                    logger.exception("Connection Error: {}".format(e))
+                    response = dumps({'error': 'Unable to connect to NFVO'})
+                    return (response, 400)
+                else:
+                    # Store the osm object to the mongo db
+                    thebytes = pickle.dumps(osm)
+                    obj_json = {"_id": new_uuid, "id": data["id"],
+                                "obj": Binary(thebytes)}
+                    mongoUtils.add('nfvo_obj', obj_json)
+                    # Get information regarding VNFDs and NSDs
+                    osmUtils.bootstrapNfvo(osm)
+            else:
+                response = dumps({'error': 'This type nfvo is not supported'})
+                return response, 400
             return "Created " + str(mongoUtils.add('nfvo', data)), 201

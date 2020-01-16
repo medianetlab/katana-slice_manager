@@ -28,6 +28,7 @@ logger.addHandler(stream_handler)
 
 class EmsView(FlaskView):
     route_prefix = '/api/'
+    req_fields = ["url", "id"]
 
     def index(self):
         """
@@ -69,12 +70,16 @@ class EmsView(FlaskView):
         # TODO: Test connectivity with the EMS
         new_uuid = str(uuid.uuid4())
         # Create the object and store it in the object collection
-        if request.json["type"] == "amarisoft-ems":
-            ems = amar_emsUtils.Ems(request.json['url'])
-        elif request.json["type"] == "test-ems":
-            ems = test_emsUtils.Ems(request.json['url'])
-        else:
-            return "Error: Not supported EMS type", 400
+        try:
+            ems_id = request.json["id"]
+            if request.json["type"] == "amarisoft-ems":
+                ems = amar_emsUtils.Ems(request.json['url'])
+            elif request.json["type"] == "test-ems":
+                ems = test_emsUtils.Ems(request.json['url'])
+            else:
+                return "Error: Not supported EMS type", 400
+        except KeyError:
+            return f"Error: Required fields: {self.req_fields}", 400
         thebytes = pickle.dumps(ems)
         obj_json = {"_id": new_uuid, "id": request.json["id"],
                     "obj": Binary(thebytes)}
@@ -88,7 +93,6 @@ class EmsView(FlaskView):
         Delete a specific EMS.
         used by: `katana ems rm [uuid]`
         """
-        # TODO: Check if there is anything running by this ems before delete
         mongoUtils.delete("ems_obj", uuid)
         result = mongoUtils.delete("ems", uuid)
         if result:
@@ -102,18 +106,39 @@ class EmsView(FlaskView):
         Update the details of a specific EMS.
         used by: `katana ems update -f [yaml file] [uuid]`
         """
-        # TODO: Validate what data should not change
         data = request.json
         data['_id'] = uuid
         old_data = mongoUtils.get("ems", uuid)
 
         if old_data:
             data["created_at"] = old_data["created_at"]
-            mongoUtils.update("ems", uuid, data)
+            try:
+                for entry in self.req_fields:
+                    if data[entry] != old_data[entry]:
+                        return "Cannot update field: " + entry, 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            else:
+                mongoUtils.update("ems", uuid, data)
             return f"Modified {uuid}", 200
         else:
             new_uuid = uuid
             data = request.json
             data['_id'] = new_uuid
             data['created_at'] = time.time()  # unix epoch
+            new_uuid = str(uuid.uuid4())
+            # Create the object and store it in the object collection
+            try:
+                if request.json["type"] == "amarisoft-ems":
+                    ems = amar_emsUtils.Ems(request.json['url'])
+                elif request.json["type"] == "test-ems":
+                    ems = test_emsUtils.Ems(request.json['url'])
+                else:
+                    return "Error: Not supported EMS type", 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            thebytes = pickle.dumps(ems)
+            obj_json = {"_id": new_uuid, "id": data["id"],
+                        "obj": Binary(thebytes)}
+            mongoUtils.add('ems_obj', obj_json)
             return "Created " + str(mongoUtils.add('ems', data)), 201

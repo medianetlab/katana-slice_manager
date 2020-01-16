@@ -1,6 +1,6 @@
 {
     "sst": 1,
-    "name": "5GCore",
+    "name": "5GCore_embb",
     "supported_locations": [],
     "ns_list":[
         {

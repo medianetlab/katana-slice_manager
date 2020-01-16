@@ -28,6 +28,7 @@ logger.addHandler(stream_handler)
 
 class WimView(FlaskView):
     route_prefix = '/api/'
+    req_fields = ["id", "url"]
 
     def index(self):
         """
@@ -69,12 +70,16 @@ class WimView(FlaskView):
         # TODO: Test connectivity with the WIM
         new_uuid = str(uuid.uuid4())
         # Create the object and store it in the object collection
-        if request.json["type"] == "odl-wim":
-            wim = odl_wimUtils.Wim(request.json['url'])
-        elif request.json["type"] == "test-wim":
-            wim = test_wimUtils.Wim(request.json['url'])
-        else:
-            return "Error: Not supported WIM type", 400
+        try:
+            wim_id = request.json["id"]
+            if request.json["type"] == "odl-wim":
+                wim = odl_wimUtils.Wim(request.json['url'])
+            elif request.json["type"] == "test-wim":
+                wim = test_wimUtils.Wim(request.json['url'])
+            else:
+                return "Error: Not supported WIM type", 400
+        except KeyError:
+            return f"Error: Required fields: {self.req_fields}", 400
         thebytes = pickle.dumps(wim)
         obj_json = {"_id": new_uuid, "id": request.json["id"],
                     "obj": Binary(thebytes)}
@@ -105,18 +110,40 @@ class WimView(FlaskView):
         Update the details of a specific wim.
         used by: `katana wim update -f [yaml file] [uuid]`
         """
-        # TODO: Validate what data should not change
         data = request.json
         data['_id'] = uuid
         old_data = mongoUtils.get("wim", uuid)
 
         if old_data:
             data["created_at"] = old_data["created_at"]
-            mongoUtils.update("wim", uuid, data)
+            data["slices"] = old_data["slices"]
+            try:
+                for entry in self.req_fields:
+                    if data[entry] != old_data[entry]:
+                        return "Cannot update field: " + entry, 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            else:
+                mongoUtils.update("wim", uuid, data)
             return f"Modified {uuid}", 200
         else:
             new_uuid = uuid
             data = request.json
             data['_id'] = new_uuid
             data['created_at'] = time.time()  # unix epoch
+            try:
+                wim_id = request.json["id"]
+                if request.json["type"] == "odl-wim":
+                    wim = odl_wimUtils.Wim(request.json['url'])
+                elif request.json["type"] == "test-wim":
+                    wim = test_wimUtils.Wim(request.json['url'])
+                else:
+                    return "Error: Not supported WIM type", 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            thebytes = pickle.dumps(wim)
+            obj_json = {"_id": new_uuid, "id": data["id"],
+                        "obj": Binary(thebytes)}
+            mongoUtils.add('wim_obj', obj_json)
+            data['slices'] = {}
             return "Created " + str(mongoUtils.add('wim', data)), 201

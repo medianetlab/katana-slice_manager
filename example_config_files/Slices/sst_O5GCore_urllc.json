@@ -1,6 +1,6 @@
 {
     "sst": 2,
-    "name": "5GCore",
+    "name": "5GCore_urllc",
     "supported_locations": ["minilab", "library", "cosmote"],
     "ns_list":[
         {

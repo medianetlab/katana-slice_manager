@@ -25,9 +25,9 @@ def ls():
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
         # click.echo(json.dumps(json_data, indent=2))
-        print(console_formatter("DB_ID", "NFVO_ID", "TYPE", "CREATED AT"))
+        click.echo(console_formatter("DB_ID", "NFVO_ID", "TYPE", "CREATED AT"))
         for i in range(len(json_data)):
-            print(console_formatter(
+            click.echo(console_formatter(
                 json_data[i]["_id"],
                 json_data[i]["nfvo_id"],
                 json_data[i]["type"],
@@ -37,6 +37,7 @@ def ls():
             )
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -63,6 +64,7 @@ def inspect(id):
             click.echo("Error: No such nfvo: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -113,6 +115,7 @@ def rm(id):
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -141,6 +144,7 @@ def update(file, id):
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:

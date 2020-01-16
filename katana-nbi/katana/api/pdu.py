@@ -24,6 +24,7 @@ logger.addHandler(stream_handler)
 
 class PduView(FlaskView):
     route_prefix = '/api/'
+    req_fields = ["id"]
 
     def index(self):
         """
@@ -55,6 +56,10 @@ class PduView(FlaskView):
         Add a new pdu. The request must provide the pdu details.
         used by: `katana pdu add -f [yaml file]`
         """
+        try:
+            pdu_id = request.json["id"]
+        except KeyError:
+            return f"Error: Required fields: {self.req_fields}", 400
         new_uuid = str(uuid.uuid4())
         request.json['_id'] = new_uuid
         request.json['created_at'] = time.time()  # unix epoch
@@ -66,8 +71,10 @@ class PduView(FlaskView):
         Delete a specific pdu.
         used by: `katana pdu rm [uuid]`
         """
-        result = mongoUtils.delete("pdu", uuid)
-        if result:
+        del_pdu = mongoUtils.delete("pdu", uuid)
+        if del_pdu:
+            if del_pdu["tenants"]:
+                return "Cannot delete pdu {} - In use".format(uuid), 400
             return "Deleted PDU {}".format(uuid), 200
         else:
             # if uuid is not found, return error
@@ -78,16 +85,27 @@ class PduView(FlaskView):
         Update the details of a specific pdu.
         used by: `katana pdu update [uuid] -f [yaml file]`
         """
-        # TODO: Validate what data should not change
         data = request.json
         data['_id'] = uuid
         old_data = mongoUtils.get("pdu", uuid)
 
         if old_data:
             data["created_at"] = old_data["created_at"]
-            mongoUtils.update("pdu", uuid, data)
+            data["tenants"] = old_data["tenants"]
+            try:
+                for entry in self.req_fields:
+                    if data[entry] != old_data[entry]:
+                        return "Cannot update field: " + entry, 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            else:
+                mongoUtils.update("pdu", uuid, data)
             return f"Modified {uuid}", 200
         else:
+            try:
+                pdu_id = request.json["id"]
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
             new_uuid = uuid
             data = request.json
             data['_id'] = new_uuid

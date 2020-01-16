@@ -26,6 +26,7 @@ def ls():
                 json_data[i]["_id"]))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:
@@ -51,6 +52,7 @@ def inspect(id):
             click.echo("Error: No such GST: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
+        click.echo(r.content)
     except requests.exceptions.ConnectionError as errc:
         print("Error Connecting:", errc)
     except requests.exceptions.Timeout as errt:

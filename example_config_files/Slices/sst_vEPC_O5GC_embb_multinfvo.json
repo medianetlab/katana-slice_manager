@@ -1,13 +1,13 @@
 {
     "sst": 1,
-    "name": "5GCore",
+    "name": "5GCore-vEPC-embb",
     "supported_locations": ["minilab", "library", "cosmote"],
     "ns_list":[
         {
             "nfvo-id": "OSM6",
             "nsd-id": "2ca6ab45-e9d5-4397-932b-787886c4984e",
             "ns-name": "5GCore_GW_nsd",
-            "ems-id": "Amarisoft_EMS",
+            "ems-id": "test_ems",
             "placement": 0,
             "optional": false
         },
@@ -15,7 +15,7 @@
             "nfvo-id": "OSM6",
             "nsd-id": "e47bb529-2c38-4b16-969a-fa9661f54824",
             "ns-name": "5GCore_MME-HSS_nsd",
-            "ems-id": "Amarisoft_EMS",
+            "ems-id": "test_ems",
             "placement": 0,
             "optional": false
         },
@@ -38,9 +38,17 @@
             "nfvo-id": "OSM5",
             "nsd-id": "a9ac7f6e-9b44-4f99-860b-db4c94794b4d",
             "ns-name": "Amarisoft_vEPC",
+            "ems-id": "test_ems",
             "placement": 0,
             "optional": false
-        },
+        }
     ],
-    "pnf_list":[]
+    "pnf_list":[
+        {
+            "pnf-name": "Amarisoft_enb",
+            "ems-id": "test_ems",
+            "pdu-id:": "AmarisoftENB",
+            "optional": false
+        }
+    ]
 }

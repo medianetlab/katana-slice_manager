@@ -28,6 +28,8 @@ logger.addHandler(stream_handler)
 
 class VimView(FlaskView):
     route_prefix = '/api/'
+    req_fields = ["id", "auth_url", "username", "password",
+                  "admin_project_name"]
 
     def index(self):
         """
@@ -71,11 +73,14 @@ class VimView(FlaskView):
         request.json['created_at'] = time.time()  # unix epoch
         request.json['tenants'] = {}
 
-        # TODO implement authorizing VIM connection
-        username = request.json['username']
-        password = request.json['password']
-        auth_url = request.json['auth_url']
-        project_name = request.json['admin_project_name']
+        try:
+            username = request.json['username']
+            password = request.json['password']
+            auth_url = request.json['auth_url']
+            project_name = request.json['admin_project_name']
+            vim_id = request.json["id"]
+        except KeyError:
+            return f"Error: Required fields: {self.req_fields}", 400
         if request.json['type'] == "openstack":
             try:
                 new_vim = openstackUtils.Openstack(uuid=new_uuid,
@@ -135,18 +140,69 @@ class VimView(FlaskView):
         Update the details of a specific vim.
         used by: `katana vim update -f [yaml file] [uuid]`
         """
-        # TODO: Validate what data should not change
         data = request.json
         data['_id'] = uuid
         old_data = mongoUtils.get("vim", uuid)
 
         if old_data:
             data["created_at"] = old_data["created_at"]
-            mongoUtils.update("vim", uuid, data)
+            data["tenants"] = old_data["tenants"]
+            try:
+                for entry in self.req_fields:
+                    if data[entry] != old_data[entry]:
+                        return "Cannot update field: " + entry, 400
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            else:
+                mongoUtils.update("vim", uuid, data)
             return f"Modified {uuid}", 200
         else:
             new_uuid = uuid
-            data = request.json
-            data['_id'] = new_uuid
-            data['created_at'] = time.time()  # unix epoch
+            request.json['_id'] = new_uuid
+            request.json['created_at'] = time.time()  # unix epoch
+            request.json['tenants'] = {}
+
+            try:
+                username = request.json['username']
+                password = request.json['password']
+                auth_url = request.json['auth_url']
+                project_name = request.json['admin_project_name']
+                vim_id = request.json["id"]
+            except KeyError:
+                return f"Error: Required fields: {self.req_fields}", 400
+            if request.json['type'] == "openstack":
+                try:
+                    new_vim = openstackUtils\
+                        .Openstack(uuid=new_uuid, auth_url=auth_url,
+                                   project_name=project_name, username=username,
+                                   password=password)
+                    if new_vim.auth_error:
+                        raise(AttributeError)
+                except AttributeError as e:
+                    response = dumps({'error': 'Openstack auth failed.'+e})
+                    return response, 400
+                else:
+                    thebytes = pickle.dumps(new_vim)
+                    obj_json = {"_id": new_uuid, "id": request.json["id"],
+                                "obj": Binary(thebytes)}
+                    mongoUtils.add("vim_obj", obj_json)
+                    return mongoUtils.add("vim", request.json)
+            elif request.json['type'] == "opennebula":
+                try:
+                    new_vim = opennebulaUtils.\
+                        Opennebula(uuid=new_uuid, auth_url=auth_url,
+                                   project_name=project_name,
+                                   username=username, password=password)
+                except AttributeError as e:
+                    response = dumps({'Error': 'OpenNebula auth failed.'+e})
+                    return response, 400
+                else:
+                    thebytes = pickle.dumps(new_vim)
+                    obj_json = {"_id": new_uuid, "id": request.json["id"],
+                                "obj": Binary(thebytes)}
+                    mongoUtils.add("vim_obj", obj_json)
+                    return mongoUtils.add("vim", request.json)
+            else:
+                response = dumps({'error': 'This type VIM is not supported'})
+                return response, 400
             return "Created " + str(mongoUtils.add('vim', data)), 201
