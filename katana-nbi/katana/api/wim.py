@@ -83,14 +83,14 @@ class WimView(FlaskView):
         thebytes = pickle.dumps(wim)
         obj_json = {"_id": new_uuid, "id": request.json["id"],
                     "obj": Binary(thebytes)}
+        request.json['_id'] = new_uuid
+        request.json['created_at'] = time.time()  # unix epoch
+        request.json['slices'] = {}
         try:
             new_uuid = mongoUtils.add('wim', request.json)
         except pymongo.errors.DuplicateKeyError:
             return f"WIM with id {wim_id} already exists", 400
         mongoUtils.add('wim_obj', obj_json)
-        request.json['_id'] = new_uuid
-        request.json['created_at'] = time.time()  # unix epoch
-        request.json['slices'] = {}
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -148,10 +148,10 @@ class WimView(FlaskView):
             thebytes = pickle.dumps(wim)
             obj_json = {"_id": new_uuid, "id": data["id"],
                         "obj": Binary(thebytes)}
+            data['slices'] = {}
             try:
                 new_uuid = mongoUtils.add('wim', data)
             except pymongo.errors.DuplicateKeyError:
                 return f"WIM with id {wim_id} already exists", 400
             mongoUtils.add('wim_obj', obj_json)
-            data['slices'] = {}
             return f"Created {new_uuid}", 201

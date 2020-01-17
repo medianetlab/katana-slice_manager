@@ -47,7 +47,7 @@
         {
             "pnf-name": "Amarisoft_enb",
             "ems-id": "test_ems",
-            "pdu-id:": "AmarisoftENB",
+            "pdu-id": "AmarisoftENB",
             "optional": false
         }
     ]
