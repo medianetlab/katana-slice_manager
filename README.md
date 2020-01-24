@@ -1,5 +1,7 @@
 # katana Slice Manager version 2.1.0
 
+![](./katana-ui/ui/static/images/katana-logo.svg)
+
 ## Quick Start
 
 ### Requirements
