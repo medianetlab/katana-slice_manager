@@ -37,7 +37,7 @@ class PolicyView(FlaskView):
         return_data = []
         for item in policy_data:
             return_data.append(dict(_id=item['_id'],
-                               system_id=item['id'],
+                               component_id=item['id'],
                                created_at=item['created_at'],
                                type=item['type']))
         return dumps(return_data)
@@ -86,7 +86,7 @@ class PolicyView(FlaskView):
         used by: `katana policy rm [uuid]`
         """
         del_policy = mongoUtils.delete("policy", uuid)
-        if del_pplicy:
+        if del_policy:
             return "Deleted policy management system {}".format(uuid), 200
         else:
             # if uuid is not found, return error
