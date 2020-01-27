@@ -10,6 +10,7 @@ db.nfvo.create_index([('id', ASCENDING)], unique=True)
 db.wim.create_index([('id', ASCENDING)], unique=True)
 db.ems.create_index([('id', ASCENDING)], unique=True)
 db.pdu.create_index([('id', ASCENDING)], unique=True)
+db.policy.create_index([('id', ASCENDING)], unique=True)
 
 
 def index(collection_name):

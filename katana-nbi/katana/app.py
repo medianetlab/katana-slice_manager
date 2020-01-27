@@ -11,6 +11,7 @@ from katana.api.pdu import PduView
 from katana.api.gst import GstView
 from katana.api.slice_des import Slice_desView
 from katana.api.resource import ResourcesView
+from katana.api.policy import PolicyView
 
 
 def create_app():
@@ -37,5 +38,6 @@ def create_app():
     Slice_desView.register(app, trailing_slash=False)
     GstView.register(app, trailing_slash=False)
     ResourcesView.register(app, trailing_slash=False)
+    PolicyView.register(app, trailing_slash=False)
 
     return app
