@@ -28,7 +28,7 @@ logger.addHandler(stream_handler)
 
 class WimView(FlaskView):
     route_prefix = '/api/'
-    req_fields = ["id", "url"]
+    req_fields = ["id", "url", "type"]
 
     def index(self):
         """

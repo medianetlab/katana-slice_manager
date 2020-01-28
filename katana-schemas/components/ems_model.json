@@ -24,5 +24,6 @@
       "type": "string",
       "description": "EMS' type"
     }
-  }
+  },
+  "required": ["id", "url", "type"]
 }

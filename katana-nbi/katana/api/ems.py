@@ -28,7 +28,7 @@ logger.addHandler(stream_handler)
 
 class EmsView(FlaskView):
     route_prefix = '/api/'
-    req_fields = ["url", "id"]
+    req_fields = ["url", "id", "type"]
 
     def index(self):
         """

@@ -48,5 +48,6 @@
       "type": "object",
       "description": "Optional parameters regarding the VIM operation - example: Security group"
     }
-  }
+  },
+  "required": ["id", "auth_url", "username", "password", "admin_project_name"]
 }

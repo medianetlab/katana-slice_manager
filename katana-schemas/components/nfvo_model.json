@@ -44,5 +44,6 @@
         "type": "object",
         "description": "Optional parameters regarding the NFVO operation - example: network: flat"
     }
-  }
+  },
+  "required": ["id", "nfvousername", "nfvopassword", "nfvoip", "tenantname"]
 }

@@ -85,6 +85,14 @@
         "description": "Wiki",
         "url": "https://github.com/medianetlab/katana-slice_manager/wiki/sst"
       }
+    },
+    {
+      "name": "Policy Mgmt System",
+      "description": "Add, Read, Update and Delete Policy Systems",
+      "externalDocs": {
+        "description": "Wiki",
+        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/policy"
+      }
     }
   ],
   "paths": {
@@ -1379,6 +1387,221 @@
         }
       }
     },
+    "/policy": {
+      "get": {
+        "tags": [
+          "Policy Mgmt System"
+        ],
+        "summary": "Returns a list of registered Policy Systems",
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/sbi_ls"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Policy Mgmt System"
+        ],
+        "summary": "Adds a new Policy Mgmt System",
+        "requestBody": {
+          "description": "Policy Mgmt System Parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/policy"
+              }
+            },
+            "application/yaml": {
+              "schema": {
+                "$ref": "#/components/schemas/policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "string": {
+                "schema": {
+                  "type": "string",
+                  "description": "The uuid of the new Policy System"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "405": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/policy/{policy_system_id}": {
+      "get": {
+        "tags": [
+          "Policy Mgmt System"
+        ],
+        "summary": "Returns information about the given Policy Mgmt System",
+        "parameters": [
+          {
+            "name": "policy_system_id",
+            "in": "path",
+            "description": "ID of System to be inspected",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/policy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Policy Mgmt System"
+        ],
+        "summary": "Updates the given Policy Mgmt System",
+        "parameters": [
+          {
+            "name": "policy_system_id",
+            "in": "path",
+            "description": "ID of Policy Mgmt System to be updated",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "WIM Parameters",
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {}
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "string": {
+                "schema": {
+                  "type": "string",
+                  "description": "The uuid of the new Policy Mgmt System"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "body"
+      },
+      "delete": {
+        "tags": [
+          "Policy Mgmt System"
+        ],
+        "summary": "Deletes the given Policy Mgmt System",
+        "parameters": [
+          {
+            "name": "policy_system_id",
+            "in": "path",
+            "description": "ID of Policy Mgmt System to be deleted",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      }
+    },
     "/resources": {
       "get": {
         "tags": [
@@ -2569,7 +2792,8 @@
             "description": "Optional parameters regarding the VIM operation - example: Security group"
           }
         },
-        "description": "A new VIM"
+        "description": "A new VIM",
+        "required": ["id", "auth_url", "username", "password", "admin_project_name"]
       },
       "nfvo": {
         "type": "object",
@@ -2612,7 +2836,8 @@
             "description": "Optional parameters regarding the NFVO operation - example: network: flat"
           }
         },
-        "description": "A new NFVO"
+        "description": "A new NFVO",
+        "required": ["id", "nfvousername", "nfvopassword", "nfvoip", "tenantname"]
       },
       "wim": {
         "type": "object",
@@ -2638,7 +2863,8 @@
             "description": "WIM's type"
           }
         },
-        "description": "A new WIM"
+        "description": "A new WIM",
+        "required": ["id", "url", "type"]
       },
       "ems": {
         "type": "object",
@@ -2664,7 +2890,8 @@
             "description": "EMS' type"
           }
         },
-        "description": "A new EMS"
+        "description": "A new EMS",
+        "required": ["id", "url", "type"]
       },
       "pdu": {
         "type": "object",
@@ -2690,7 +2917,8 @@
             "description": "The location for new PDU"
           }
         },
-        "description": "A new PDU"
+        "description": "A new PDU",
+        "required": ["id"]
       },
       "resources": {
         "type": "object",
@@ -2778,6 +3006,29 @@
             }
           }
         }
+      },
+      "policy": {
+        "type": "object",
+        "description": "A new Policy Management System",
+        "properties": {
+          "id":{
+            "type": "string",
+            "description": "Unique id"
+          },
+          "url": {
+            "type": "string",
+            "description": "The URL of the Policy Management System"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description for the Policy Management System"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type for new Policy Management System"
+          }
+        },
+        "required": ["id", "url", "type"]
       },
       "sup_sst": {
         "type": "object",
