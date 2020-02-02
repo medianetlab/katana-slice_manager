@@ -1,8 +1,8 @@
-version: '3.3'
+version: "3.3"
 
 services:
   mongo:
-    image: 'mongo:4.0.5'
+    image: "mongo:4.0.5"
     container_name: katana-mongo
     restart: always
     volumes:
@@ -51,7 +51,7 @@ services:
     volumes:
       - "./katana-nbi:/katana-nbi"
     ports:
-      - '8000:8000'
+      - "8000:8000"
     environment:
       PYTHONWARNINGS: "ignore:Unverified HTTPS request"
     restart: always
@@ -96,20 +96,20 @@ services:
     network_mode: "host"
     restart: always
     volumes:
-      - './katana-cli:/cli'
+      - "./katana-cli:/cli"
     depends_on:
       - katana-nbi
 
   swagger:
-    image: 'swaggerapi/swagger-ui'
+    image: "swaggerapi/swagger-ui"
     container_name: katana-swagger
     restart: always
     environment:
       - SWAGGER_JSON=/my_swagger/swagger.json
     ports:
-      - '8001:8080'
+      - "8001:8080"
     volumes:
-      - './swagger:/my_swagger'
+      - "./swagger:/my_swagger"
     depends_on:
       - katana-mngr
 
@@ -160,4 +160,3 @@ volumes:
   mongo-datadb: {}
   mongo-configdb: {}
   postgres: {}
-  zk-kafka: {}
