@@ -1,14 +1,17 @@
 # Katana Slice Information Model - Generic Slice Template (GST)
 
-## Introduction
-The Generic Slice Template (GST) is a set of attributes that can characterise a type
-of network slice/service. GST is generic and is not tied to any specific network deployment.
-The NEtwork Slice Type (NEST) is a GST filled with values. The attributes and their values
-are assigned to fulfil a given set of requirements derived from a network slice customer use
-case. The NEST is an input to the network slice (instance) preparation performed by the
-Network Slice Manager. One or more NSIs (Network Slice Instance
-as defined in 3GPP TS 23.501) can be created out of the same NEST, but also existing
-NSI(s) may be reused
+## Roles in network slicing
+Multiple roles related to network slicing are specified in 3GPP TS 28.530. In this document the following roles are used:
+• Communication Service Customer (CSC): Uses communication services, e.g. end user, tenant, vertical.
+• Communication Service Provider (CSP): Provides communication services. Designs, builds and operates its communication services. The CSP provided communication service can be built with or without network slice.
+• Network Operator (NOP): Provides network services. Designs, builds and operates its networks to offer such services.
+• Network Slice Customer (NSC): The Communication Service Provider (CSP) or Communication Service Customer (CSC) who uses Network Slice as a Service.
+• Network Slice Provider (NSP): The Communication Service Provider (CSP) or Network Operator (NOP) who provides Network Slice as a Service.
+
+## GST and NEST
+The Generic Slice Template (GST) is a set of attributes that can characterise a type of network slice/service. GST is generic and is not tied to any specific network deployment. The NEtwork Slice Type (NEST) is a GST filled with values. The attributes and their values are assigned to fulfil a given set of requirements derived from a network slice customer use case. The NEST is an input to the network slice (instance) preparation performed by the Network Slice Manager. One or more NSIs (Network Slice Instance as defined in 3GPP TS 23.501) can be created out of the same NEST, but also existing NSI(s) may be reused
+
+A NEST is sent to Katana Slice Manager with a slice creation request. It is then parsed by the Slice Mapping process, which, in combination with the supported slices by the underlying infrastructure (see [Supported Slices](sst)), creates the slice.
 
 ## How to use
 ### Structure

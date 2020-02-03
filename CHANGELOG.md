@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 03/02-2020
+
+### Added
+
+- Support (API and DB) for external Policy System Engine
+
+### Changed
+
+- Required fields on json schema
+- Readmec file
+- GST Terminology
+- Wiki
+
 ## [2.1.0] - 16/01/2020
 
 ### Added
