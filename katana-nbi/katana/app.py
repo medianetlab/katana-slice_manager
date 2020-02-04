@@ -12,6 +12,7 @@ from katana.api.gst import GstView
 from katana.api.slice_des import Slice_desView
 from katana.api.resource import ResourcesView
 from katana.api.policy import PolicyView
+from katana.api.nslist import NslistView
 
 
 def create_app():
@@ -39,5 +40,6 @@ def create_app():
     GstView.register(app, trailing_slash=False)
     ResourcesView.register(app, trailing_slash=False)
     PolicyView.register(app, trailing_slash=False)
+    NslistView.register(app, trailing_slash=False)
 
     return app

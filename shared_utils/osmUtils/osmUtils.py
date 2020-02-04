@@ -1,6 +1,7 @@
 import requests
 import logging
 import uuid
+import pymongo
 from katana.utils.mongoUtils import mongoUtils
 
 # Logging Parameters
@@ -240,6 +241,7 @@ class Osm():
                 osm_vnfd_list = response.json()
                 new_vnfd = {}
                 for osm_vnfd in osm_vnfd_list:
+                    new_vnfd["vnfd-id"] = osm_vnfd["_id"]
                     new_vnfd["name"] = osm_vnfd["id"]
                     new_vnfd["flavor"] = {"memory-mb": 0,
                                           "vcpu-count": 0,
@@ -254,7 +256,10 @@ class Osm():
                     new_vnfd["mgmt"] = osm_vnfd["mgmt-interface"]["cp"]
                     new_vnfd["nfvo_id"] = self.nfvo_id
                     new_vnfd["_id"] = str(uuid.uuid4())
-                    mongoUtils.add("vnfd", new_vnfd)
+                    try:
+                        mongoUtils.add("vnfd", new_vnfd)
+                    except pymongo.errors.DuplicateKeyError:
+                        continue
                     new_vnfd = {}
                 break
             else:
@@ -276,7 +281,8 @@ class Osm():
                 osm_nsd_list = response.json()
                 new_nsd = {}
                 for osm_nsd in osm_nsd_list:
-                    new_nsd["id"] = osm_nsd["_id"]
+                    new_nsd["nsd-id"] = osm_nsd["_id"]
+                    new_nsd["nsd-name"] = osm_nsd["id"]
                     new_nsd["vnfd_list"] = []
                     new_nsd["flavor"] = {"memory-mb": 0,
                                          "vcpu-count": 0,
@@ -297,7 +303,10 @@ NFVO repository")
                                 reg_vnfd["flavor"]["storage-gb"]
                     new_nsd["nfvo_id"] = self.nfvo_id
                     new_nsd["_id"] = str(uuid.uuid4())
-                    mongoUtils.add("nsd", new_nsd)
+                    try:
+                        mongoUtils.add("nsd", new_nsd)
+                    except pymongo.errors.DuplicateKeyError:
+                        continue
                     new_nsd = {}
                 break
             else:

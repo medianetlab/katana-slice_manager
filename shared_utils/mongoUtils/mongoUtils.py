@@ -11,6 +11,8 @@ db.wim.create_index([('id', ASCENDING)], unique=True)
 db.ems.create_index([('id', ASCENDING)], unique=True)
 db.pdu.create_index([('id', ASCENDING)], unique=True)
 db.policy.create_index([('id', ASCENDING)], unique=True)
+db.nsd.create_index([('nsd-id', ASCENDING)], unique=True)
+db.vnfd.create_index([('vnfd-id', ASCENDING)], unique=True)
 
 
 def index(collection_name):

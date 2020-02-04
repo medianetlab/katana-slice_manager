@@ -5,7 +5,7 @@ import click
 
 @click.group()
 def cli():
-    """Manage General Slice Template"""
+    """Query Resources"""
     pass
 
 
