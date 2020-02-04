@@ -1,5 +1,5 @@
 from katana.utils.sliceUtils import sliceUtils
-from katana.utils.kafkaUtils import kafkaUtils
+from katana.shared_utils.kafkaUtils import kafkaUtils
 import logging
 import logging.handlers
 

@@ -8,8 +8,8 @@ import pickle
 import time
 import logging
 import pymongo
-from katana.utils.mongoUtils import mongoUtils
-from katana.utils.wimUtils import odl_wimUtils, test_wimUtils
+from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.wimUtils import odl_wimUtils, test_wimUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

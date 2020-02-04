@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask import request
 from flask_classful import FlaskView
-from katana.utils.openstackUtils import utils as openstackUtils
-from katana.utils.opennebulaUtils import utils as opennebulaUtils
-from katana.utils.mongoUtils import mongoUtils
+from katana.shared_utils.openstackUtils import utils as openstackUtils
+from katana.shared_utils.opennebulaUtils import utils as opennebulaUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 import uuid
 from bson.json_util import dumps
 from bson.binary import Binary

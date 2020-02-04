@@ -1,8 +1,8 @@
 from flask import request
 from flask_classful import FlaskView, route
-from katana.utils.mongoUtils import mongoUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 from katana.slice_mapping import slice_mapping
-from katana.utils.kafkaUtils import kafkaUtils
+from katana.shared_utils.kafkaUtils import kafkaUtils
 
 import uuid
 from bson.json_util import dumps

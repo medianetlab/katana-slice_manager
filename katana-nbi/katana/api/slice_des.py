@@ -4,7 +4,7 @@ from flask import request
 import logging
 import uuid
 from bson.json_util import dumps
-from katana.utils.mongoUtils import mongoUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

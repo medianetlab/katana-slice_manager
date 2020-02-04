@@ -3,7 +3,7 @@ from flask_classful import FlaskView
 import logging
 from bson.json_util import dumps
 
-from katana.utils.mongoUtils import mongoUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

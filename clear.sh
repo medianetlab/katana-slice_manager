@@ -16,6 +16,8 @@ rm -f $file1 $file2
 
 # Remove Kafka data
 rm -rf zk-kafka/* || echo "Warning: Need root permission for removing Kafka and Zookeeper files - Try again with sudo"
+rm -rf katana-mngr/katana/shared_utils
+rm -rf katana-nbi/katana/shared_utils
 
 # Remove the shared_utils from katana-nbi and katana-mngr containers
 for file in $(ls shared_utils/) ; do

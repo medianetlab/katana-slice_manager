@@ -1,6 +1,6 @@
 from flask import request
 from flask_classful import FlaskView
-from katana.utils.mongoUtils import mongoUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 from bson.json_util import dumps
 import logging
 import time

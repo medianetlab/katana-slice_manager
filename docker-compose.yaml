@@ -50,6 +50,7 @@ services:
     command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload "katana.app:create_app()"
     volumes:
       - "./katana-nbi:/katana-nbi"
+      - "./shared_utils:/katana-nbi/katana/shared_utils"
     ports:
       - "8000:8000"
     environment:
@@ -72,6 +73,7 @@ services:
     command: python3 katana-mngr.py
     volumes:
       - "./katana-mngr:/katana-mngr"
+      - "./shared_utils:/katana-mngr/katana/shared_utils"
     environment:
       PYTHONWARNINGS: "ignore:Unverified HTTPS request"
     restart: always

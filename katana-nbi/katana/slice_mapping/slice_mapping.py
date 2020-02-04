@@ -1,4 +1,4 @@
-from katana.utils.mongoUtils import mongoUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 import logging
 import uuid
 

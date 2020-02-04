@@ -4,8 +4,8 @@ import logging
 from bson.json_util import dumps
 import pickle
 
-from katana.utils.mongoUtils import mongoUtils
-from katana.utils.osmUtils import osmUtils
+from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.osmUtils import osmUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
