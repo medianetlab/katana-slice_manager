@@ -113,7 +113,7 @@ def add_slice(nest_req):
     pop_list = []
     for ns in ns_list:
         # Search the nsd collection in Mongo for the nsd
-        nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"],
+        nsd = mongoUtils.find("nsd", {"nsd-id": ns["nsd-id"],
                               "nfvo_id": ns["nfvo-id"]})
         if not nsd:
             # Bootstrap the NFVO to check for NSDs that are not in mongo
@@ -128,7 +128,7 @@ def add_slice(nest_req):
                 return
             nfvo = pickle.loads(nfvo_obj_json["obj"])
             bootstrapNfvo(nfvo)
-            nsd = mongoUtils.find("nsd", {"id": ns["nsd-id"],
+            nsd = mongoUtils.find("nsd", {"nsd-id": ns["nsd-id"],
                                   "nfvo_id": ns["nfvo-id"]})
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)
