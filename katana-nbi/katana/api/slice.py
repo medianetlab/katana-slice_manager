@@ -76,7 +76,8 @@ class SliceView(FlaskView):
         request.json['_id'] = new_uuid
 
         # Get the NEST from the Slice Mapping process
-        nest, error_code = slice_mapping.gst_to_nest(request.json)
+        nest, error_code = slice_mapping.nest_mapping(request.json)
+
         if error_code:
             return nest, error_code
 

@@ -7,30 +7,32 @@ import datetime
 
 @click.group()
 def cli():
-    """Manage supported SST"""
+    """Manage supported Network Functions"""
     pass
 
 
 @click.command()
 def ls():
     """
-    List supported SST
+    List supported Network Functions
     """
 
-    url = "http://localhost:8000/api/sst"
+    url = "http://localhost:8000/api/function"
     r = None
     try:
         r = requests.get(url, timeout=3)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        # indent=2 "beautifies" json
-        # click.echo(json.dumps(json_data, indent=2))
-        print(console_formatter("DB_ID", "SST", "NAME", "CREATED AT"))
+        print(console_formatter("DB_ID", "FUNC_ID", "GEN", "FUNC", "TYPE",
+                                "LOCATION", "CREATED AT"))
         for i in range(len(json_data)):
             print(console_formatter(
                 json_data[i]["_id"],
-                json_data[i]["sst"],
-                json_data[i]["name"],
+                json_data[i]["func_id"],
+                json_data[i]["gen"],
+                json_data[i]["func"],
+                json_data[i]["type"],
+                json_data[i]["loc"],
                 datetime.datetime.fromtimestamp(json_data[i]["created_at"]).
                 strftime('%Y-%m-%d %H:%M:%S')))
 
@@ -49,9 +51,9 @@ def ls():
 @click.argument('id')
 def inspect(id):
     """
-    Display detailed information of supported SST
+    Display detailed information of supported Network Function
     """
-    url = "http://localhost:8000/api/sst/"+id
+    url = "http://localhost:8000/api/function/"+id
     r = None
     try:
         r = requests.get(url, timeout=3)
@@ -74,15 +76,15 @@ def inspect(id):
 
 @click.command()
 @click.option('-f', '--file', required=True, type=str,
-              help='yaml file with SST details')
+              help='yaml file with Network Function details')
 def add(file):
     """
-    Add new supported SST
+    Add new supported Network Function
     """
     with open(file, 'r') as stream:
         data = yaml.load(stream)
 
-    url = "http://localhost:8000/api/sst"
+    url = "http://localhost:8000/api/function"
     r = None
     try:
         r = requests.post(url, json=json.loads(json.dumps(data)), timeout=10)
@@ -104,9 +106,9 @@ def add(file):
 @click.argument('id')
 def rm(id):
     """
-    Remove supported SST
+    Remove supported Network Function
     """
-    url = "http://localhost:8000/api/sst/"+id
+    url = "http://localhost:8000/api/function/"+id
     r = None
     try:
         r = requests.delete(url, timeout=3)
@@ -125,16 +127,16 @@ def rm(id):
 
 @click.command()
 @click.option('-f', '--file', required=True, type=str,
-              help='yaml file with SST details')
+              help='yaml file with Network Function details')
 @click.argument('id')
 def update(file, id):
     """
-    Update SST
+    Update Network Function
     """
     with open(file, 'r') as stream:
         data = yaml.load(stream)
 
-    url = "http://localhost:8000/api/sst/"+id
+    url = "http://localhost:8000/api/function/"+id
     r = None
     try:
         r = requests.put(url, json=json.loads(json.dumps(data)), timeout=3)
@@ -159,10 +161,13 @@ cli.add_command(rm)
 cli.add_command(update)
 
 
-def console_formatter(uuid, serv_type, name, created_at):
-    return '{0: <40}{1: <10}{2: <20}{3: <25}'.format(
+def console_formatter(uuid, func_id, gen, func, _type, loc, created_at):
+    return '{0: <40}{1: <20}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}'.format(
         uuid,
-        serv_type,
-        name,
+        func_id,
+        gen,
+        func,
+        _type,
+        loc,
         created_at
     )

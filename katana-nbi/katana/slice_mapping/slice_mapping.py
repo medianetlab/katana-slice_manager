@@ -17,7 +17,8 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
-GST_FIELDS = ("base_slice_descriptor", "service_descriptor", "test_descriptor")
+NEST_FIELDS = ("base_slice_descriptor", "service_descriptor",
+               "test_descriptor")
 
 SLICE_DES_OBJ = ("base_slice_des_id", "base_slice_des_ref", "delay_tolerance",
                  "network_DL_throughput", "ue_DL_throughput",
@@ -37,106 +38,101 @@ TEST_DES_OBJ = ("performance_monitoring", "performance_prediction")
 TEST_DES_LIST = ("probe_list",)
 
 
-def gst_to_nest(gst):
+# Calculate the Required generation
+def calc_find_data(gen, location, func):
+    if gen == 5:
+        return {"location": location, "gen": 5, "func": func}
+    else:
+        return {"location": location, "gen": 5, "func": func}
+
+
+def nest_mapping(req):
     """
-    Function that translates the gst to nest
+    Function that maps nest to the underlying network functions
     """
-    nest = {"_id": gst["_id"]}
-    for field in GST_FIELDS:
-        gst[field] = gst.get(field, None)
+    # Store the gst in DB
+    mongoUtils.add("gst", req)
+
+    nest = {"_id": req["_id"]}
+
+    # Recreate the nest req
+    for field in NEST_FIELDS:
+        req[field] = req.get(field, None)
 
     # ****** STEP 1: Slice Descriptor ******
-    if not gst["base_slice_descriptor"]:
+    if not req["base_slice_descriptor"]:
         logger.error("No Base Slice Descriptor given - Exit")
-        return "GST Error: No Base Slice Descriptor given", 400
-    gst_slice_des = gst["base_slice_descriptor"]
-    # *** Recreate the GST ***
-    for gst_key in SLICE_DES_OBJ:
-        gst_slice_des[gst_key] = gst_slice_des.get(gst_key, None)
-    for gst_key in SLICE_DES_LIST:
-        gst_slice_des[gst_key] = gst_slice_des.get(gst_key, [])
+        return "NEST Error: No Base Slice Descriptor given", 400
+    req_slice_des = req["base_slice_descriptor"]
+    # *** Recreate the NEST ***
+    for req_key in SLICE_DES_OBJ:
+        req_slice_des[req_key] = req_slice_des.get(req_key, None)
+    for req_key in SLICE_DES_LIST:
+        req_slice_des[req_key] = req_slice_des.get(req_key, [])
 
     # *** Check if there are references for slice ***
-    if gst_slice_des["base_slice_des_ref"]:
+    if req_slice_des["base_slice_des_ref"]:
         ref_slice = mongoUtils.find("base_slice_des_ref", {"base_slice_des_id":
-                                    gst_slice_des["base_slice_des_ref"]})
+                                    req_slice_des["base_slice_des_ref"]})
         if ref_slice:
-            for key, value in gst_slice_des.items():
+            for key, value in req_slice_des.items():
                 try:
                     if value is None:
-                        gst_slice_des[key] = ref_slice[key]
+                        req_slice_des[key] = ref_slice[key]
                 except KeyError:
                     continue
         else:
             logger.error("slice_descriptor {} not found".
-                         format(gst_slice_des["base_slice_des_ref"]))
+                         format(req_slice_des["base_slice_des_ref"]))
             return "Error: referenced slice_descriptor not found", 400
 
+    # *************************** Start the mapping ***************************
+    # Currently supports:
+    # 1) If delay_tolerance --> EMBB else --> URLLC
+    #    If EMBB --> EPC Placement=@Core. If URLLC --> EPC Placement=@Edge
+    # 2) If network throughput > 100 Mbps --> Type=5G
+    # *************************************************************************
+
+    if req_slice_des["network_DL_throughput"] > 100000:
+        gen = 5
+    else:
+        gen = 4
+
     # *** Calculate the type of the slice (sst) ***
-    # Based on the Supported Slices inputs will determine sst and sd values
-    if gst_slice_des["delay_tolerance"]:
-        if gst_slice_des["nb_iot"]:
-            # MIoT
-            sst = 3
-        else:
-            # eMBB
-            sst = 1
-    else:
-        if gst_slice_des["nb_iot"]:
-            # TBD
-            sst = 1
-        else:
-            # uRLLC
-            if len(gst_slice_des["coverage"]) > 0:
-                sst = 2
+    if req_slice_des["delay_tolerance"]:
+        # EMBB
+        epc = mongoUtils.find("func", calc_find_data(gen, "Core", 0))
+        connections = []
+        not_supp_loc = []
+        for location in req_slice_des["coverage"]:
+            enb = mongoUtils.find("func", calc_find_data(gen, location, 1))
+            if not enb:
+                not_supp_loc.append(location)
             else:
-                logger.warning("No edge location - embb placement")
-                sst = 1
-
-    # Get the supported slices list
-    while True:
-        sst_list = list(mongoUtils.find_all("sst", {"sst": sst}))
-        # If there are not supported sst 2 or 3, search supported sst 1 (embb)
-        if not sst_list:
-            if sst > 1:
-                logger.warning(
-                    "There are not supported sst {} types - Searching for eMBB"
-                    .format(sst))
-                sst = 1
-            else:
-                logger.error("There are no supported eMBB slices")
-                return "Error: There are no supported slices", 400
-        else:
-            break
-
-    # Check if there are more than one supported sst with same type
-    if len(sst_list) > 1:
-        # Check the sst supported locations against coverage
-        max_match = 0
-        max_pos = 0
-        for i, _slice in enumerate(sst_list):
-            tot = 0
-            for location in gst_slice_des["coverage"]:
-                if location in _slice["supported_locations"]:
-                    tot += 1
-            if tot > max_match:
-                max_match = tot
-                max_pos = i
-
-        selected_slice = sst_list[max_pos]
+                connections.append({"core": epc, "radio": enb})
+        if not epc or not connections:
+            return "Error: Not available Network Functions", 400
+        for location in not_supp_loc:
+            logger.warning(f"Location {location} not supported")
+            req_slice_des["coverage"].remove(location)
     else:
-        selected_slice = sst_list[0]
-    nest["sst_id"] = selected_slice["_id"]
+        # URLLC
+        connections = []
+        not_supp_loc = []
+        for location in req_slice_des["coverage"]:
+            epc = mongoUtils.find("func", calc_find_data(gen, location, 0))
+            enb = mongoUtils.find("func", calc_find_data(gen, location, 1))
+            if not epc or not enb:
+                not_supp_loc.append(location)
+            else:
+                connections.append({"core": epc, "radio": enb})
+        if not connections:
+            return "Error: Not available Network Functions", 400
+        for location in not_supp_loc:
+            logger.warning(f"Location {location} not supported")
+            req_slice_des["coverage"].remove(location)
 
-    # *** Check which locations are not covered by the supported sst ***
-    remove_locations = []
-    for location in gst_slice_des["coverage"]:
-        if location not in selected_slice["supported_locations"]:
-            remove_locations.append(location)
-            logger.warning("Location {} is not supported for that type of sst".
-                           format(location))
-    nest["coverage"] = [location for location in gst_slice_des["coverage"] if
-                        location not in remove_locations]
+    nest["connections"] = connections
 
     # Values to be copied to NEST
     KEYS_TO_BE_COPIED = ("network_DL_throughput", "ue_DL_throughput",
@@ -144,42 +140,61 @@ def gst_to_nest(gst):
                          "group_communication_support", "mtu",
                          "number_of_terminals", "positional_support",
                          "radio_spectrum", "device_velocity",
-                         "terminal_density")
+                         "terminal_density", "coverage")
     for key in KEYS_TO_BE_COPIED:
-        nest[key] = gst_slice_des[key]
+        nest[key] = req_slice_des[key]
 
     # Create the shared value
-    nest["shared"] = {"isolation": gst_slice_des["isolation_level"],
-                      "simultaneous_nsi": gst_slice_des["simultaneous_nsi"]}
+    nest["shared"] = {"isolation": req_slice_des["isolation_level"],
+                      "simultaneous_nsi": req_slice_des["simultaneous_nsi"]}
+
+    # Replace placement value with location in each NS and create a list with
+    # all the NS Lists on the nest
+    # nslists = []
+    # # Add there all the ns list in the core slice
+    # for connection in connections:
+    #     for key in connection:
+    #         try:
+    #             for ns in connection[key]["ns_list"]:
+    #                 ns["placement"] = (
+    #                     lambda x: "Core" if not x else
+    #                     connection[key]["location"])(ns["placement"])
+    #         except KeyError:
+    #             continue
 
     # ****** STEP 2: Service Descriptor ******
-    if gst["service_descriptor"]:
-        gst_service_des = gst["service_descriptor"]
-        # *** Recreate the GST ***
-        for gst_key in SERVICE_DES_OBJ:
-            gst_service_des[gst_key] = gst_service_des.get(gst_key, None)
-        for gst_key in SERVICE_DES_LIST:
-            gst_service_des[gst_key] = gst_service_des.get(gst_key, [])
+    if req["service_descriptor"]:
+        req_service_des = req["service_descriptor"]
+        # *** Recreate the NEST ***
+        for req_key in SERVICE_DES_OBJ:
+            req_service_des[req_key] = req_service_des.get(req_key, None)
+        for req_key in SERVICE_DES_LIST:
+            req_service_des[req_key] = req_service_des.get(req_key, [])
         # Create the NS field on Nest
-        nest["ns_list"] = gst_service_des["ns_list"]
+        nest["ns_list"] = req_service_des["ns_list"]
+
+        # # Replace Placement with location in each NS
+        # for ns in nest["ns_list"]:
+        #     ns["placement"] = (
+        #         lambda x: {"location": ["Core"]} if not x else
+        #         {"location": req_slice_des["coverage"]})(ns["placement"])
 
     # ****** STEP 3: Service Descriptor ******
-    if gst["test_descriptor"]:
-        gst_test_des = gst["test_descriptor"]
-        # *** Recreate the GST ***
-        for gst_key in TEST_DES_OBJ:
-            gst_test_des[gst_key] = gst_test_des.get(gst_key, None)
-        for gst_key in TEST_DES_LIST:
-            gst_test_des[gst_key] = gst_test_des.get(gst_key, [])
+    if req["test_descriptor"]:
+        req_test_des = req["test_descriptor"]
+        # *** Recreate the NEST ***
+        for req_key in TEST_DES_OBJ:
+            req_test_des[req_key] = req_test_des.get(req_key, None)
+        for req_key in TEST_DES_LIST:
+            req_test_des[req_key] = req_test_des.get(req_key, [])
         # Create the Probe field on Nest
-        nest["probe_list"] = gst_test_des["probe_list"]
+        nest["probe_list"] = req_test_des["probe_list"]
 
-    mongoUtils.add("gst", gst)
     if not mongoUtils.find(
             "base_slice_des_ref",
-            {"base_slice_des_id": gst["base_slice_descriptor"]
+            {"base_slice_des_id": req["base_slice_descriptor"]
                 ["base_slice_des_id"]}):
         new_uuid = str(uuid.uuid4())
-        gst["base_slice_descriptor"]["_id"] = new_uuid
-        mongoUtils.add("base_slice_des_ref", gst["base_slice_descriptor"])
+        req["base_slice_descriptor"]["_id"] = new_uuid
+        mongoUtils.add("base_slice_des_ref", req["base_slice_descriptor"])
     return nest, 0
