@@ -150,7 +150,7 @@ def add_slice(nest_req):
 
     # Find the nsd details for each NS and replace placement with location
 
-    # Get Details for the Network Services
+    # **** Step1-a: Get Details for the Network Services ****
     # i) The extra NS of the slice
     temp_list = nest["ns_list"]
     total_ns_list, vim_dict, nest["ns_list"], err = ns_details(
@@ -178,15 +178,41 @@ def add_slice(nest_req):
             else:
                 del temp_list
 
-    # ***********************************TBD    ***********************************************
-    # # Create the information for the EMS, WIM MON
-    # end_points = {"vims": vim_list, "pdus": pdu_list,
-    #               "probes": nest["probe_list"]}
-    # wim_data = {"network_DL_throughput": nest["network_DL_throughput"],
-    #             "network_UL_throughput": nest["network_UL_throughput"],
-    #             "mtu": nest["mtu"], "end_points": end_points}
+    # **** Step1-b: Create the data for WIM ****
+    wim_data = {"core_connections": [], "extra_NS": []}
+    # Add the connections
+    for connection in nest["connections"]:
+        data = {}
+        for key in connection:
+            key_data = {}
+            try:
+                ns_l = connection[key]["ns_list"]
+            except KeyError:
+                pass
+            else:
+                key_data["ns"] = []
+                for ns in ns_l:
+                    for site in ns["placement"]:
+                        if site not in key_data["ns"]:
+                            key_data["ns"].append(site)
+            try:
+                pnf_l = connection[key]["pnf_list"]
+            except KeyError:
+                pass
+            else:
+                key_data["pnf"] = pnf_l
+            pnf = connection[key].get("pnf_list", [])
+            if key_data:
+                data[key] = key_data
+        if data:
+            wim_data["core_connections"].append(data)
 
-    # nest["network functions"] = {"ns_list": ns_list, "pnf_list": pnf_list}
+    # Add the extra Network Services
+    for ns in nest["ns_list"]:
+        for site in ns["placement"]:
+            wim_data["extra_NS"].append(site)
+    logger.debug(wim_data)
+
     nest["configured_components"].append("nf")
     nest["vim_list"] = vim_dict
     nest['deployment_time']['Placement_Time'] = format(
@@ -248,26 +274,26 @@ def add_slice(nest_req):
             mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
 
     mongoUtils.update("slice", nest['_id'], nest)
-    # # *** STEP-2b: WAN ***
-    # if (mongoUtils.count('wim') <= 0):
-    #     logger.warning('There is no registered WIM')
-    # else:
-    #     wan_start_time = time.time()
-    #     # Select WIM - Assume that there is only one registered
-    #     wim_list = list(mongoUtils.index('wim'))
-    #     target_wim = wim_list[0]
-    #     target_wim_id = target_wim["id"]
-    #     target_wim_obj = pickle.loads(
-    #         mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
-    #     target_wim_obj.create_slice(wim_data)
-    #     nest["wim_data"] = wim_data
-    #     target_wim["slices"][nest["_id"]] = end_points
-    #     mongoUtils.update("wim", target_wim["_id"], target_wim)
-    #     nest['deployment_time']['WAN_Deployment_Time'] =\
-    #         format(time.time() - wan_start_time, '.4f')
-    #     nest["configured_components"].append("wim")
-    # nest['deployment_time']['Provisioning_Time'] =\
-    #     format(time.time() - prov_start_time, '.4f')
+    # *** STEP-2b: WAN ***
+    if (mongoUtils.count('wim') <= 0):
+        logger.warning('There is no registered WIM')
+    else:
+        wan_start_time = time.time()
+        # Select WIM - Assume that there is only one registered
+        wim_list = list(mongoUtils.index('wim'))
+        target_wim = wim_list[0]
+        target_wim_id = target_wim["id"]
+        target_wim_obj = pickle.loads(
+            mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
+        target_wim_obj.create_slice(wim_data)
+        nest["wim_data"] = wim_data
+        target_wim["slices"][nest["_id"]] = nest["_id"]
+        mongoUtils.update("wim", target_wim["_id"], target_wim)
+        nest['deployment_time']['WAN_Deployment_Time'] =\
+            format(time.time() - wan_start_time, '.4f')
+        nest["configured_components"].append("wim")
+    nest['deployment_time']['Provisioning_Time'] =\
+        format(time.time() - prov_start_time, '.4f')
 
     # **** STEP-3: Slice Activation Phase****
     nest['status'] = 'Activation'
@@ -304,7 +330,8 @@ def add_slice(nest_req):
         target_nfvo_obj = pickle.loads(
             mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
         for site in ns["placement"]:
-            nfvo_inst_ns_id = ns_inst_info[ns["nsd-id"]][site["location"]]["nfvo_inst_ns"]
+            nfvo_inst_ns_id = \
+                ns_inst_info[ns["nsd-id"]][site["location"]]["nfvo_inst_ns"]
             insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
             while (insr["operational-status"] != "running" or
                    insr["config-status"] != "configured"):
@@ -458,7 +485,8 @@ def delete_slice(slice_json):
                     mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
                 # Stop the NS
                 for site in ns["placement"]:
-                    nfvo_inst_ns = ns_inst_info[ns["nsd-id"]][site["location"]]["nfvo_inst_ns"]
+                    nfvo_inst_ns = ns_inst_info[ns["nsd-id"]]\
+                        [site["location"]]["nfvo_inst_ns"]
                     target_nfvo_obj.deleteNs(nfvo_inst_ns)
                     while True:
                         if target_nfvo_obj.checkNsLife(nfvo_inst_ns):

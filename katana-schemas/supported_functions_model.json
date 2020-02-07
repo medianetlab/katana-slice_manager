@@ -47,6 +47,10 @@
           "type": "string",
           "description": "The management IP of the PNF"
         },
+        "location": {
+          "type": "string",
+          "description": "The location of the PNF"
+        },
         "optional":{
           "type": "boolean"
         }
