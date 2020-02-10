@@ -1,5 +1,6 @@
 import requests
 import logging
+import logging.handlers
 import uuid
 import pymongo
 from katana.shared_utils.mongoUtils import mongoUtils

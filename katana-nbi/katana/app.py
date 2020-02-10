@@ -7,7 +7,6 @@ from katana.api.nfvo import NFVOView
 from katana.api.ems import EmsView
 from katana.api.slice import SliceView
 from katana.api.function import FunctionView
-from katana.api.pdu import PduView
 from katana.api.gst import GstView
 from katana.api.slice_des import Slice_desView
 from katana.api.resource import ResourcesView
@@ -33,7 +32,6 @@ def create_app():
     WimView.register(app, trailing_slash=False)
     EmsView.register(app, trailing_slash=False)
     NFVOView.register(app, trailing_slash=False)
-    PduView.register(app, trailing_slash=False)
     SliceView.register(app, trailing_slash=False)
     FunctionView.register(app, trailing_slash=False)
     Slice_desView.register(app, trailing_slash=False)

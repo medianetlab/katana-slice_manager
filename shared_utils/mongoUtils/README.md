@@ -5,7 +5,6 @@
 * vim
 * wim
 * ems
-* pdu
 
 ## Platform Components Binary Objects
 * nfvo
@@ -14,7 +13,7 @@
 * ems
 
 ## Slice Related
-* sst
+* func
 * slice
 
 ## Network Services Related 

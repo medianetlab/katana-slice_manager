@@ -26,7 +26,10 @@ consumer = kafkaUtils.create_consumer()
 
 # Check for new messages
 for message in consumer:
-    logger.debug(message)
+    logger.info("--- New Message ---")
+    logger.info(
+        "Topic: {0} | Partition: {1} | Offset: {2}".
+        format(message.topic, message.partition, message.offset))
     # Commit the latest received message
     consumer.commit()
     action = message.value["action"]

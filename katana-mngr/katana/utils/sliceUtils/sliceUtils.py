@@ -1,4 +1,5 @@
 from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.osmUtils import osmUtils
 import pickle
 import time
 import logging
@@ -54,7 +55,7 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
                     "There is no NFVO with id {}".format(ns["nfvo-id"]))
                 return [], [], [], 1
             nfvo = pickle.loads(nfvo_obj_json["obj"])
-            bootstrapNfvo(nfvo)
+            osmUtils.bootstrapNfvo(nfvo)
             nsd = mongoUtils.find("nsd", {"nsd-id": ns["nsd-id"],
                                   "nfvo_id": ns["nfvo-id"]})
             if not nsd and ns.get("optional", False):
@@ -135,7 +136,6 @@ def add_slice(nest_req):
     placement_start_time = time.time()
 
     # Initiate the lists
-    pdu_list = []
     vim_dict = {}
     total_ns_list = []
     ems_messages = {}
@@ -447,15 +447,6 @@ def delete_slice(slice_json):
     else:
         logger.info("There was not EMS configuration")
 
-    # Release PDUs
-    if "pdu" in slice_json["configured_components"]:
-        for ipdu in slice_json["pdu_list"]:
-            pdu = mongoUtils.find("pdu", {"id": ipdu})
-            pdu["tenants"].remove(slice_json["_id"])
-            mongoUtils.update("pdu", pdu["_id"], pdu)
-    else:
-        logger.info("No PDUs on the slice")
-
     # *** Step-2: WAN Slice ***
     wim_data = slice_json.get("wim_data", None)
     if wim_data:
@@ -548,11 +539,3 @@ def delete_slice(slice_json):
         ifunc = mongoUtils.get("func", func_id)
         ifunc["tenants"].remove(slice_json["_id"])
         mongoUtils.update("func", func_id, ifunc)
-
-
-def bootstrapNfvo(nfvo_obj):
-    """
-    Reads info from NSDs/VNFDs in the NFVO and stores them in mongodb
-    """
-    nfvo_obj.readVnfd()
-    nfvo_obj.readNsd()
