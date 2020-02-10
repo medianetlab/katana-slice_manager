@@ -77,7 +77,7 @@
     "func":{
       "type": "number",
       "enum": [0, 1],
-      "description": "0: EPC, 1: xNodeB"
+      "description": "0: Core, 1: Radio"
     },
     "shared": {
       "type": "object",

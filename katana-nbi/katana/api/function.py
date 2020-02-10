@@ -36,15 +36,15 @@ class FunctionView(FlaskView):
         """
         data = mongoUtils.index("func")
         return_data = []
-        for iservice in data:
+        for iserv in data:
             return_data.append(dict(
-                _id=iservice['_id'],
-                gen=(lambda x: "4G" if x == 4 else "5G")(iservice["gen"]),
-                func=(lambda x: "EPC" if x == 0 else "xNB")(iservice["func"]),
+                _id=iserv['_id'],
+                gen=(lambda x: "4G" if x == 4 else "5G")(iserv["gen"]),
+                func=(lambda x: "Core" if x == 0 else "Radio")(iserv["func"]),
                 type=(lambda x: "Virtual" if x == 0 else "Physical")(
-                    iservice["type"]),
-                func_id=iservice['id'], loc=iservice["location"],
-                created_at=iservice['created_at']))
+                    iserv["type"]),
+                func_id=iserv['id'], loc=iserv["location"],
+                created_at=iserv['created_at']))
         return dumps(return_data), 200
 
     def get(self, uuid):

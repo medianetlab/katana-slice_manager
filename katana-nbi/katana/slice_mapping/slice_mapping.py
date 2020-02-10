@@ -92,6 +92,7 @@ def nest_mapping(req):
     #    If EMBB --> EPC Placement=@Core. If URLLC --> EPC Placement=@Edge
     # 2) If network throughput > 100 Mbps --> Type=5G
     # *************************************************************************
+    functions_list = []
 
     if req_slice_des["network_DL_throughput"] > 100000:
         gen = 5
@@ -101,7 +102,10 @@ def nest_mapping(req):
     # *** Calculate the type of the slice (sst) ***
     if req_slice_des["delay_tolerance"]:
         # EMBB
+        nest["sst"] = 1
         epc = mongoUtils.find("func", calc_find_data(gen, "Core", 0))
+        if not epc:
+            return "Error: Not available Core Network Functions", 400
         connections = []
         not_supp_loc = []
         for location in req_slice_des["coverage"]:
@@ -110,13 +114,20 @@ def nest_mapping(req):
                 not_supp_loc.append(location)
             else:
                 connections.append({"core": epc, "radio": enb})
+                enb["tenants"].append(nest["_id"])
+                mongoUtils.update("func", enb["_id"], enb)
+                functions_list.append(enb["_id"])
         if not epc or not connections:
             return "Error: Not available Network Functions", 400
+        epc["tenants"].append(nest["_id"])
+        mongoUtils.update("func", epc["_id"], epc)
+        functions_list.append(epc["_id"])
         for location in not_supp_loc:
             logger.warning(f"Location {location} not supported")
             req_slice_des["coverage"].remove(location)
     else:
         # URLLC
+        nest["sst"] = 2
         connections = []
         not_supp_loc = []
         for location in req_slice_des["coverage"]:
@@ -126,6 +137,11 @@ def nest_mapping(req):
                 not_supp_loc.append(location)
             else:
                 connections.append({"core": epc, "radio": enb})
+                epc["tenants"].append(nest["_id"])
+                enb["tenants"].append(nest["_id"])
+                mongoUtils.update("func", enb["_id"], enb)
+                mongoUtils.update("func", epc["_id"], epc)
+                functions_list.extend([epc["_id"], enb["_id"]])
         if not connections:
             return "Error: Not available Network Functions", 400
         for location in not_supp_loc:
@@ -133,6 +149,7 @@ def nest_mapping(req):
             req_slice_des["coverage"].remove(location)
 
     nest["connections"] = connections
+    nest["functions"] = functions_list
 
     # Values to be copied to NEST
     KEYS_TO_BE_COPIED = ("network_DL_throughput", "ue_DL_throughput",
@@ -147,20 +164,6 @@ def nest_mapping(req):
     # Create the shared value
     nest["shared"] = {"isolation": req_slice_des["isolation_level"],
                       "simultaneous_nsi": req_slice_des["simultaneous_nsi"]}
-
-    # Replace placement value with location in each NS and create a list with
-    # all the NS Lists on the nest
-    # nslists = []
-    # # Add there all the ns list in the core slice
-    # for connection in connections:
-    #     for key in connection:
-    #         try:
-    #             for ns in connection[key]["ns_list"]:
-    #                 ns["placement"] = (
-    #                     lambda x: "Core" if not x else
-    #                     connection[key]["location"])(ns["placement"])
-    #         except KeyError:
-    #             continue
 
     # ****** STEP 2: Service Descriptor ******
     if req["service_descriptor"]:

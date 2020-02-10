@@ -19,14 +19,14 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-NEST_KEYS_OBJ = ("sst_id", "shared", "network_DL_throughput",
+NEST_KEYS_OBJ = ("sst", "shared", "network_DL_throughput",
                  "ue_DL_throughput", "network_UL_throughput",
                  "ue_UL_throughput", "group_communication_support", "mtu",
                  "number_of_terminals", "positional_support",
                  "device_velocity", "terminal_density")
 
 NEST_KEYS_LIST = ("coverage", "ns_list", "radio_spectrum", "probe_list",
-                  "connections")
+                  "connections", "functions")
 
 
 def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
@@ -140,16 +140,6 @@ def add_slice(nest_req):
     total_ns_list = []
     ems_messages = {}
 
-    # ems = pnf.get("ems-id", None)
-    # if ems:
-    #     ems_messages[ems] = ems_messages.get(ems, {"conf_ns_list": [],
-    #                                                "conf_pnf_list": []})
-    #     ems_messages[ems]["conf_pnf_list"].append(
-    #         {"name": pnf["pnf-name"], "ip": pdu["ip"],
-    #          "pdu-location": pdu["location"]})
-
-    # Find the nsd details for each NS and replace placement with location
-
     # **** Step1-a: Get Details for the Network Services ****
     # i) The extra NS of the slice
     for location in nest["coverage"]:
@@ -211,7 +201,6 @@ def add_slice(nest_req):
     for ns in nest["ns_list"]:
         if ns["placement"] not in wim_data["extra_NS"]:
             wim_data["extra_NS"].append(ns["placement"])
-    logger.debug(wim_data)
 
     nest["configured_components"].append("nf")
     nest["vim_list"] = vim_dict
@@ -287,8 +276,6 @@ def add_slice(nest_req):
             mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
         target_wim_obj.create_slice(wim_data)
         nest["wim_data"] = wim_data
-        logger.debug("-----WIM DATA ------")
-        logger.debug(wim_data)
         target_wim["slices"][nest["_id"]] = nest["_id"]
         mongoUtils.update("wim", target_wim["_id"], target_wim)
         nest['deployment_time']['WAN_Deployment_Time'] =\
@@ -488,8 +475,6 @@ def delete_slice(slice_json):
         logger.info("There was no WIM configuration")
 
     # *** Step-3: Cloud ***
-    # Recreate the ns_lists
-
     if "nf" in slice_json["configured_components"]:
         total_ns_list = slice_json["total_ns_list"]
         ns_inst_info = slice_json["ns_inst_info"]
@@ -557,6 +542,12 @@ def delete_slice(slice_json):
         logger.info("No NFs on the slice")
 
     mongoUtils.delete("slice", slice_json["_id"])
+
+    # Remove Slice from the tenants list on functions
+    for func_id in slice_json["functions"]:
+        ifunc = mongoUtils.get("func", func_id)
+        ifunc["tenants"].remove(slice_json["_id"])
+        mongoUtils.update("func", func_id, ifunc)
 
 
 def bootstrapNfvo(nfvo_obj):
