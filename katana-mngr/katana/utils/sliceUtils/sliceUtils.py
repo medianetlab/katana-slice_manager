@@ -130,7 +130,7 @@ def add_slice(nest_req):
 
     # **** STEP-1: Placement ****
     nest['status'] = 'Placement'
-    nest["configured_components"] = []
+    nest["conf_comp"] = {"nf": [],  "ems": []}
     mongoUtils.update("slice", nest['_id'], nest)
     logger.info("Status: Placement")
     placement_start_time = time.time()
@@ -202,7 +202,6 @@ def add_slice(nest_req):
         if ns["placement"] not in wim_data["extra_NS"]:
             wim_data["extra_NS"].append(ns["placement"])
 
-    nest["configured_components"].append("nf")
     nest["vim_list"] = vim_dict
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
@@ -280,7 +279,6 @@ def add_slice(nest_req):
         mongoUtils.update("wim", target_wim["_id"], target_wim)
         nest['deployment_time']['WAN_Deployment_Time'] =\
             format(time.time() - wan_start_time, '.4f')
-        nest["configured_components"].append("wim")
     nest['deployment_time']['Provisioning_Time'] =\
         format(time.time() - prov_start_time, '.4f')
 
@@ -309,6 +307,7 @@ def add_slice(nest_req):
         )
         ns_inst_info[ns["nsd-id"]][ns["placement"]["location"]] = {
             "nfvo_inst_ns": nfvo_inst_ns}
+        nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
         time.sleep(2)
 
@@ -409,7 +408,7 @@ def add_slice(nest_req):
         nest["ems_data"] = ems_messages
         nest['deployment_time']['Radio_Configuration_Time']\
             = format(time.time() - radio_start_time, '.4f')
-        nest["configured_components"].append("ems")
+        nest["conf_comp"]["ems"].append(ems_id)
 
     # *** STEP-4: Finalize ***
     logger.info("Status: Running")
@@ -430,13 +429,13 @@ def delete_slice(slice_json):
     logger.info("Status: Terminating")
 
     # *** Step-1: Radio Slice Configuration ***
-    if "ems" in slice_json["configured_components"]:
+    if slice_json["conf_comp"]["ems"]:
         ems_messages = slice_json.get("ems_data", None)
         if ems_messages:
             for ems_id, ems_message in ems_messages.items():
                 # Find the EMS
                 target_ems = mongoUtils.find("ems", {"id": ems_id})
-                if not target_ems:
+                if not target_ems or ems_id not in slice_json["conf_comp"]["ems"]:
                     # ERROR HANDLING: There is no such EMS
                     logger.error("EMS {} not found - No configuration".
                                  format(ems_id))
@@ -466,12 +465,15 @@ def delete_slice(slice_json):
         logger.info("There was no WIM configuration")
 
     # *** Step-3: Cloud ***
-    if "nf" in slice_json["configured_components"]:
-        total_ns_list = slice_json["total_ns_list"]
-        ns_inst_info = slice_json["ns_inst_info"]
+    if slice_json["conf_comp"]["nf"]:
         try:
+            total_ns_list = slice_json["total_ns_list"]
+            ns_inst_info = slice_json["ns_inst_info"]
             vim_error_list = []
             for ns in total_ns_list:
+                if ns["nsd-id"] not in slice_json["conf_comp"]["nf"]:
+                    logger.error(f"{ns['nsd-id']} was not instantiated successfully")
+                    continue
                 # Get the NFVO
                 nfvo_id = ns["nfvo-id"]
                 target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
