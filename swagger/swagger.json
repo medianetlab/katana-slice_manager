@@ -10,7 +10,7 @@
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "1.0.0"
+    "version": "2.2.0"
   },
   "servers": [
     {
@@ -71,11 +71,11 @@
       "description": "Create, Read, Update and Delete Base Slice Descriptors that will be included in the GST"
     },
     {
-      "name": "Supported SST",
+      "name": "Network Functions",
       "description": "Read, Write, Update and Delete the supported slices on the platform",
       "externalDocs": {
         "description": "Wiki",
-        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/sst"
+        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/function"
       }
     },
     {
@@ -1472,12 +1472,12 @@
         }
       }
     },
-    "/sst": {
+    "/function": {
       "get": {
         "tags": [
-          "Supported SST"
+          "Network Functions"
         ],
-        "summary": "Returns a list of the supported SST on the platform",
+        "summary": "Returns a list of the Network Function on the platform",
         "responses": {
           "200": {
             "description": "Successful Operation",
@@ -1485,9 +1485,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "description": "A list of supported sst",
+                  "description": "A list of Network Functions",
                   "items": {
-                    "$ref": "#/components/schemas/sup_sst"
+                    "$ref": "#/components/schemas/net_func"
                   }
                 }
               }
@@ -1505,15 +1505,15 @@
       },
       "post": {
         "tags": [
-          "Supported SST"
+          "Network Functions"
         ],
-        "summary": "Add a supported SST on the platform",
+        "summary": "Add a Network Function on the platform",
         "requestBody": {
-          "description": "Supported SST Parameters",
+          "description": "Network Functions Parameters",
           "content": {
             "*/*": {
               "schema": {
-                "$ref": "#/components/schemas/sup_sst"
+                "$ref": "#/components/schemas/net_func"
               }
             }
           },
@@ -1527,7 +1527,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "The uuid of the new supported SST"
+                  "description": "The uuid of the new Network Function"
                 }
               }
             }
@@ -1548,17 +1548,17 @@
         "x-codegen-request-body-name": "body"
       }
     },
-    "/sst/{sst_id}": {
+    "/function/{func_id}": {
       "get": {
         "tags": [
-          "Supported SST"
+          "Network Functions"
         ],
-        "summary": "Return Info about a specific supported SST on the platform",
+        "summary": "Return Info about a specific Network Function on the platform",
         "parameters": [
           {
-            "name": "sst_id",
+            "name": "func_id",
             "in": "path",
-            "description": "ID of SST",
+            "description": "ID of Network Function",
             "required": true,
             "schema": {
               "type": "string",
@@ -1572,7 +1572,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/sup_sst"
+                  "$ref": "#/components/schemas/net_func"
                 }
               }
             }
@@ -1593,14 +1593,14 @@
       },
       "put": {
         "tags": [
-          "Supported SST"
+          "Network Functions"
         ],
-        "summary": "Add or update a supported SST on the platform",
+        "summary": "Add or update a Network Function on the platform",
         "parameters": [
           {
-            "name": "sst_id",
+            "name": "func_id",
             "in": "path",
-            "description": "ID of SST",
+            "description": "ID of Network Function",
             "required": true,
             "schema": {
               "type": "string",
@@ -1609,11 +1609,11 @@
           }
         ],
         "requestBody": {
-          "description": "SST Parameters",
+          "description": "Network Function Parameters",
           "content": {
             "*/*": {
               "schema": {
-                "$ref": "#/components/schemas/sup_sst"
+                "$ref": "#/components/schemas/net_func"
               }
             }
           },
@@ -1631,7 +1631,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "The uuid of the new supported SST"
+                  "description": "The uuid of the new Network Function"
                 }
               }
             }
@@ -1657,14 +1657,14 @@
       },
       "delete": {
         "tags": [
-          "Supported SST"
+          "Network Functions"
         ],
-        "summary": "Delete a supported SST on the platform",
+        "summary": "Delete a Network Function on the platform",
         "parameters": [
           {
-            "name": "sst_id",
+            "name": "func_id",
             "in": "path",
-            "description": "ID of SST",
+            "description": "ID of Network Function",
             "required": true,
             "schema": {
               "type": "string",
@@ -1919,7 +1919,7 @@
           }
         ],
         "requestBody": {
-          "description": "SST Parameters",
+          "description": "Network Function Parameters",
           "content": {
             "*/*": {
               "schema": {
@@ -2548,23 +2548,31 @@
                 "description": "A list of PNFs",
                 "items": {
                   "type": "object",
+                  "description": "A Physical Network Service",
                   "properties": {
-                    "ems-id": {
+                    "pnf-id": {
                       "type": "string",
-                      "format": "uuid"
+                      "description": "A Unique ID of the pnf"
                     },
                     "pnf-name": {
                       "type": "string",
+                      "description": "The name of the PNF"
                     },
-                    "pdu-id": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "ip": {
                       "type": "string",
-                      "format": "uuid"
+                      "description": "The management IP of the PNF"
                     },
-                    "optional": {
+                    "location": {
+                      "type": "string",
+                      "description": "The location of the PNF"
+                    },
+                    "optional":{
                       "type": "boolean"
                     }
-                  },
-                  "description": "A PNF"
+                  }
                 }
               }
             },
@@ -2804,21 +2812,78 @@
               "description": "A VIM"
             }
           },
-          "PDUs": {
+          "Functions": {
             "type": "array",
             "description": "A list of all the available PDUs",
             "items": {
               "type": "object",
               "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "id": {
+                "DB_ID": {
                   "type": "string",
+                  "description": "The id of the function in the Slice Manager DB",
+                  "format": "uuid"
+                },
+                "function_id": {
+                  "type": "string",
+                  "description": "The unique ID for this network function",
                   "format": "uuid"
                 },
                 "location": {
                   "type": "string"
+                },
+                "gen": {
+                  "type": "string",
+                  "description": "4G or 5G Generation Component"
+                },
+                "functionality": {
+                  "type": "string",
+                  "description": "Core/Radio"
+                },
+                "shared": {
+                  "type": "object",
+                  "description": "Availability to be shared amongst many network slices",
+                  "properties": {
+                    "availability": {
+                      "type": "boolean",
+                      "description": "Available for sharing"
+                    },
+                    "max_shared": {
+                      "type": "integer",
+                      "description": "Max number of slices - If availability is true and max_shared not defined, it will be assumed unlimited availability"
+                    }
+                  }
+                },
+                "pnf_list": {
+                  "type": "array",
+                  "description": "Conditional - If type == Physical - A list of the PNFs that will be part of the slice",
+                  "items": {
+                    "type": "object",
+                    "description": "A Physical Network Service",
+                    "properties": {
+                      "pnf-id": {
+                        "type": "string",
+                        "description": "A Unique ID of the pnf"
+                      },
+                      "pnf-name": {
+                        "type": "string",
+                        "description": "The name of the PNF"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "ip": {
+                        "type": "string",
+                        "description": "The management IP of the PNF"
+                      },
+                      "location": {
+                        "type": "string",
+                        "description": "The location of the PNF"
+                      },
+                      "optional":{
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 },
                 "tenants": {
                   "type": "array",
@@ -2858,46 +2923,94 @@
         },
         "required": ["id", "url", "type"]
       },
-      "sup_sst": {
+      "net_func": {
         "type": "object",
+        "description": "A core slice network function",
         "properties": {
-          "sst": {
-            "type": "number",
-            "description": "1: embb, 2: urllc, 3: iot"
+          "id": {
+            "type": "string",
+            "description": "A unique ID for this network function"
           },
-          "sd": {
-            "type": "number",
-            "description": "Service Differentiator - Optional information that complements the Slice/Service type(s) to differentiate amongst multiple Network Slices of the same SST"
+          "name": {
+            "type": "string",
+            "description": "Optional name for the network function"
           },
-          "supported_locations": {
-            "type": "array",
-            "description": "A list of the supported edge locations of the platform for that slice",
-            "items": {
-              "type": "string",
-              "description": "A location"
-            }
+          "gen": {
+            "type": "number",
+            "enum": [4, 5],
+            "description" : "Type of the network function - 4: 4G, 5: 5G"
+          },
+          "func":{
+            "type": "number",
+            "enum": [0, 1],
+            "description": "0: Core, 1: Radio"
+          },
+          "shared": {
+            "type": "object",
+            "description": "Defines if the function can be shared between different slices",
+            "properties": {
+              "availability": {
+                "type": "boolean",
+                "description": "true: shared, false: no shared"
+              },
+              "max_shared": {
+                "type": "number",
+                "description": "Max number of slices - If availability is true and max_shared not defined, it will be assumed unlimited availability"
+              }
+            },
+            "required": ["availability"]
+          },
+          "type": {
+            "type": "number",
+            "enum": [0, 1],
+            "description": "0: Virtual, 1: Physical"
+          },
+          "location": {
+            "type": "string",
+            "description": "Supported location"
           },
           "ns_list": {
             "type": "array",
-            "description": "A list of the NSs that will be part of the slice",
+            "description": "Conditional - If type == Virtual - A list of the NSs that will be part of the slice",
             "items": {
               "$ref": "#/components/schemas/ns"
             }
           },
           "pnf_list": {
             "type": "array",
-            "description": "A list of the PNFs that will be part of the slice",
+            "description": "Conditional - If type == Physical - A list of the PNFs that will be part of the slice",
             "items": {
               "$ref": "#/components/schemas/pnf"
             }
+          },
+          "ems-id": {
+            "type": "string",
+            "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
+          },
+          "other_required_functions":{
+            "type": "array",
+            "description": "A list with the IDs of other functions that are required to be deployed along with this",
+            "items": {
+              "type": "string",
+              "description": "ID of a network function"
+            }
+          },
+          "other_supported_functions":{
+            "type": "array",
+            "description": "A list with the IDs of other functions that can be deployed along with this",
+            "items": {
+              "type": "string",
+              "description": "ID of a network function"
+            }
           }
         },
-        "description": "A supported slice by the platform"
+        "required": ["id", "gen", "func", "shared", "type", "location"]
       },
       "ns": {
         "type": "object",
-        "properties": {
-          "nfvo-id": {
+        "description": "A Network Service",
+        "properties":{
+          "nfvo-id":{
             "type": "string",
             "description": "The NFVO that will manage the life cycle of the NS"
           },
@@ -2905,32 +3018,47 @@
             "type": "string",
             "description": "The NSD id as defined on the NFVO"
           },
+          "ns-name": {
+            "type": "string",
+            "description": "The name of the NS"
+          },
           "placement": {
             "type": "number",
+            "enum": [0, 1],
             "description": "1: Core, 2: Edge"
           },
-          "optional": {
+          "optional":{
             "type": "boolean"
           }
-        },
-        "description": "A Network Service"
+        }
       },
-      "pnf": {
+       "pnf": {
         "type": "object",
+        "description": "A Physical Network Service",
         "properties": {
-          "ems-id": {
+          "pnf-id": {
             "type": "string",
-            "description": "The EMS that will manage the life cycle of the EMS"
+            "description": "A Unique ID of the pnf"
           },
-          "pdu-id": {
+          "pnf-name": {
             "type": "string",
-            "description": "The Physical Device Unit that will be used for the PNF"
+            "description": "The name of the PNF"
           },
-          "optional": {
+          "description": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string",
+            "description": "The management IP of the PNF"
+          },
+          "location": {
+            "type": "string",
+            "description": "The location of the PNF"
+          },
+          "optional":{
             "type": "boolean"
           }
-        },
-        "description": "A Physical Network Service"
+        }
       }
     }
   }

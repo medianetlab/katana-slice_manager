@@ -4,6 +4,8 @@ import pickle
 import time
 import logging
 import logging.handlers
+import uuid
+import copy
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -39,64 +41,78 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
     """
     pop_list = []
     for ns in ns_list:
+        try:
+            if ns["placement_loc"] and not ns["placement"]:
+                # Placement to Core already done - go to next NS
+                continue
+            else:
+                # Placement to Edge - Is already done - Need to make another ns
+                new_ns = copy.deepcopy(ns)
+        except KeyError:
+            # No placement at all
+            new_ns = ns
         # A) ****** Get the NSD ******
         # Search the nsd collection in Mongo for the nsd
-        nsd = mongoUtils.find("nsd", {"nsd-id": ns["nsd-id"],
-                              "nfvo_id": ns["nfvo-id"]})
+        nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"],
+                              "nfvo_id": new_ns["nfvo-id"]})
         if not nsd:
             # Bootstrap the NFVO to check for NSDs that are not in mongo
             # If again is not found, check if NS is optional.
             # If it is just remove it, else error
-            nfvo_obj_json = mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})
+            nfvo_obj_json = mongoUtils.find("nfvo_obj",
+                                            {"id": new_ns["nfvo-id"]})
             if not nfvo_obj_json:
-                # ERROR HANDLING: There is no OSM for that ns -
+                # Error handling: There is no OSM for that ns -
                 # Stop and return
                 logger.error(
-                    "There is no NFVO with id {}".format(ns["nfvo-id"]))
-                return [], [], [], 1
+                    "There is no NFVO with id {}".format(new_ns["nfvo-id"]))
+                return 1, []
             nfvo = pickle.loads(nfvo_obj_json["obj"])
             osmUtils.bootstrapNfvo(nfvo)
-            nsd = mongoUtils.find("nsd", {"nsd-id": ns["nsd-id"],
-                                  "nfvo_id": ns["nfvo-id"]})
+            nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"],
+                                  "nfvo_id": new_ns["nfvo-id"]})
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)
                 continue
             else:
-                # ERROR HANDLING: The ns is not optional and the nsd is not
+                # Error handling: The ns is not optional and the nsd is not
                 # on the NFVO - stop and return
                 logger.error(
-                    f"NSD {ns['nsd-id']} not found on OSM {ns['nfvo-id']}")
-                return [], [], [], 1
-        ns["nsd-info"] = nsd
+                    f"NSD {new_ns['nsd-id']} not found on OSM {new_ns['nfvo-id']}")
+                return 1, []
+        new_ns["nsd-info"] = nsd
         # B) ****** Replace placement value with location info ******
-        ns["placement"] = (lambda x: {"location": "Core"} if not x
-                           else {"location": edge_loc})(ns["placement"])
+        new_ns["placement_loc"] = (
+            lambda x: {"location": "Core"} if not x
+            else {"location": edge_loc})(new_ns["placement"])
 
         # C) ****** Get the VIM info ******
-        ns["vims"] = []
-        loc = ns["placement"]["location"]
+        new_ns["vims"] = []
+        loc = new_ns["placement_loc"]["location"]
         get_vim = list(mongoUtils.find_all('vim', {"location": loc}))
         if not get_vim:
-            # ERROR HANDLING: There is no VIM at that location
+            # Error handling: There is no VIM at that location
             logger.error(f"VIM not found in location {loc}")
-            return [], [], [], 1
+            return 1, []
         # TODO: Check the available resources and select vim
         # Temporary use the first element
         selected_vim = get_vim[0]["id"]
-        ns["vims"].append(selected_vim)
+        new_ns["vims"].append(selected_vim)
         try:
-            vim_dict[selected_vim]["ns_list"].append(ns["ns-name"])
-            if ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
-                vim_dict[selected_vim]["nfvo_list"].append(ns["nfvo-id"])
+            vim_dict[selected_vim]["ns_list"].append(new_ns["ns-name"])
+            if new_ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
+                vim_dict[selected_vim]["nfvo_list"].append(new_ns["nfvo-id"])
         except KeyError:
-            vim_dict[selected_vim] = {"ns_list": [ns["ns-name"]],
-                                      "nfvo_list": [ns["nfvo-id"]]}
-        ns["placement"]["vim"] = selected_vim
-        if ns not in total_ns_list:
-            total_ns_list.append(ns)
+            vim_dict[selected_vim] = {"ns_list": [new_ns["ns-name"]],
+                                      "nfvo_list": [new_ns["nfvo-id"]]}
+        new_ns["placement_loc"]["vim"] = selected_vim
+        # 0) Create an uuid for the ns
+        new_ns["ns-id"] = str(uuid.uuid4())
+        total_ns_list.append(new_ns)
+        del(new_ns)
     # Remove the ns that are optional and nsd was not found
     ns_list = [ns for ns in ns_list if ns not in pop_list]
-    return total_ns_list, vim_dict, ns_list, 0
+    return 0, pop_list
 
 
 def add_slice(nest_req):
@@ -140,69 +156,37 @@ def add_slice(nest_req):
     total_ns_list = []
     ems_messages = {}
 
-    # **** Step1-a: Get Details for the Network Services ****
+    # Get Details for the Network Services
     # i) The extra NS of the slice
     for location in nest["coverage"]:
-        total_ns_list, vim_dict, temp_list, err = ns_details(
-            nest["ns_list"], location, vim_dict, total_ns_list)
+        err, _ = ns_details(nest["ns_list"], location, vim_dict, total_ns_list)
         if err:
             delete_slice(nest)
             return
-    nest["ns_list"] = []
-    for ns in total_ns_list:
-        nest["ns_list"].append(ns)
-
+    del(nest["ns_list"])
+    nest["ns_list"] = copy.deepcopy(total_ns_list)
     # ii) The NS part of the core slice
+    inst_functions = {}
     for connection in nest["connections"]:
         for key in connection:
+            if connection[key]["_id"] in inst_functions:
+                connection[key] = inst_functions[connection[key]["_id"]]
+                continue
             try:
-                total_ns_list, vim_dict, connection[key]["ns_list"],\
-                    err = ns_details(
-                        connection[key]["ns_list"],
-                        connection[key]["location"],
-                        vim_dict, total_ns_list)
+                err, pop_list = ns_details(connection[key]["ns_list"],
+                                           connection[key]["location"],
+                                           vim_dict, total_ns_list)
+                if pop_list:
+                    connection[key]["ns_list"] = [x for x in connection[key]["ns_list"] if x not in pop_list]
                 if err:
                     delete_slice(nest)
                     return
+                inst_functions[connection[key]["_id"]] = connection[key]
             except KeyError:
                 continue
-            else:
-                del temp_list
-
-    # **** Step1-b: Create the data for WIM ****
-    wim_data = {"core_connections": [], "extra_NS": []}
-    # Add the connections
-    for connection in nest["connections"]:
-        data = {}
-        for key in connection:
-            key_data = {}
-            try:
-                ns_l = connection[key]["ns_list"]
-            except KeyError:
-                pass
-            else:
-                key_data["ns"] = []
-                for ns in ns_l:
-                    if ns["placement"] not in key_data["ns"]:
-                        key_data["ns"].append(ns["placement"])
-            try:
-                pnf_l = connection[key]["pnf_list"]
-            except KeyError:
-                pass
-            else:
-                key_data["pnf"] = pnf_l
-            pnf = connection[key].get("pnf_list", [])
-            if key_data:
-                data[key] = key_data
-        if data:
-            wim_data["core_connections"].append(data)
-
-    # Add the extra Network Services
-    for ns in nest["ns_list"]:
-        if ns["placement"] not in wim_data["extra_NS"]:
-            wim_data["extra_NS"].append(ns["placement"])
 
     nest["vim_list"] = vim_dict
+    nest["total_ns_list"] = total_ns_list
     nest['deployment_time']['Placement_Time'] = format(
         time.time() - placement_start_time, '.4f')
 
@@ -267,6 +251,44 @@ def add_slice(nest_req):
         logger.warning('There is no registered WIM')
     else:
         wan_start_time = time.time()
+        # Crate the data for the WIM
+        wim_data = {"core_connections": [], "extra_ns": []}
+        # i) Create the slice_sla data for the WIM
+        wim_data["slice_sla"] = {
+            "network_DL_throughput": nest["network_DL_throughput"],
+            "network_UL_throughput": nest["network_UL_throughput"],
+            "mtu": nest["mtu"]}
+        # ii) Add the connections
+        for connection in nest["connections"]:
+            data = {}
+            for key in connection:
+                key_data = {}
+                try:
+                    ns_l = connection[key]["ns_list"]
+                except KeyError:
+                    pass
+                else:
+                    key_data["ns"] = []
+                    for ns in ns_l:
+                        if ns["placement_loc"] not in key_data["ns"]:
+                            key_data["ns"].append(ns["placement_loc"])
+                try:
+                    pnf_l = connection[key]["pnf_list"]
+                except KeyError:
+                    pass
+                else:
+                    key_data["pnf"] = pnf_l
+                pnf = connection[key].get("pnf_list", [])
+                if key_data:
+                    data[key] = key_data
+            if data:
+                wim_data["core_connections"].append(data)
+        # iii) Add the extra Network Services
+        for ns in nest["ns_list"]:
+            if ns["placement_loc"] not in wim_data["extra_ns"]:
+                wim_data["extra_ns"].append(ns["placement_loc"])
+        # iV) Add the probes
+        wim_data["probes"] = nest["probe_list"]
         # Select WIM - Assume that there is only one registered
         wim_list = list(mongoUtils.index('wim'))
         target_wim = wim_list[0]
@@ -293,11 +315,11 @@ def add_slice(nest_req):
     nest['deployment_time']['NS_Deployment_Time'] = {}
     for ns in total_ns_list:
         ns_start_time = time.time()
-        ns_inst_info[ns["nsd-id"]] = {}
+        ns_inst_info[ns["ns-id"]] = {}
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(
             mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
-        selected_vim = ns["placement"]["vim"]
+        selected_vim = ns["placement_loc"]["vim"]
         nfvo_vim_account = \
             vim_dict[selected_vim]["nfvo_vim_account"][ns["nfvo-id"]]
         nfvo_inst_ns = target_nfvo_obj.instantiateNs(
@@ -305,7 +327,7 @@ def add_slice(nest_req):
             ns["nsd-id"],
             nfvo_vim_account
         )
-        ns_inst_info[ns["nsd-id"]][ns["placement"]["location"]] = {
+        ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]] = {
             "nfvo_inst_ns": nfvo_inst_ns}
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
@@ -316,9 +338,9 @@ def add_slice(nest_req):
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(
             mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
-        site = ns["placement"]
+        site = ns["placement_loc"]
         nfvo_inst_ns_id = \
-            ns_inst_info[ns["nsd-id"]][site["location"]]["nfvo_inst_ns"]
+            ns_inst_info[ns["ns-id"]][site["location"]]["nfvo_inst_ns"]
         insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
         while (insr["operational-status"] != "running" or
                insr["config-status"] != "configured"):
@@ -332,10 +354,9 @@ def add_slice(nest_req):
         for ivnfr_id in vnfr_id_list:
             vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
             vnf_list.append(target_nfvo_obj.getIPs(vnfr))
-        ns_inst_info[ns["nsd-id"]][site["location"]]["vnfr"] = vnf_list
+        ns_inst_info[ns["ns-id"]][site["location"]]["vnfr"] = vnf_list
 
     nest["ns_inst_info"] = ns_inst_info
-    nest["total_ns_list"] = total_ns_list
     mongoUtils.update("slice", nest['_id'], nest)
 
     # *** STEP-3b: Radio Slice Configuration ***
@@ -372,13 +393,16 @@ def add_slice(nest_req):
                     else:
                         key_data["ns"] = []
                         for ns in ns_l:
-                            ns_info = ns_inst_info[ns["nsd-id"]]\
-                                [connection[key]["location"]]
+                            try:
+                                ns_info = ns_inst_info[ns["ns-id"]]\
+                                    [connection[key]["location"]]
+                            except KeyError:
+                                ns_info = ns_inst_info[ns["ns-id"]]["Core"]
                             ns_data = \
                                 {"name": ns["ns-name"],
-                                 "location": ns["placement"]["location"],
+                                 "location": ns["placement_loc"]["location"],
                                  "vnf_list": ns_info["vnfr"]}
-                            key_data["ns"].append(ns_info)
+                            key_data["ns"].append(ns_data)
                 try:
                     key_data["pnf"] = connection[key]["pnf_list"]
                 except KeyError:
@@ -396,7 +420,7 @@ def add_slice(nest_req):
             # Find the EMS
             target_ems = mongoUtils.find("ems", {"id": ems_id})
             if not target_ems:
-                # ERROR HANDLING: There is no such EMS
+                # Error handling: There is no such EMS
                 logger.error("EMS {} not found - No configuration".
                              format(ems_id))
                 continue
@@ -436,7 +460,7 @@ def delete_slice(slice_json):
                 # Find the EMS
                 target_ems = mongoUtils.find("ems", {"id": ems_id})
                 if not target_ems or ems_id not in slice_json["conf_comp"]["ems"]:
-                    # ERROR HANDLING: There is no such EMS
+                    # Error handling: There is no such EMS
                     logger.error("EMS {} not found - No configuration".
                                  format(ems_id))
                     continue
@@ -486,8 +510,8 @@ def delete_slice(slice_json):
                 target_nfvo_obj = pickle.loads(
                     mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
                 # Stop the NS
-                nfvo_inst_ns = ns_inst_info[ns["nsd-id"]]\
-                    [ns["placement"]["location"]]["nfvo_inst_ns"]
+                nfvo_inst_ns = ns_inst_info[ns["ns-id"]]\
+                    [ns["placement_loc"]["location"]]["nfvo_inst_ns"]
                 target_nfvo_obj.deleteNs(nfvo_inst_ns)
                 while True:
                     if target_nfvo_obj.checkNsLife(nfvo_inst_ns):

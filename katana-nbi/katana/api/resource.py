@@ -20,6 +20,44 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
+def get_vims(filter_data=None):
+    '''
+    Return the list of available VIMs
+    '''
+    vims = []
+    for vim in mongoUtils.find_all("vim", data=filter_data):
+        # TODO: Get resources from monitoring module
+        max_resources = None
+        avail_resources = None
+        vims.append({"name": vim["name"], "id": vim["id"],
+                     "location": vim["location"], "type": vim["type"],
+                     "tenants": vim["tenants"],
+                     "max_resources": max_resources,
+                     "avail_resources": avail_resources})
+    return vims
+
+
+def get_func(filter_data={}):
+    '''
+    Return the list of available Network Functions
+    '''
+    filter_data["type"] = 1
+    data = mongoUtils.find_all("func", data=filter_data)
+    functions = []
+    for iserv in data:
+        functions.append(dict(
+            DB_ID=iserv['_id'],
+            gen=(lambda x: "4G" if x == 4 else "5G")(iserv["gen"]),
+            functionality=(
+                lambda x: "Core" if x == 0 else "Radio")(iserv["func"]),
+            pnf_list=iserv["pnf_list"],
+            function_id=iserv['id'], location=iserv["location"],
+            tenants=iserv["tenants"],
+            shared=iserv["shared"],
+            created_at=iserv['created_at']))
+    return functions
+
+
 class ResourcesView(FlaskView):
     route_prefix = '/api/'
 
@@ -29,25 +67,10 @@ class ResourcesView(FlaskView):
         used by: `katana resource ls`
         """
         # Get VIMs
-        vims = []
-        for vim in mongoUtils.index("vim"):
-            # TODO: Get resources from monitoring module
-            max_resources = None
-            avail_resources = None
-            vims.append({"name": vim["name"], "id": vim["id"],
-                         "location": vim["location"], "type": vim["type"],
-                         "tenants": vim["tenants"],
-                         "max_resources": max_resources,
-                         "avail_resources": avail_resources})
-        # Get PDUs
-        pdus = []
-        for pdu in mongoUtils.index("pdu"):
-            pdus.append({"name": pdu["name"], "id": pdu["id"],
-                         "location": pdu["location"],
-                         "tenants": pdu["tenants"]})
-
-        resources = {"VIMs": vims,
-                     "PDUs": pdus}
+        vims = get_vims()
+        # Get Functions
+        functions = get_func()
+        resources = {"VIMs": vims, "Functions": functions}
         return dumps(resources), 200
 
     def get(self, uuid):
@@ -56,27 +79,9 @@ class ResourcesView(FlaskView):
         used by: `katana resource location <location>`
         """
         # Get VIMs
-        vims = []
-        filter_data = {}
-        logger.debug(uuid)
-        if uuid:
-            filter_data["location"] = uuid
-        for vim in mongoUtils.find_all("vim", data=filter_data):
-            # TODO: Get resources from monitoring module
-            max_resources = None
-            avail_resources = None
-            vims.append({"name": vim["name"], "id": vim["id"],
-                         "location": vim["location"], "type": vim["type"],
-                         "tenants": vim["tenants"],
-                         "max_resources": max_resources,
-                         "avail_resources": avail_resources})
-        # Get PDUs
-        pdus = []
-        for pdu in mongoUtils.find_all("pdu", data=filter_data):
-            pdus.append({"name": pdu["name"], "id": pdu["id"],
-                         "location": pdu["location"],
-                         "tenants": pdu["tenants"]})
-
-        resources = {"VIMs": vims,
-                     "PDUs": pdus}
+        filter_data = {"location": uuid}
+        vims = get_vims(filter_data)
+        # Get Functions
+        functions = get_func(filter_data)
+        resources = {"VIMs": vims, "Functions": functions}
         return dumps(resources), 200

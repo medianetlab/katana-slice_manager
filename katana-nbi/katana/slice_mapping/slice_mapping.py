@@ -94,7 +94,7 @@ def nest_mapping(req):
     # *************************************************************************
     functions_list = []
 
-    if req_slice_des["network_DL_throughput"] > 100000:
+    if req_slice_des["network_DL_throughput"]["guaranteed"] > 100000:
         gen = 5
     else:
         gen = 4

@@ -11,7 +11,7 @@ Multiple roles related to network slicing are specified in 3GPP TS 28.530. In th
 ## GST and NEST
 The Generic Slice Template (GST) is a set of attributes that can characterise a type of network slice/service. GST is generic and is not tied to any specific network deployment. The NEtwork Slice Type (NEST) is a GST filled with values. The attributes and their values are assigned to fulfil a given set of requirements derived from a network slice customer use case. The NEST is an input to the network slice (instance) preparation performed by the Network Slice Manager. One or more NSIs (Network Slice Instance as defined in 3GPP TS 23.501) can be created out of the same NEST, but also existing NSI(s) may be reused
 
-A NEST is sent to Katana Slice Manager with a slice creation request. It is then parsed by the Slice Mapping process, which, in combination with the supported slices by the underlying infrastructure (see [Supported Slices](sst)), creates the slice.
+A NEST is sent to Katana Slice Manager with a slice creation request. It is then parsed by the Slice Mapping process, which, in combination with the supported network functions by the underlying infrastructure, creates the slice.
 
 ## How to use
 ### Structure
