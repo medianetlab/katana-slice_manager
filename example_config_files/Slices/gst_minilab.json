@@ -1,8 +1,0 @@
-{
-    "base_slice_descriptor": {
-        "base_slice_des_ref": "O5GCore",
-        "base_slice_des_id": "O5GCore_minilab",
-        "coverage": ["minilab"],
-        "delay_tolerance": false
-    }
-}

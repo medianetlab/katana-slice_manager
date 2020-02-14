@@ -1,0 +1,35 @@
+{
+  "id": "O5GCore_Minilab",
+  "name": "O5GCore_Minilab",
+  "gen": 5,
+  "func": 0,
+  "shared": {
+    "availability": true
+  },
+  "type": 0,
+  "location": "Minilab",
+  "ns_list":[
+    {
+      "nfvo-id": "OSM5",
+      "nsd-id": "91e16ae4-d9f9-4787-aebf-e058dcf9d05f",
+      "ns-name": "5GCore_MME-HSS_nsd",
+      "placement": 0,
+      "optional": false
+    },
+    {
+      "nfvo-id": "OSM6",
+      "nsd-id": "8c9f9143-6502-4b43-8325-7086ac2f3ac3",
+      "ns-name": "5GCore_PCRF_nsd",
+      "placement": 1,
+      "optional": true
+    },
+    {
+      "nfvo-id": "OSM5",
+      "nsd-id": "notnotnotnotnotnot",
+      "ns-name": "dummy_ns",
+      "placement": 0,
+      "optional": true
+    }
+  ],
+  "ems-id": "test-ems"
+}

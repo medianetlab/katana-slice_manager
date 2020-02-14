@@ -1,14 +1,14 @@
 {
-  "id": "mnl_cloud",
-  "name": "core_vim",
+  "id": "cosmote_vim",
+  "name": "cosmote_vim",
   "auth_url": "http://10.200.64.2:5000/v3/",
   "username": "******",
   "password": "******",
   "admin_project_name": "******",
-  "location": "Core",
+  "location": "Cosmote",
   "type": "openstack",
   "version": "Queens",
-  "description": "Core VIM - MNL Cloud",
+  "description": "Edge VIM - Media/Cosmote",
   "config": {
       "security_groups": "TBD"
   },

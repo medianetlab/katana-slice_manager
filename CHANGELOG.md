@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 17/02-2020
+
+### Added
+
+- Support for NEAT UE Policy System
+
+### Changed
+
+- Network Functions DB instead of SST
+- Slice Mapping chooses the most suitable Functions from the database
+- Removed PDU db
+- Improved Slice Deletion process
+
 ## [2.1.1] - 03/02-2020
 
 ### Added

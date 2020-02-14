@@ -1,0 +1,6 @@
+{
+  "id": "test_neat",
+  "description": "NEAT for debugging",
+  "url": "https://jsonplaceholder.typicode.com/posts",
+  "type": "neat"
+}

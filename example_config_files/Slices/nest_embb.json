@@ -1,0 +1,38 @@
+{
+    "base_slice_descriptor": {
+        "base_slice_des_id": "O5GCore",
+        "coverage": ["Minilab"],
+        "delay_tolerance": true,
+        "network_DL_throughput": {
+            "guaranteed": 1500000
+        },
+        "ue_DL_throughput": {
+            "guaranteed": 1500000
+        },
+        "network_UL_throughput": {
+            "guaranteed": 50
+        },
+        "ue_UL_throughput": {
+            "guaranteed": 60
+        },
+        "mtu": 1500
+    },
+    "service_descriptor":{
+        "ns_list": [
+            {
+                "nfvo-id": "OSM5",
+                "nsd-id": "65373e5a-679d-46b7-898a-e304652e5102",
+                "ns-name": "dummy_ns",
+                "placement": 0,
+                "optional": true
+            },
+            {
+                "nfvo-id": "OSM6",
+                "nsd-id": "tbdtbdtbd",
+                "ns-name": "dummy_ns_core",
+                "placement": 1,
+                "optional": true
+            }
+        ]
+    }
+}
