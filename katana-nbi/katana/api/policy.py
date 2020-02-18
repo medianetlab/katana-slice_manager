@@ -1,5 +1,5 @@
 from flask import request
-from flask_classful import FlaskView
+from flask_classful import FlaskView, route
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.policyUtils import neatUtils, test_policyUtils
 from bson.json_util import dumps
@@ -7,16 +7,16 @@ import logging
 import time
 import uuid
 import pymongo
+import requests
+import json
 
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -25,7 +25,7 @@ logger.addHandler(stream_handler)
 
 
 class PolicyView(FlaskView):
-    route_prefix = '/api/'
+    route_prefix = "/api/"
     req_fields = ["id", "url", "type"]
 
     def index(self):
@@ -36,10 +36,14 @@ class PolicyView(FlaskView):
         policy_data = mongoUtils.index("policy")
         return_data = []
         for item in policy_data:
-            return_data.append(dict(_id=item['_id'],
-                               component_id=item['id'],
-                               created_at=item['created_at'],
-                               type=item['type']))
+            return_data.append(
+                dict(
+                    _id=item["_id"],
+                    component_id=item["id"],
+                    created_at=item["created_at"],
+                    type=item["type"],
+                )
+            )
         return dumps(return_data)
 
     def get(self, uuid):
@@ -47,7 +51,7 @@ class PolicyView(FlaskView):
         Returns the details of specific policy management system,
         used by: `katana policy inspect [uuid]`
         """
-        data = (mongoUtils.get("policy", uuid))
+        data = mongoUtils.get("policy", uuid)
         if data:
             return dumps(data), 200
         else:
@@ -61,23 +65,23 @@ class PolicyView(FlaskView):
         # Create the object and store it in the object collection
         try:
             if request.json["type"] == "test-policy":
-                policy = test_policyUtils.Policy(id=request.json["id"],
-                                                 url=request.json['url'])
+                policy = test_policyUtils.Policy(id=request.json["id"], url=request.json["url"])
             elif request.json["type"] == "neat":
-                policy = neatUtils.Policy(id=request.json["id"],
-                                          url=request.json['url'])
+                policy = neatUtils.Policy(id=request.json["id"], url=request.json["url"])
             else:
                 return "Error: Not supported Policy system type", 400
         except KeyError:
             return f"Error: Required fields: {self.req_fields}", 400
         new_uuid = str(uuid.uuid4())
-        request.json['_id'] = new_uuid
-        request.json['created_at'] = time.time()  # unix epoch
+        request.json["_id"] = new_uuid
+        request.json["created_at"] = time.time()  # unix epoch
         try:
-            new_uuid = mongoUtils.add('policy', request.json)
+            new_uuid = mongoUtils.add("policy", request.json)
         except pymongo.errors.DuplicateKeyError:
-            return "Policy management system with id {0} already exists".\
-                format(request.json["id"]), 400
+            return (
+                "Policy management system with id {0} already exists".format(request.json["id"]),
+                400,
+            )
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -90,8 +94,7 @@ class PolicyView(FlaskView):
             return "Deleted policy management system {}".format(uuid), 200
         else:
             # if uuid is not found, return error
-            return "Error: No such policy management system: {}".format(uuid),\
-                404
+            return "Error: No such policy management system: {}".format(uuid), 404
 
     def put(self, uuid):
         """
@@ -99,7 +102,7 @@ class PolicyView(FlaskView):
         used by: `katana policy update [uuid] -f [yaml file]`
         """
         data = request.json
-        data['_id'] = uuid
+        data["_id"] = uuid
         old_data = mongoUtils.get("policy", uuid)
 
         if old_data:
@@ -117,21 +120,58 @@ class PolicyView(FlaskView):
             # Create the object and store it in the object collection
             try:
                 if request.json["type"] == "test-policy":
-                    policy = test_policyUtils.Policy(id=request.json["id"],
-                                                     url=request.json['url'])
+                    policy = test_policyUtils.Policy(id=request.json["id"], url=request.json["url"])
                 elif request.json["type"] == "neat":
-                    policy = neatUtils.Policy(id=request.json["id"],
-                                              url=request.json['url'])
+                    policy = neatUtils.Policy(id=request.json["id"], url=request.json["url"])
                 else:
                     return "Error: Not supported Policy system type", 400
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
             new_uuid = str(uuid.uuid4())
-            request.json['_id'] = new_uuid
-            request.json['created_at'] = time.time()  # unix epoch
+            request.json["_id"] = new_uuid
+            request.json["created_at"] = time.time()  # unix epoch
             try:
-                new_uuid = mongoUtils.add('policy', request.json)
+                new_uuid = mongoUtils.add("policy", request.json)
             except pymongo.errors.DuplicateKeyError:
-                return "Policy management system with id {0} already exists".\
-                    format(request.json["id"]), 400
+                return (
+                    "Policy management system with id {0} already exists".format(
+                        request.json["id"]
+                    ),
+                    400,
+                )
             return f"Created {new_uuid}", 201
+
+
+    @route("/neat", methods=["POST"])
+    def post(self,):
+        """
+        Send the slice parameters to the neat UE Policy System
+        """
+        data = request.json
+        url = data["url"]
+        slice_id = data["slice_id"]
+        # Get the GST parameters
+        slice_parameters = mongoUtils.get("gst", slice_id)
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        r = None
+        try:
+            r = requests.post(url, headers=headers,
+                              json=json.loads(json.dumps(slice_parameters)), timeout=120)
+            logger.info(r.json())
+            r.raise_for_status()
+            return f"Sent slice parameters to neat @ {url}", 200
+        except requests.exceptions.HTTPError as errh:
+            logger.exception("Http Error:", errh)
+            return errh, 400
+        except requests.exceptions.ConnectionError as errc:
+            logger.exception("Error Connecting:", errc)
+            return errc, 400
+        except requests.exceptions.Timeout as errt:
+            logger.exception("Timeout Error:", errt)
+            return errt, 400
+        except requests.exceptions.RequestException as err:
+            logger.exception("Error:", err)
+            return err, 400

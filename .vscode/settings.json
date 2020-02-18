@@ -5,5 +5,8 @@
     "python.formatting.provider": "black",
     "python.formatting.blackArgs": ["--line-length", "100"],
     "python.linting.pydocstyleArgs": ["--line-length=100"],
-    "python.linting.pylintArgs": ["--max-line-length=100"]
+    "python.linting.pylintArgs": [
+        "--max-line-length=100"
+    ],
+    "python.pythonPath": "/usr/bin/python3.7"
 }
