@@ -5,30 +5,41 @@ import uuid
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
-NEST_FIELDS = ("base_slice_descriptor", "service_descriptor",
-               "test_descriptor")
+NEST_FIELDS = ("base_slice_descriptor", "service_descriptor", "test_descriptor")
 
-SLICE_DES_OBJ = ("base_slice_des_id", "base_slice_des_ref", "delay_tolerance",
-                 "network_DL_throughput", "ue_DL_throughput",
-                 "network_UL_throughput", "ue_UL_throughput",
-                 "deterministic_communication", "group_communication_support",
-                 "isolation_level", "mtu", "mission_critical_support",
-                 "mmtel_support", "nb_iot", "number_of_connections",
-                 "number_of_terminals", "positional_support",
-                 "simultaneous_nsi", "nonIP_traffic",
-                 "device_velocity", "terminal_density")
+SLICE_DES_OBJ = (
+    "base_slice_des_id",
+    "base_slice_des_ref",
+    "delay_tolerance",
+    "network_DL_throughput",
+    "ue_DL_throughput",
+    "network_UL_throughput",
+    "ue_UL_throughput",
+    "deterministic_communication",
+    "group_communication_support",
+    "isolation_level",
+    "mtu",
+    "mission_critical_support",
+    "mmtel_support",
+    "nb_iot",
+    "number_of_connections",
+    "number_of_terminals",
+    "positional_support",
+    "simultaneous_nsi",
+    "nonIP_traffic",
+    "device_velocity",
+    "terminal_density",
+)
 SLICE_DES_LIST = ("coverage", "radio_spectrum", "qos")
 
 SERVICE_DES_OBJ = ()
@@ -72,8 +83,9 @@ def nest_mapping(req):
 
     # *** Check if there are references for slice ***
     if req_slice_des["base_slice_des_ref"]:
-        ref_slice = mongoUtils.find("base_slice_des_ref", {"base_slice_des_id":
-                                    req_slice_des["base_slice_des_ref"]})
+        ref_slice = mongoUtils.find(
+            "base_slice_des_ref", {"base_slice_des_id": req_slice_des["base_slice_des_ref"]}
+        )
         if ref_slice:
             for key, value in req_slice_des.items():
                 try:
@@ -82,8 +94,9 @@ def nest_mapping(req):
                 except KeyError:
                     continue
         else:
-            logger.error("slice_descriptor {} not found".
-                         format(req_slice_des["base_slice_des_ref"]))
+            logger.error(
+                "slice_descriptor {} not found".format(req_slice_des["base_slice_des_ref"])
+            )
             return "Error: referenced slice_descriptor not found", 400
 
     # *************************** Start the mapping ***************************
@@ -152,18 +165,28 @@ def nest_mapping(req):
     nest["functions"] = functions_list
 
     # Values to be copied to NEST
-    KEYS_TO_BE_COPIED = ("network_DL_throughput", "ue_DL_throughput",
-                         "network_UL_throughput", "ue_UL_throughput",
-                         "group_communication_support", "mtu",
-                         "number_of_terminals", "positional_support",
-                         "radio_spectrum", "device_velocity",
-                         "terminal_density", "coverage")
+    KEYS_TO_BE_COPIED = (
+        "network_DL_throughput",
+        "ue_DL_throughput",
+        "network_UL_throughput",
+        "ue_UL_throughput",
+        "group_communication_support",
+        "mtu",
+        "number_of_terminals",
+        "positional_support",
+        "radio_spectrum",
+        "device_velocity",
+        "terminal_density",
+        "coverage",
+    )
     for key in KEYS_TO_BE_COPIED:
         nest[key] = req_slice_des[key]
 
     # Create the shared value
-    nest["shared"] = {"isolation": req_slice_des["isolation_level"],
-                      "simultaneous_nsi": req_slice_des["simultaneous_nsi"]}
+    nest["shared"] = {
+        "isolation": req_slice_des["isolation_level"],
+        "simultaneous_nsi": req_slice_des["simultaneous_nsi"],
+    }
 
     # ****** STEP 2: Service Descriptor ******
     if req["service_descriptor"]:
@@ -194,9 +217,9 @@ def nest_mapping(req):
         nest["probe_list"] = req_test_des["probe_list"]
 
     if not mongoUtils.find(
-            "base_slice_des_ref",
-            {"base_slice_des_id": req["base_slice_descriptor"]
-                ["base_slice_des_id"]}):
+        "base_slice_des_ref",
+        {"base_slice_des_id": req["base_slice_descriptor"]["base_slice_des_id"]},
+    ):
         new_uuid = str(uuid.uuid4())
         req["base_slice_descriptor"]["_id"] = new_uuid
         mongoUtils.add("base_slice_des_ref", req["base_slice_descriptor"])
