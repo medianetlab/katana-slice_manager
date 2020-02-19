@@ -59,16 +59,20 @@
       }
     },
     {
-      "name": "Resources",
-      "description": "Read the available/max resources"
-    },
-    {
       "name": "Generic Slice Template",
-      "description": "Read the GST given to the SM"
+      "description": "Read the GST given to the SM",
+      "externalDocs": {
+        "description": "Wiki",
+        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/gst"
+      }
     },
     {
       "name": "Base Slice Descriptors",
-      "description": "Create, Read, Update and Delete Base Slice Descriptors that will be included in the GST"
+      "description": "Create, Read, Update and Delete Base Slice Descriptors that will be included in the GST",
+      "externalDocs": {
+        "description": "Wiki",
+        "url": "https://github.com/medianetlab/katana-slice_manager/wiki/gst"
+      }
     },
     {
       "name": "Network Functions",
@@ -85,6 +89,10 @@
         "description": "Wiki",
         "url": "https://github.com/medianetlab/katana-slice_manager/wiki/policy"
       }
+    },
+    {
+      "name": "Resources",
+      "description": "Read the available/max resources"
     }
   ],
   "paths": {
