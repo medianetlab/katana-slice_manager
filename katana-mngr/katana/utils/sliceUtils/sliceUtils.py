@@ -288,7 +288,6 @@ def add_slice(nest_req):
                     pass
                 else:
                     key_data["pnf"] = pnf_l
-                pnf = connection[key].get("pnf_list", [])
                 if key_data:
                     data[key] = key_data
             if data:

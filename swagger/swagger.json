@@ -1412,37 +1412,37 @@
         }
       }
     },
-    "/policy/neat": {
-      "post": {
+    "/policy/neat/{slice_id}": {
+      "get": {
         "tags": [
           "Policy Mgmt System"
         ],
         "summary": "Sends the slice parameters to the NEAT UE Policy System",
-        "requestBody": {
-          "description": "NEAT Configuration Parameters",
-          "content": {
-            "*/*": {
-              "schema": {
-                "$ref": "#/components/schemas/neat_conf"
-              }
+        "parameters": [
+          {
+            "name": "slice_id",
+            "in": "path",
+            "description": "ID of slice",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Operation",
             "content": {
               "string": {
                 "schema": {
-                  "type": "string",
-                  "description": "Successful"
+                  "$ref": "#/components/schemas/gst"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "404": {
+            "description": "Slice not found",
             "content": {}
           }
         }
@@ -3101,20 +3101,6 @@
           },
           "optional":{
             "type": "boolean"
-          }
-        }
-      },
-      "neat_conf": {
-        "type": "object",
-        "description": "A Physical Network Service",
-        "properties": {
-          "url":{
-            "type": "string",
-            "description": "The url of the NEAT policy system"
-          },
-          "slice_id": {
-            "type": "string",
-            "description": "The id of the slice, the gst of which will be sent to NEAT"
           }
         }
       }

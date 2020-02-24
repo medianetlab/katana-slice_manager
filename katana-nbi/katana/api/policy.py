@@ -3,12 +3,12 @@ from flask_classful import FlaskView, route
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.policyUtils import neatUtils, test_policyUtils
 from bson.json_util import dumps
+from bson.binary import Binary
+import pickle
 import logging
 import time
 import uuid
 import pymongo
-import requests
-import json
 
 
 # Logging Parameters
@@ -82,6 +82,11 @@ class PolicyView(FlaskView):
                 "Policy management system with id {0} already exists".format(request.json["id"]),
                 400,
             )
+        # Store the policy object to the mongo db
+        thebytes = pickle.dumps(policy)
+        obj_json = {"_id": new_uuid, "id": request.json["id"],
+                    "obj": Binary(thebytes)}
+        mongoUtils.add('policy_obj', obj_json)
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -139,39 +144,20 @@ class PolicyView(FlaskView):
                     ),
                     400,
                 )
+            # Store the policy object to the mongo db
+            thebytes = pickle.dumps(policy)
+            obj_json = {"_id": new_uuid, "id": request.json["id"],
+                        "obj": Binary(thebytes)}
+            mongoUtils.add('policy_obj', obj_json)
             return f"Created {new_uuid}", 201
 
-
-    @route("/neat", methods=["POST"])
-    def post(self,):
+    @route("/neat/<slice_id>", methods=["GET"])
+    def neat(self, slice_id):
         """
         Send the slice parameters to the neat UE Policy System
         """
-        data = request.json
-        url = data["url"]
-        slice_id = data["slice_id"]
-        # Get the GST parameters
         slice_parameters = mongoUtils.get("gst", slice_id)
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-        r = None
-        try:
-            r = requests.post(url, headers=headers,
-                              json=json.loads(json.dumps(slice_parameters)), timeout=120)
-            logger.info(r.json())
-            r.raise_for_status()
-            return f"Sent slice parameters to neat @ {url}", 200
-        except requests.exceptions.HTTPError as errh:
-            logger.exception("Http Error:", errh)
-            return errh, 400
-        except requests.exceptions.ConnectionError as errc:
-            logger.exception("Error Connecting:", errc)
-            return errc, 400
-        except requests.exceptions.Timeout as errt:
-            logger.exception("Timeout Error:", errt)
-            return errt, 400
-        except requests.exceptions.RequestException as err:
-            logger.exception("Error:", err)
-            return err, 400
+        if slice_parameters:
+            return slice_parameters, 200
+        else:
+            return f"Slice with id {slice_id} was not found", 404

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import request, make_response, abort
+from flask import request
 from flask_classful import FlaskView
 from katana.shared_utils.osmUtils import osmUtils
 # from katana.shared_utils.tango5gUtils import tango5gUtils
