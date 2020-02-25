@@ -11,12 +11,10 @@ import urllib3
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -29,8 +27,9 @@ class SliceView(FlaskView):
     Returns a list of slices and their details,
     used by: `katana slice ls`
     """
+
     urllib3.disable_warnings()
-    route_prefix = '/api/'
+    route_prefix = "/api/"
 
     def index(self):
         """
@@ -40,9 +39,9 @@ class SliceView(FlaskView):
         slice_data = mongoUtils.index("slice")
         return_data = []
         for islice in slice_data:
-            return_data.append(dict(_id=islice['_id'],
-                                    created_at=islice['created_at'],
-                                    status=islice['status']))
+            return_data.append(
+                dict(_id=islice["_id"], created_at=islice["created_at"], status=islice["status"])
+            )
         return dumps(return_data), 200
 
     def get(self, uuid):
@@ -50,13 +49,13 @@ class SliceView(FlaskView):
         Returns the details of specific slice,
         used by: `katana slice inspect [uuid]`
         """
-        data = (mongoUtils.get("slice", uuid))
+        data = mongoUtils.get("slice", uuid)
         if data:
             return dumps(data), 200
         else:
             return "Not Found", 404
 
-    @route('/<uuid>/time')
+    @route("/<uuid>/time")
     def show_time(self, uuid):
         """
         Returns deployment time of a slice
@@ -73,7 +72,7 @@ class SliceView(FlaskView):
         used by: `katana slice add -f [yaml file]`
         """
         new_uuid = str(uuid.uuid4())
-        request.json['_id'] = new_uuid
+        request.json["_id"] = new_uuid
 
         # Get the NEST from the Slice Mapping process
         nest, error_code = slice_mapping.nest_mapping(request.json)

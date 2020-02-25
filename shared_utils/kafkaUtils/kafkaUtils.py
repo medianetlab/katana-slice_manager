@@ -25,7 +25,7 @@ def create_consumer():
     global consumer
 
     # Create the kafka consumer
-    tries = 3
+    tries = 30
     exit = False
     while not exit:
         try:
@@ -48,7 +48,7 @@ def create_consumer():
         else:
             logger.info("New consumer")
             exit = True
-            tries = 3
+            tries = 30
     return consumer
 
 
@@ -56,7 +56,7 @@ def create_producer():
     global producer
 
     # Create the kafka producer
-    tries = 3
+    tries = 30
     exit = False
     while not exit:
         try:
@@ -74,7 +74,7 @@ def create_producer():
         else:
             logger.info("New producer")
             exit = True
-            tries = 3
+            tries = 30
     return producer
 
 
@@ -82,7 +82,7 @@ def create_topic():
     global topic
 
     # Create the kafka topic
-    tries = 3
+    tries = 30
     exit = False
     while not exit:
         try:
@@ -105,4 +105,4 @@ def create_topic():
                 logger.error(KafkaError)
         else:
             exit = True
-            tries = 3
+            tries = 30
