@@ -120,22 +120,6 @@
     "ems-id": {
       "type": "string",
       "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
-    },
-    "other_required_functions":{
-      "type": "array",
-      "description": "A list with the IDs of other functions that are required to be deployed along with this",
-      "items": {
-        "type": "string",
-        "description": "ID of a network function"
-      }
-    },
-    "other_supported_functions":{
-      "type": "array",
-      "description": "A list with the IDs of other functions that can be deployed along with this",
-      "items": {
-        "type": "string",
-        "description": "ID of a network function"
-      }
     }
   },
   "required": ["id", "gen", "func", "shared", "type", "location"]

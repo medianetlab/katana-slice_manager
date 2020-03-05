@@ -84,9 +84,8 @@ class PolicyView(FlaskView):
             )
         # Store the policy object to the mongo db
         thebytes = pickle.dumps(policy)
-        obj_json = {"_id": new_uuid, "id": request.json["id"],
-                    "obj": Binary(thebytes)}
-        mongoUtils.add('policy_obj', obj_json)
+        obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
+        mongoUtils.add("policy_obj", obj_json)
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -146,9 +145,8 @@ class PolicyView(FlaskView):
                 )
             # Store the policy object to the mongo db
             thebytes = pickle.dumps(policy)
-            obj_json = {"_id": new_uuid, "id": request.json["id"],
-                        "obj": Binary(thebytes)}
-            mongoUtils.add('policy_obj', obj_json)
+            obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
+            mongoUtils.add("policy_obj", obj_json)
             return f"Created {new_uuid}", 201
 
     @route("/neat/<slice_id>", methods=["GET"])
@@ -156,7 +154,7 @@ class PolicyView(FlaskView):
         """
         Send the slice parameters to the neat UE Policy System
         """
-        slice_parameters = mongoUtils.get("gst", slice_id)
+        slice_parameters = mongoUtils.get("slice", slice_id)
         if slice_parameters:
             return slice_parameters, 200
         else:

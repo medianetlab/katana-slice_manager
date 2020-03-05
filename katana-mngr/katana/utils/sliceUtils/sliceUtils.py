@@ -35,7 +35,15 @@ NEST_KEYS_OBJ = (
     "terminal_density",
 )
 
-NEST_KEYS_LIST = ("coverage", "ns_list", "radio_spectrum", "probe_list", "connections", "functions")
+NEST_KEYS_LIST = (
+    "coverage",
+    "ns_list",
+    "radio_spectrum",
+    "probe_list",
+    "connections",
+    "functions",
+    "qos",
+)
 
 
 def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
