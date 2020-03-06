@@ -249,3 +249,20 @@ class Openstack():
         sec_group = self.create_sec_group(conn, tenant_project_name, project)
         return {"sliceProjectName": project.name, "sliceUserName": user.name,
                 "secGroupName": sec_group.name}
+
+    # list_hypervisors() and other useful functions available
+    # for the "Connection Object" can be found here:
+    #  - https://docs.openstack.org/openstacksdk/latest/user/connection.html
+    #
+    def print_list_hypervisors(self):
+        conn = openstack.connect(
+            auth_url=self.auth_url,
+            project_name=self.project_name,
+            username=self.username,
+            password=self.password,
+            user_domain_name=self.user_domain_name,
+            project_domain_name=self.project_domain_name,
+        )
+        self.openstack_authorize(conn)
+
+        print(json.dumps(conn.list_hypervisors(), indent=4, sort_keys=True))
