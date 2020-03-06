@@ -20,17 +20,21 @@ def ls():
     url = "http://localhost:8000/api/policy"
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         print(console_formatter("DB_ID", "COMPONENT_ID", "TYPE", "CREATED AT"))
         for i in range(len(json_data)):
-            print(console_formatter(
-                json_data[i]["_id"],
-                json_data[i]["component_id"],
-                json_data[i]["type"],
-                datetime.datetime.fromtimestamp(json_data[i]["created_at"])
-                .strftime('%Y-%m-%d %H:%M:%S')))
+            print(
+                console_formatter(
+                    json_data[i]["_id"],
+                    json_data[i]["component_id"],
+                    json_data[i]["type"],
+                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+                )
+            )
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -43,21 +47,20 @@ def ls():
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def inspect(id):
     """
     Display detailed information of Policy Management System
     """
-    url = "http://localhost:8000/api/policy/"+id
+    url = "http://localhost:8000/api/policy/" + id
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
         if not json_data:
-            click.echo("Error: No such Policy Management Systems: {}".
-                       format(id))
+            click.echo("Error: No such Policy Management Systems: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -70,19 +73,20 @@ def inspect(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str,
-              help='yaml file with Policy Management Systems details')
+@click.option(
+    "-f", "--file", required=True, type=str, help="yaml file with Policy Management Systems details"
+)
 def add(file):
     """
     Add new Policy Management System
     """
-    with open(file, 'r') as stream:
+    with open(file, "r") as stream:
         data = yaml.load(stream)
 
     url = "http://localhost:8000/api/policy"
     r = None
     try:
-        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=10)
+        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -98,15 +102,15 @@ def add(file):
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def rm(id):
     """
     Remove Policy Management System
     """
-    url = "http://localhost:8000/api/policy/"+id
+    url = "http://localhost:8000/api/policy/" + id
     r = None
     try:
-        r = requests.delete(url, timeout=3)
+        r = requests.delete(url, timeout=30)
         r.raise_for_status()
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
@@ -121,20 +125,21 @@ def rm(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str,
-              help='yaml file with Policy Management Systems details')
-@click.argument('id')
+@click.option(
+    "-f", "--file", required=True, type=str, help="yaml file with Policy Management Systems details"
+)
+@click.argument("id")
 def update(file, id):
     """
     Update Policy Management Systems
     """
-    with open(file, 'r') as stream:
+    with open(file, "r") as stream:
         data = yaml.load(stream)
 
-    url = "http://localhost:8000/api/policy/"+id
+    url = "http://localhost:8000/api/policy/" + id
     r = None
     try:
-        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=3)
+        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -157,9 +162,4 @@ cli.add_command(update)
 
 
 def console_formatter(uuid, _id, _type, created_at):
-    return '{0: <40}{1: <20}{2: <20}{3: <25}'.format(
-        uuid,
-        _id,
-        _type,
-        created_at
-    )
+    return "{0: <40}{1: <20}{2: <20}{3: <25}".format(uuid, _id, _type, created_at)

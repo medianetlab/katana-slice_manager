@@ -20,21 +20,26 @@ def ls():
     url = "http://localhost:8000/api/function"
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        print(console_formatter("DB_ID", "FUNC_ID", "GEN", "FUNC", "TYPE",
-                                "LOCATION", "CREATED AT"))
+        print(
+            console_formatter("DB_ID", "FUNC_ID", "GEN", "FUNC", "TYPE", "LOCATION", "CREATED AT")
+        )
         for i in range(len(json_data)):
-            print(console_formatter(
-                json_data[i]["_id"],
-                json_data[i]["func_id"],
-                json_data[i]["gen"],
-                json_data[i]["func"],
-                json_data[i]["type"],
-                json_data[i]["loc"],
-                datetime.datetime.fromtimestamp(json_data[i]["created_at"]).
-                strftime('%Y-%m-%d %H:%M:%S')))
+            print(
+                console_formatter(
+                    json_data[i]["_id"],
+                    json_data[i]["func_id"],
+                    json_data[i]["gen"],
+                    json_data[i]["func"],
+                    json_data[i]["type"],
+                    json_data[i]["loc"],
+                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+                )
+            )
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -48,15 +53,15 @@ def ls():
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def inspect(id):
     """
     Display detailed information of supported Network Function
     """
-    url = "http://localhost:8000/api/function/"+id
+    url = "http://localhost:8000/api/function/" + id
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
@@ -75,19 +80,20 @@ def inspect(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str,
-              help='yaml file with Network Function details')
+@click.option(
+    "-f", "--file", required=True, type=str, help="yaml file with Network Function details"
+)
 def add(file):
     """
     Add new supported Network Function
     """
-    with open(file, 'r') as stream:
+    with open(file, "r") as stream:
         data = yaml.load(stream)
 
     url = "http://localhost:8000/api/function"
     r = None
     try:
-        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=10)
+        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -103,15 +109,15 @@ def add(file):
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def rm(id):
     """
     Remove supported Network Function
     """
-    url = "http://localhost:8000/api/function/"+id
+    url = "http://localhost:8000/api/function/" + id
     r = None
     try:
-        r = requests.delete(url, timeout=3)
+        r = requests.delete(url, timeout=30)
         r.raise_for_status()
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
@@ -126,20 +132,21 @@ def rm(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str,
-              help='yaml file with Network Function details')
-@click.argument('id')
+@click.option(
+    "-f", "--file", required=True, type=str, help="yaml file with Network Function details"
+)
+@click.argument("id")
 def update(file, id):
     """
     Update Network Function
     """
-    with open(file, 'r') as stream:
+    with open(file, "r") as stream:
         data = yaml.load(stream)
 
-    url = "http://localhost:8000/api/function/"+id
+    url = "http://localhost:8000/api/function/" + id
     r = None
     try:
-        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=3)
+        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -162,12 +169,6 @@ cli.add_command(update)
 
 
 def console_formatter(uuid, func_id, gen, func, _type, loc, created_at):
-    return '{0: <40}{1: <20}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}'.format(
-        uuid,
-        func_id,
-        gen,
-        func,
-        _type,
-        loc,
-        created_at
+    return "{0: <40}{1: <20}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}".format(
+        uuid, func_id, gen, func, _type, loc, created_at
     )

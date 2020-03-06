@@ -17,7 +17,7 @@ def ls():
     url = "http://localhost:8000/api/resources"
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
@@ -33,15 +33,15 @@ def ls():
 
 
 @click.command()
-@click.argument('location')
+@click.argument("location")
 def location(location):
     """
     List all resources in the specific location
     """
-    url = "http://localhost:8000/api/resources/"+location
+    url = "http://localhost:8000/api/resources/" + location
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
