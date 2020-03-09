@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from flask_classful import FlaskView
 import logging
 import pickle
+from flask_classful import FlaskView, route
 from bson.json_util import dumps
+from threading import Thread
 
 from katana.shared_utils.mongoUtils import mongoUtils
 
@@ -25,13 +26,6 @@ def get_vims(filter_data=None):
     """
     vims = []
     for vim in mongoUtils.find_all("vim", data=filter_data):
-        # TODO: Get resources from monitoring module
-        if vim["type"] == "openstack":
-            logger.debug(f"Looking for {vim['id']}")
-            vim_obj = pickle.loads(mongoUtils.get("vim_obj", vim["_id"])["obj"])
-            resources = vim_obj.get_resources()
-        else:
-            resources = "N/A"
         vims.append(
             {
                 "name": vim["name"],
@@ -39,7 +33,7 @@ def get_vims(filter_data=None):
                 "location": vim["location"],
                 "type": vim["type"],
                 "tenants": vim["tenants"],
-                "resources": resources,
+                "resources": vim["resources"],
             }
         )
     return vims
@@ -69,6 +63,20 @@ def get_func(filter_data={}):
     return functions
 
 
+def vim_update():
+    """
+    Gets the resources of the stored VIMs
+    """
+    for vim in mongoUtils.find_all("vim"):
+        if vim["type"] == "openstack":
+            vim_obj = pickle.loads(mongoUtils.get("vim_obj", vim["_id"])["obj"])
+            resources = vim_obj.get_resources()
+            vim["resources"] = resources
+            mongoUtils.update("vim", vim["_id"], vim)
+        else:
+            resources = "N/A"
+
+
 class ResourcesView(FlaskView):
     route_prefix = "/api/"
 
@@ -96,3 +104,12 @@ class ResourcesView(FlaskView):
         functions = get_func(filter_data)
         resources = {"VIMs": vims, "Functions": functions}
         return dumps(resources), 200
+
+    @route("/update", methods=["GET", "POST"])
+    def update(self):
+        """
+        Update the resource database for the stored VIMs
+        """
+        thread = Thread(target=vim_update)
+        thread.start()
+        return "Updating resource database"
