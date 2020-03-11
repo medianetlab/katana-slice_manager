@@ -45,8 +45,6 @@ def location(location):
         r.raise_for_status()
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
-        if not json_data:
-            click.echo("Error: No such GST: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -58,5 +56,28 @@ def location(location):
         print("Error:", err)
 
 
+@click.command()
+def updatedb():
+    """
+    Update the resource database
+    """
+    url = "http://localhost:8000/api/resources/update"
+    r = None
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        click.echo(r.content)
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+        click.echo(r.content)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Error:", err)
+
+
+cli.add_command(updatedb)
 cli.add_command(ls)
 cli.add_command(location)

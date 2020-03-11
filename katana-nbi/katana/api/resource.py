@@ -112,4 +112,4 @@ class ResourcesView(FlaskView):
         """
         thread = Thread(target=vim_update)
         thread.start()
-        return "Updating resource database"
+        return "Updating resource database", 200
