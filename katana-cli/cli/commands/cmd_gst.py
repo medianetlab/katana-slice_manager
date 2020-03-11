@@ -17,13 +17,12 @@ def ls():
     url = "http://localhost:8000/api/gst"
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         print(console_formatter("GST_ID"))
         for i in range(len(json_data)):
-            print(console_formatter(
-                json_data[i]["_id"]))
+            print(console_formatter(json_data[i]["_id"]))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -36,15 +35,15 @@ def ls():
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def inspect(id):
     """
     Display detailed information of GST
     """
-    url = "http://localhost:8000/api/gst/"+id
+    url = "http://localhost:8000/api/gst/" + id
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
@@ -66,4 +65,4 @@ cli.add_command(inspect)
 
 
 def console_formatter(uuid):
-    return '{0: <40}'.format(uuid)
+    return "{0: <40}".format(uuid)

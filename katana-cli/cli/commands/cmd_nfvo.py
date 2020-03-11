@@ -20,19 +20,21 @@ def ls():
     url = "http://localhost:8000/api/nfvo"
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
         # click.echo(json.dumps(json_data, indent=2))
         click.echo(console_formatter("DB_ID", "NFVO_ID", "TYPE", "CREATED AT"))
         for i in range(len(json_data)):
-            click.echo(console_formatter(
-                json_data[i]["_id"],
-                json_data[i]["nfvo_id"],
-                json_data[i]["type"],
-                datetime.datetime.fromtimestamp(json_data[i]["created_at"])
-                .strftime('%Y-%m-%d %H:%M:%S')
+            click.echo(
+                console_formatter(
+                    json_data[i]["_id"],
+                    json_data[i]["nfvo_id"],
+                    json_data[i]["type"],
+                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
                 )
             )
     except requests.exceptions.HTTPError as errh:
@@ -47,15 +49,15 @@ def ls():
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def inspect(id):
     """
     Display detailed information of NFVO
     """
-    url = "http://localhost:8000/api/nfvo/"+id
+    url = "http://localhost:8000/api/nfvo/" + id
     r = None
     try:
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
         # indent=2 "beautifies" json
@@ -74,19 +76,18 @@ def inspect(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str,
-              help='yaml file with NFVO details')
+@click.option("-f", "--file", required=True, type=str, help="yaml file with NFVO details")
 def add(file):
     """
     Add new NFVO
     """
-    with open(file, 'r') as stream:
+    with open(file, "r") as stream:
         data = yaml.load(stream)
 
     url = "http://localhost:8000/api/nfvo"
     r = None
     try:
-        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=10)
+        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -102,15 +103,15 @@ def add(file):
 
 
 @click.command()
-@click.argument('id')
+@click.argument("id")
 def rm(id):
     """
     Remove NFVO
     """
-    url = "http://localhost:8000/api/nfvo/"+id
+    url = "http://localhost:8000/api/nfvo/" + id
     r = None
     try:
-        r = requests.delete(url, timeout=3)
+        r = requests.delete(url, timeout=30)
         r.raise_for_status()
         click.echo(r.content)
     except requests.exceptions.HTTPError as errh:
@@ -125,20 +126,19 @@ def rm(id):
 
 
 @click.command()
-@click.option('-f', '--file', required=True, type=str,
-              help='yaml file with NFVO details')
-@click.argument('id')
+@click.option("-f", "--file", required=True, type=str, help="yaml file with NFVO details")
+@click.argument("id")
 def update(file, id):
     """
     Update NFVO
     """
-    with open(file, 'r') as stream:
+    with open(file, "r") as stream:
         data = yaml.load(stream)
 
-    url = "http://localhost:8000/api/nfvo/"+id
+    url = "http://localhost:8000/api/nfvo/" + id
     r = None
     try:
-        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=3)
+        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -161,9 +161,4 @@ cli.add_command(update)
 
 
 def console_formatter(uuid, nfvo_id, nfvotype, created_at):
-    return '{0: <40}{1: <20}{2: <20}{3: <25}'.format(
-        uuid,
-        nfvo_id,
-        nfvotype,
-        created_at
-    )
+    return "{0: <40}{1: <20}{2: <20}{3: <25}".format(uuid, nfvo_id, nfvotype, created_at)

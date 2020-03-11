@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 11/03-2020
+
+### Added
+
+- API for retrieving OpenStack max and available resources
+
 ## [2.2.0] - 20/02-2020
 
 ### Added
