@@ -72,7 +72,7 @@ def add(file):
     Add new EMS
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/ems"
     r = None
@@ -125,7 +125,7 @@ def update(file, id):
     Update Base Slice Descriptor
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/slice_des/" + id
     r = None

@@ -82,7 +82,7 @@ def add(file):
     Add new NFVO
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/nfvo"
     r = None
@@ -133,7 +133,7 @@ def update(file, id):
     Update NFVO
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/nfvo/" + id
     r = None

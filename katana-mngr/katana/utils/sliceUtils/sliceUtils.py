@@ -269,7 +269,7 @@ def add_slice(nest_req):
     else:
         wan_start_time = time.time()
         # Crate the data for the WIM
-        wim_data = {"core_connections": [], "extra_ns": []}
+        wim_data = {"core_connections": [], "extra_ns": [], "slice_sla": {}}
         # i) Create the slice_sla data for the WIM
         wim_data["slice_sla"] = {
             "network_DL_throughput": nest["network_DL_throughput"],
@@ -328,7 +328,7 @@ def add_slice(nest_req):
     ns_inst_info = {}
     nest["deployment_time"]["NS_Deployment_Time"] = {}
     for ns in total_ns_list:
-        ns_start_time = time.time()
+        ns["start_time"] = time.time()
         ns_inst_info[ns["ns-id"]] = {}
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
@@ -351,7 +351,7 @@ def add_slice(nest_req):
             time.sleep(10)
             insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
         nest["deployment_time"]["NS_Deployment_Time"][ns["ns-name"]] = format(
-            time.time() - ns_start_time, ".4f"
+            time.time() - ns["start_time"], ".4f"
         )
         # Get the IPs of the instantiated NS
         vnf_list = []
@@ -433,11 +433,11 @@ def add_slice(nest_req):
             # Send the message
             for imessage in ems_message:
                 target_ems_obj.conf_radio(imessage)
+            nest["conf_comp"]["ems"].append(ems_id)
         nest["ems_data"] = ems_messages
         nest["deployment_time"]["Radio_Configuration_Time"] = format(
             time.time() - radio_start_time, ".4f"
         )
-        nest["conf_comp"]["ems"].append(ems_id)
 
     # *** STEP-4: Finalize ***
     logger.info("Status: Running")

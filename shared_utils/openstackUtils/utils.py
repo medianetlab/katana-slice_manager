@@ -211,7 +211,7 @@ class Openstack:
 
     def set_quotas(self, conn, name, **kwargs):
         """
-        Sets the quotas of the user
+        Sets the quotas of the tenant
         """
         try:
             conn.set_compute_quotas(name_or_id=name, **kwargs)

@@ -88,7 +88,7 @@ def add(file):
     Add new supported Network Function
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/function"
     r = None
@@ -141,7 +141,7 @@ def update(file, id):
     Update Network Function
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/function/" + id
     r = None

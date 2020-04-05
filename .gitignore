@@ -125,3 +125,6 @@ dmypy.json
 
 # Zookeeper - Kafka Directory
 zk-kafka/
+
+# Editor specific files
+.vscode
