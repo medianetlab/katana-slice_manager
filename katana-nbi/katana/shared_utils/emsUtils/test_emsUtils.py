@@ -1,7 +1,8 @@
-import requests
 import json
 import logging
 from logging import handlers
+
+import requests
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

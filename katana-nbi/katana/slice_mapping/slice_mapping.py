@@ -1,11 +1,12 @@
-from katana.shared_utils.mongoUtils import mongoUtils
 import logging
+from logging import handlers
 import uuid
 
+from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")

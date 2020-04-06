@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
+from logging import handlers
 import pickle
-from flask_classful import FlaskView, route
-from bson.json_util import dumps
 from threading import Thread
+
+from bson.json_util import dumps
+from flask_classful import FlaskView, route
 
 from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")

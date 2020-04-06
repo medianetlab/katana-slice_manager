@@ -1,16 +1,16 @@
-import pyone
 import functools
-from multiprocessing import Process
 import logging
+from logging import handlers
+from multiprocessing import Process
+
+import pyone
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -22,6 +22,7 @@ def timeout(func):
     """
     Wrapper for function, terminate after 5 seconds
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         action = Process(target=func, args=args, kwargs=kwargs)
@@ -37,13 +38,15 @@ def timeout(func):
         if action.exitcode != 0:
             # raise Attirbute Error, which is the most probable
             raise (AttributeError)
-    return (wrapper)
+
+    return wrapper
 
 
-class Opennebula():
+class Opennebula:
     """
     Class implementing the communication API with OpenNebula
     """
+
     # Note: Cannot use conn as a self variable, as it is not possible to
     # serialize it and store it in a db
 
@@ -56,10 +59,7 @@ class Opennebula():
         self.project_name = project_name
         self.username = username
         self.password = password
-        conn = pyone.OneServer(
-            self.auth_url,
-            session="{0}:{1}".format(username, password)
-            )
+        conn = pyone.OneServer(self.auth_url, session="{0}:{1}".format(username, password))
 
     def create_project(self, conn, name, description="Katana Slice Project"):
         """
@@ -81,8 +81,8 @@ class Opennebula():
         Creates the security group to be assigned to the new tenant
         """
         sec_group = conn.create_security_group(
-            name=name, description="Katana Security Group",
-            project_id=project.id)
+            name=name, description="Katana Security Group", project_id=project.id
+        )
         conn.create_security_group_rule(sec_group)
         return sec_group
 
@@ -131,9 +131,8 @@ class Opennebula():
         Deletes user and project
         """
         conn = pyone.OneServer(
-            self.auth_url,
-            session="{0}:{1}".format(self.username, self.password)
-            )
+            self.auth_url, session="{0}:{1}".format(self.username, self.password)
+        )
         try:
             user = conn.user.info(user_id)
             group = user.get_GROUPS().ID[0]
@@ -151,12 +150,11 @@ class Opennebula():
         Deletes user and project
         """
         conn = pyone.OneServer(
-            self.auth_url,
-            session="{0}:{1}".format(self.username, self.password)
-            )
-        userpool = conn.userpool.info(-1,-1,-1)
+            self.auth_url, session="{0}:{1}".format(self.username, self.password)
+        )
+        userpool = conn.userpool.info(-1, -1, -1)
         for user in userpool.USER:
-            if user.get_NAME() ==  name:
+            if user.get_NAME() == name:
                 group = user.get_GROUPS()[0]
                 # delete group
                 conn.group.delete(group)
@@ -164,21 +162,22 @@ class Opennebula():
                 return conn.user.delete(user.get_ID())
         logger.warning("Delete user ONE: user does not exist: ", name)
 
-    def create_slice_prerequisites(self, tenant_project_name,
-                                   tenant_project_description,
-                                   tenant_project_user,
-                                   tenant_project_password,
-                                   slice_uuid):
+    def create_slice_prerequisites(
+        self,
+        tenant_project_name,
+        tenant_project_description,
+        tenant_project_user,
+        tenant_project_password,
+        slice_uuid,
+    ):
         """
         Creates the tenant (project, user, security_group) on the specified vim
         """
         conn = pyone.OneServer(
-            self.auth_url,
-            session="{0}:{1}".format(self.username, self.password)
-            )
+            self.auth_url, session="{0}:{1}".format(self.username, self.password)
+        )
         # creates the project in OpenNebula
-        project = self.create_project(conn, tenant_project_name,
-                                      tenant_project_description)
+        project = self.create_project(conn, tenant_project_name, tenant_project_description)
 
         # creates the user
         user = self.create_user(conn, tenant_project_user, "password", project)
@@ -187,5 +186,4 @@ class Opennebula():
         # sec_group = self.create_sec_group(conn, tenant_project_name, project)
         sec_group = "dummy"
 
-        return {"sliceProjectName": project, "sliceUserName": user,
-                "secGroupName": sec_group}
+        return {"sliceProjectName": project, "sliceUserName": user, "secGroupName": sec_group}

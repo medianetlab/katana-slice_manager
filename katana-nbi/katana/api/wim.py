@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
-from flask import request
-from flask_classful import FlaskView
-import uuid
-from bson.json_util import dumps
-from bson.binary import Binary
+import logging
+from logging import handlers
 import pickle
 import time
-import logging
+import uuid
+
+from bson.binary import Binary
+from bson.json_util import dumps
+from flask import request
+from flask_classful import FlaskView
 import pymongo
+
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.wimUtils import odl_wimUtils, test_wimUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -27,7 +28,7 @@ logger.addHandler(stream_handler)
 
 
 class WimView(FlaskView):
-    route_prefix = '/api/'
+    route_prefix = "/api/"
     req_fields = ["id", "url", "type"]
 
     def index(self):
@@ -38,10 +39,14 @@ class WimView(FlaskView):
         wim_data = mongoUtils.index("wim")
         return_data = []
         for iwim in wim_data:
-            return_data.append(dict(_id=iwim['_id'],
-                               wim_id=iwim['id'],
-                               wim_type=iwim['type'],
-                               created_at=iwim['created_at']))
+            return_data.append(
+                dict(
+                    _id=iwim["_id"],
+                    wim_id=iwim["id"],
+                    wim_type=iwim["type"],
+                    created_at=iwim["created_at"],
+                )
+            )
         return dumps(return_data), 200
 
     # @route('/all/') #/wim/all
@@ -56,7 +61,7 @@ class WimView(FlaskView):
         Returns the details of specific wim,
         used by: `katana wim inspect [uuid]`
         """
-        data = (mongoUtils.get("wim", uuid))
+        data = mongoUtils.get("wim", uuid)
         if data:
             return dumps(data), 200
         else:
@@ -73,24 +78,23 @@ class WimView(FlaskView):
         try:
             wim_id = request.json["id"]
             if request.json["type"] == "odl-wim":
-                wim = odl_wimUtils.Wim(request.json['url'])
+                wim = odl_wimUtils.Wim(request.json["url"])
             elif request.json["type"] == "test-wim":
-                wim = test_wimUtils.Wim(request.json['url'])
+                wim = test_wimUtils.Wim(request.json["url"])
             else:
                 return "Error: Not supported WIM type", 400
         except KeyError:
             return f"Error: Required fields: {self.req_fields}", 400
         thebytes = pickle.dumps(wim)
-        obj_json = {"_id": new_uuid, "id": request.json["id"],
-                    "obj": Binary(thebytes)}
-        request.json['_id'] = new_uuid
-        request.json['created_at'] = time.time()  # unix epoch
-        request.json['slices'] = {}
+        obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
+        request.json["_id"] = new_uuid
+        request.json["created_at"] = time.time()  # unix epoch
+        request.json["slices"] = {}
         try:
-            new_uuid = mongoUtils.add('wim', request.json)
+            new_uuid = mongoUtils.add("wim", request.json)
         except pymongo.errors.DuplicateKeyError:
             return f"WIM with id {wim_id} already exists", 400
-        mongoUtils.add('wim_obj', obj_json)
+        mongoUtils.add("wim_obj", obj_json)
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -115,7 +119,7 @@ class WimView(FlaskView):
         used by: `katana wim update -f [yaml file] [uuid]`
         """
         data = request.json
-        data['_id'] = uuid
+        data["_id"] = uuid
         old_data = mongoUtils.get("wim", uuid)
 
         if old_data:
@@ -133,25 +137,24 @@ class WimView(FlaskView):
         else:
             new_uuid = uuid
             data = request.json
-            data['_id'] = new_uuid
-            data['created_at'] = time.time()  # unix epoch
+            data["_id"] = new_uuid
+            data["created_at"] = time.time()  # unix epoch
             try:
                 wim_id = request.json["id"]
                 if request.json["type"] == "odl-wim":
-                    wim = odl_wimUtils.Wim(request.json['url'])
+                    wim = odl_wimUtils.Wim(request.json["url"])
                 elif request.json["type"] == "test-wim":
-                    wim = test_wimUtils.Wim(request.json['url'])
+                    wim = test_wimUtils.Wim(request.json["url"])
                 else:
                     return "Error: Not supported WIM type", 400
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
             thebytes = pickle.dumps(wim)
-            obj_json = {"_id": new_uuid, "id": data["id"],
-                        "obj": Binary(thebytes)}
-            data['slices'] = {}
+            obj_json = {"_id": new_uuid, "id": data["id"], "obj": Binary(thebytes)}
+            data["slices"] = {}
             try:
-                new_uuid = mongoUtils.add('wim', data)
+                new_uuid = mongoUtils.add("wim", data)
             except pymongo.errors.DuplicateKeyError:
                 return f"WIM with id {wim_id} already exists", 400
-            mongoUtils.add('wim_obj', obj_json)
+            mongoUtils.add("wim_obj", obj_json)
             return f"Created {new_uuid}", 201

@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
-from flask import request
-from flask_classful import FlaskView
-from katana.shared_utils.openstackUtils import utils as openstackUtils
-from katana.shared_utils.opennebulaUtils import utils as opennebulaUtils
-from katana.shared_utils.mongoUtils import mongoUtils
-import uuid
-from bson.json_util import dumps
-from bson.binary import Binary
+import logging
+from logging import handlers
 import pickle
 import time
-import logging
+import uuid
+
+from bson.binary import Binary
+from bson.json_util import dumps
+from flask import request
+from flask_classful import FlaskView
 import pymongo
+
+from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.opennebulaUtils import utils as opennebulaUtils
+from katana.shared_utils.openstackUtils import utils as openstackUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -95,7 +98,7 @@ class VimView(FlaskView):
                 if new_vim.auth_error:
                     raise (AttributeError)
             except AttributeError as e:
-                response = dumps({"error": "Openstack auth failed." + e})
+                response = dumps({"error": e})
                 return response, 400
             else:
                 request.json["resources"] = new_vim.get_resources()
@@ -111,7 +114,7 @@ class VimView(FlaskView):
                     password=password,
                 )
             except AttributeError as e:
-                response = dumps({"Error": "OpenNebula auth failed." + e})
+                response = dumps({"Error": e})
                 return response, 400
             else:
                 request.json["resources"] = {"N/A": "N/A"}
@@ -190,7 +193,7 @@ class VimView(FlaskView):
                     if new_vim.auth_error:
                         raise (AttributeError)
                 except AttributeError as e:
-                    response = dumps({"error": "Openstack auth failed." + e})
+                    response = dumps({"error": e})
                     return response, 400
                 else:
                     request.json["resources"] = new_vim.get_resources()
@@ -206,7 +209,7 @@ class VimView(FlaskView):
                         password=password,
                     )
                 except AttributeError as e:
-                    response = dumps({"Error": "OpenNebula auth failed." + e})
+                    response = dumps({"Error": e})
                     return response, 400
                 else:
                     request.json["resources"] = {"N/A": "N/A"}

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Stop the containers
+docker-compose down -v
 docker-compose rm -sfv
 
 # Remove the katana-container-log file
@@ -16,5 +17,3 @@ rm -f $file1 $file2
 
 # Remove Kafka data
 rm -rf zk-kafka/* || echo "Warning: Need root permission for removing Kafka and Zookeeper files - Try again with sudo"
-rm -rf katana-mngr/katana/shared_utils
-rm -rf katana-nbi/katana/shared_utils

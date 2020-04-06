@@ -1,8 +1,10 @@
-import requests
 import logging
 import logging.handlers
 import uuid
+
 import pymongo
+import requests
+
 from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
