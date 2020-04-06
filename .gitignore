@@ -126,5 +126,11 @@ dmypy.json
 # Zookeeper - Kafka Directory
 zk-kafka/
 
-# Editor specific files
+# dev specific files
 .vscode
+dev/*
+katana-mngr/katana/shared_utils/*
+katana-nbi/katana/shared_utils/*
+
+# log files
+*.log.*

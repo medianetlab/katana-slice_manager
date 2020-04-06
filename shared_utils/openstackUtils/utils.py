@@ -1,13 +1,13 @@
-import openstack
 import functools
+import logging
+from logging import handlers
 from multiprocessing import Process
 
-# openstack.enable_logging(debug=True)
-import logging
+import openstack
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")

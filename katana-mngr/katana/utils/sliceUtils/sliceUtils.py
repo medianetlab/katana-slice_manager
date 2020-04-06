@@ -116,6 +116,12 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
                 "ns_list": [new_ns["ns-name"]],
                 "nfvo_list": [new_ns["nfvo-id"]],
             }
+        resources = vim_dict[selected_vim].get(
+            "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
+        )
+        for key in resources:
+            resources[key] += nsd["flavor"][key]
+        vim_dict[selected_vim]["resources"] = resources
         new_ns["placement_loc"]["vim"] = selected_vim
         # 0) Create an uuid for the ns
         new_ns["ns-id"] = str(uuid.uuid4())
