@@ -128,9 +128,7 @@ zk-kafka/
 
 # dev specific files
 .vscode
-dev/*
-katana-mngr/katana/shared_utils/*
-katana-nbi/katana/shared_utils/*
+dev/
 
 # log files
 *.log.*

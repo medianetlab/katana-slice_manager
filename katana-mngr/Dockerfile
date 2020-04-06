@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -qq -y \
   build-essential libpq-dev --no-install-recommends
 
 ENV INSTALL_PATH /katana-mngr
+ENV PYTHONPATH ${INSTALL_PATH}
 RUN mkdir -p $INSTALL_PATH
 
 WORKDIR $INSTALL_PATH
@@ -14,4 +15,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD python3 katana-mngr.py
+CMD python3 katana/katana-mngr.py

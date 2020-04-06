@@ -5,7 +5,7 @@ import click
 
 @click.group()
 def cli():
-    """Query Network Slices"""
+    """Query Network Service Descriptors"""
     pass
 
 

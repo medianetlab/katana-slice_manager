@@ -6,7 +6,7 @@ import click
 
 @click.group()
 def cli():
-    """Manage Slice Descriptors"""
+    """Query Slice Descriptors"""
     pass
 
 

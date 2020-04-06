@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stop the containers
-docker-compose -f docker-compose.yaml down
+docker-compose rm -sfv
 
 # Remove the katana-container-log file
 file=katana-container-logs
