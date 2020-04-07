@@ -1,5 +1,5 @@
 from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.osmUtils import osmUtils
+from katana.shared_utils.nfvoUtils import osmUtils
 import pickle
 import time
 import logging

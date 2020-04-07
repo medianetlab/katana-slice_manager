@@ -13,7 +13,7 @@ import pymongo
 from requests import ConnectTimeout, ConnectionError
 
 from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.osmUtils import osmUtils
+from katana.shared_utils.nfvoUtils import osmUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

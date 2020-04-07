@@ -12,8 +12,8 @@ from flask_classful import FlaskView
 import pymongo
 
 from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.opennebulaUtils import utils as opennebulaUtils
-from katana.shared_utils.openstackUtils import utils as openstackUtils
+from katana.shared_utils.vimUtils import opennebulaUtils
+from katana.shared_utils.vimUtils import openstackUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)

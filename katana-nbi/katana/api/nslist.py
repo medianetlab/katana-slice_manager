@@ -7,7 +7,7 @@ from bson.json_util import dumps
 from flask_classful import FlaskView
 
 from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.osmUtils import osmUtils
+from katana.shared_utils.nfvoUtils import osmUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
