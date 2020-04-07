@@ -230,12 +230,19 @@ def add_slice(nest_req):
         tenant_project_description = "vim_{0}_katana_{1}".format(num, nest["_id"])
         tenant_project_user = "vim_{0}_katana_{1}".format(num, nest["_id"])
         tenant_project_password = "password"
+        # If the vim is Openstack type, set quotas
+        quotas = (
+            vim_info["resources"]
+            if target_vim["type"] == "openstack" or target_vim["type"] == "Openstack"
+            else None
+        )
         ids = target_vim_obj.create_slice_prerequisites(
             tenant_project_name,
             tenant_project_description,
             tenant_project_user,
             tenant_project_password,
             nest["_id"],
+            quotas=quotas,
         )
         # Register the tenant to the mongo db
         target_vim["tenants"][nest["_id"]] = tenant_project_name
