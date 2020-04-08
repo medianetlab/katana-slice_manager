@@ -4,13 +4,23 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.1] - 11/03-2020
+## [2.2.2] - 08/04/2020
+
+### Added
+
+- Set the Tenant Quotas based on the slice requirements for OpenStack VIMs
+
+### Changed
+
+- Minor bug fixes in katana-cli
+
+## [2.2.1] - 11/03/2020
 
 ### Added
 
 - API for retrieving OpenStack max and available resources
 
-## [2.2.0] - 20/02-2020
+## [2.2.0] - 20/02/2020
 
 ### Added
 
@@ -23,7 +33,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Removed PDU db
 - Improved Slice Deletion process
 
-## [2.1.1] - 03/02-2020
+## [2.1.1] - 03/02/2020
 
 ### Added
 
