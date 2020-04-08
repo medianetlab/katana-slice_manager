@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-from flask_classful import FlaskView
-from flask import request
 import logging
+from logging import handlers
 import uuid
+
 from bson.json_util import dumps
+from flask import request
+from flask_classful import FlaskView
+
 from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -22,7 +23,7 @@ logger.addHandler(stream_handler)
 
 
 class Slice_desView(FlaskView):
-    route_prefix = '/api/'
+    route_prefix = "/api/"
 
     def index(self):
         """
@@ -32,9 +33,9 @@ class Slice_desView(FlaskView):
         slice_des_data = mongoUtils.index("base_slice_des_ref")
         return_data = []
         for islicedes in slice_des_data:
-            return_data.append(dict(
-                _id=islicedes['_id'],
-                base_slice_des_id=islicedes["base_slice_des_id"]))
+            return_data.append(
+                dict(_id=islicedes["_id"], base_slice_des_id=islicedes["base_slice_des_id"])
+            )
         return dumps(return_data), 200
 
     def post(self):
@@ -44,15 +45,15 @@ class Slice_desView(FlaskView):
         """
         new_uuid = str(uuid.uuid4())
         data = request.json
-        data['_id'] = new_uuid
-        return str(mongoUtils.add('base_slice_des_id', data)), 201
+        data["_id"] = new_uuid
+        return str(mongoUtils.add("base_slice_des_id", data)), 201
 
     def get(self, uuid):
         """
         Returns the details of specific Slice Descriptor,
         used by: `katana slice_des inspect [uuid]`
         """
-        data = (mongoUtils.get("base_slice_des_ref", uuid))
+        data = mongoUtils.get("base_slice_des_ref", uuid)
         if data:
             return dumps(data), 200
         else:
@@ -65,7 +66,7 @@ class Slice_desView(FlaskView):
         used by: `katana slice_des update -f [yaml file]`
         """
         data = request.json
-        data['_id'] = uuid
+        data["_id"] = uuid
         old_data = mongoUtils.get("base_slice_des_ref", uuid)
 
         if old_data:
@@ -74,9 +75,8 @@ class Slice_desView(FlaskView):
         else:
             new_uuid = uuid
             data = request.json
-            data['_id'] = new_uuid
-            return "Created " + str(mongoUtils.add(
-                'base_slice_des_ref', data)), 201
+            data["_id"] = new_uuid
+            return "Created " + str(mongoUtils.add("base_slice_des_ref", data)), 201
 
     def delete(self, uuid):
         """

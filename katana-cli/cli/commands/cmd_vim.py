@@ -83,7 +83,7 @@ def add(file):
     Add new VIM
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/vim"
     r = None
@@ -134,7 +134,7 @@ def update(file, id):
     Update VIM
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/vim/" + id
     r = None

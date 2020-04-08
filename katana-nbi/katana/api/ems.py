@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
-from flask import request
-from flask_classful import FlaskView
-import uuid
-from bson.json_util import dumps
-from bson.binary import Binary
+import logging
+from logging import handlers
 import pickle
 import time
-import logging
+import uuid
+
+from bson.binary import Binary
+from bson.json_util import dumps
+from flask import request
+from flask_classful import FlaskView
 import pymongo
-from katana.shared_utils.mongoUtils import mongoUtils
+
 from katana.shared_utils.emsUtils import amar_emsUtils, test_emsUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -27,7 +28,7 @@ logger.addHandler(stream_handler)
 
 
 class EmsView(FlaskView):
-    route_prefix = '/api/'
+    route_prefix = "/api/"
     req_fields = ["url", "id", "type"]
 
     def index(self):
@@ -38,10 +39,14 @@ class EmsView(FlaskView):
         ems_data = mongoUtils.index("ems")
         return_data = []
         for iems in ems_data:
-            return_data.append(dict(_id=iems['_id'],
-                               ems_id=iems['id'],
-                               ems_type=iems['type'],
-                               created_at=iems['created_at']))
+            return_data.append(
+                dict(
+                    _id=iems["_id"],
+                    ems_id=iems["id"],
+                    ems_type=iems["type"],
+                    created_at=iems["created_at"],
+                )
+            )
         return dumps(return_data), 200
 
     # @route('/all/') #/ems/all
@@ -56,7 +61,7 @@ class EmsView(FlaskView):
         Returns the details of specific EMS,
         used by: `katana ems inspect [uuid]`
         """
-        data = (mongoUtils.get("ems", uuid))
+        data = mongoUtils.get("ems", uuid)
         if data:
             return dumps(data), 200
         else:
@@ -73,23 +78,22 @@ class EmsView(FlaskView):
         try:
             ems_id = request.json["id"]
             if request.json["type"] == "amarisoft-ems":
-                ems = amar_emsUtils.Ems(request.json['url'])
+                ems = amar_emsUtils.Ems(request.json["url"])
             elif request.json["type"] == "test-ems":
-                ems = test_emsUtils.Ems(request.json['url'])
+                ems = test_emsUtils.Ems(request.json["url"])
             else:
                 return "Error: Not supported EMS type", 400
         except KeyError:
             return f"Error: Required fields: {self.req_fields}", 400
         thebytes = pickle.dumps(ems)
-        obj_json = {"_id": new_uuid, "id": request.json["id"],
-                    "obj": Binary(thebytes)}
-        request.json['_id'] = new_uuid
-        request.json['created_at'] = time.time()  # unix epoch
+        obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
+        request.json["_id"] = new_uuid
+        request.json["created_at"] = time.time()  # unix epoch
         try:
-            new_uuid = mongoUtils.add('ems', request.json)
+            new_uuid = mongoUtils.add("ems", request.json)
         except pymongo.errors.DuplicateKeyError:
             return f"EMS with id {ems_id} already exists", 400
-        mongoUtils.add('ems_obj', obj_json)
+        mongoUtils.add("ems_obj", obj_json)
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -111,7 +115,7 @@ class EmsView(FlaskView):
         used by: `katana ems update -f [yaml file] [uuid]`
         """
         data = request.json
-        data['_id'] = uuid
+        data["_id"] = uuid
         old_data = mongoUtils.get("ems", uuid)
 
         if old_data:
@@ -128,25 +132,25 @@ class EmsView(FlaskView):
         else:
             new_uuid = uuid
             data = request.json
-            data['_id'] = new_uuid
-            data['created_at'] = time.time()  # unix epoch
+            data["_id"] = new_uuid
+            data["created_at"] = time.time()  # unix epoch
             new_uuid = str(uuid.uuid4())
             # Create the object and store it in the object collection
             try:
+                ems_id = request.json["id"]
                 if request.json["type"] == "amarisoft-ems":
-                    ems = amar_emsUtils.Ems(request.json['url'])
+                    ems = amar_emsUtils.Ems(request.json["url"])
                 elif request.json["type"] == "test-ems":
-                    ems = test_emsUtils.Ems(request.json['url'])
+                    ems = test_emsUtils.Ems(request.json["url"])
                 else:
                     return "Error: Not supported EMS type", 400
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
             thebytes = pickle.dumps(ems)
-            obj_json = {"_id": new_uuid, "id": data["id"],
-                        "obj": Binary(thebytes)}
+            obj_json = {"_id": new_uuid, "id": data["id"], "obj": Binary(thebytes)}
             try:
-                new_uuid = mongoUtils.add('ems', data), 201
+                new_uuid = mongoUtils.add("ems", data), 201
             except pymongo.errors.DuplicateKeyError:
                 return f"EMS with id {ems_id} already exists", 400
-            mongoUtils.add('ems_obj', obj_json)
+            mongoUtils.add("ems_obj", obj_json)
             return f"Created {new_uuid}", 201

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-from flask_classful import FlaskView
 import logging
-from bson.json_util import dumps
+from logging import handlers
 import pickle
 
+from bson.json_util import dumps
+from flask_classful import FlaskView
+
 from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.osmUtils import osmUtils
+from katana.shared_utils.nfvoUtils import osmUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -23,7 +23,7 @@ logger.addHandler(stream_handler)
 
 
 class NslistView(FlaskView):
-    route_prefix = '/api/'
+    route_prefix = "/api/"
 
     def get(self):
         """
@@ -38,5 +38,5 @@ class NslistView(FlaskView):
             osmUtils.bootstrapNfvo(nfvo)
 
         # Return the list
-        ns_list = mongoUtils.find_all('nsd')
+        ns_list = mongoUtils.find_all("nsd")
         return dumps(ns_list), 200

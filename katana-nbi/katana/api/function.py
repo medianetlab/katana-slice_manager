@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
+import logging
+from logging import handlers
+import time
+import uuid
+
+from bson.json_util import dumps
 from flask import request
 from flask_classful import FlaskView
-import uuid
-from bson.json_util import dumps
-import time
-import logging
 import pymongo
 
 from katana.shared_utils.mongoUtils import mongoUtils
 
-
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler(
-    'katana.log', maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_formatter = logging.Formatter(
-    '%(asctime)s %(name)s %(levelname)s %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(stream_formatter)
 logger.setLevel(logging.DEBUG)
@@ -26,7 +25,7 @@ logger.addHandler(stream_handler)
 
 
 class FunctionView(FlaskView):
-    route_prefix = '/api/'
+    route_prefix = "/api/"
     req_fields = ["id", "gen", "func", "shared", "type", "location"]
 
     def index(self):
@@ -37,14 +36,17 @@ class FunctionView(FlaskView):
         data = mongoUtils.index("func")
         return_data = []
         for iserv in data:
-            return_data.append(dict(
-                _id=iserv['_id'],
-                gen=(lambda x: "4G" if x == 4 else "5G")(iserv["gen"]),
-                func=(lambda x: "Core" if x == 0 else "Radio")(iserv["func"]),
-                type=(lambda x: "Virtual" if x == 0 else "Physical")(
-                    iserv["type"]),
-                func_id=iserv['id'], loc=iserv["location"],
-                created_at=iserv['created_at']))
+            return_data.append(
+                dict(
+                    _id=iserv["_id"],
+                    gen=(lambda x: "4G" if x == 4 else "5G")(iserv["gen"]),
+                    func=(lambda x: "Core" if x == 0 else "Radio")(iserv["func"]),
+                    type=(lambda x: "Virtual" if x == 0 else "Physical")(iserv["type"]),
+                    func_id=iserv["id"],
+                    loc=iserv["location"],
+                    created_at=iserv["created_at"],
+                )
+            )
         return dumps(return_data), 200
 
     def get(self, uuid):
@@ -62,8 +64,8 @@ class FunctionView(FlaskView):
         """
         new_uuid = str(uuid.uuid4())
         data = request.json
-        data['_id'] = new_uuid
-        data['created_at'] = time.time()  # unix epoch
+        data["_id"] = new_uuid
+        data["created_at"] = time.time()  # unix epoch
         data["tenants"] = []
 
         for field in self.req_fields:
@@ -72,7 +74,7 @@ class FunctionView(FlaskView):
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
         try:
-            new_uuid = mongoUtils.add('func', data)
+            new_uuid = mongoUtils.add("func", data)
         except pymongo.errors.DuplicateKeyError:
             return f"Network Function with id {data['id']} already exists", 400
         return f"Created {new_uuid}", 201
@@ -99,7 +101,7 @@ class FunctionView(FlaskView):
         used by: `katana function update -f [yaml file]`
         """
         data = request.json
-        data['_id'] = uuid
+        data["_id"] = uuid
         old_data = mongoUtils.get("func", uuid)
 
         if old_data:
@@ -112,8 +114,8 @@ class FunctionView(FlaskView):
         else:
             new_uuid = uuid
             data = request.json
-            data['_id'] = new_uuid
-            data['created_at'] = time.time()  # unix epoch
+            data["_id"] = new_uuid
+            data["created_at"] = time.time()  # unix epoch
             data["tenants"] = []
 
             for field in self.req_fields:
@@ -122,7 +124,7 @@ class FunctionView(FlaskView):
                 except KeyError:
                     return f"Error: Required fields: {self.req_fields}", 400
             try:
-                new_uuid = mongoUtils.add('func', data)
+                new_uuid = mongoUtils.add("func", data)
             except pymongo.errors.DuplicateKeyError:
                 return f"Function with id {data['id']} already exists", 400
             return f"Created {new_uuid}", 201

@@ -125,3 +125,11 @@ dmypy.json
 
 # Zookeeper - Kafka Directory
 zk-kafka/
+
+# dev specific files
+.vscode
+pyright*
+dev/
+
+# log files
+*.log.*

@@ -81,7 +81,7 @@ def add(file):
     Add new Policy Management System
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/policy"
     r = None
@@ -134,7 +134,7 @@ def update(file, id):
     Update Policy Management Systems
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/policy/" + id
     r = None

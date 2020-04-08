@@ -2341,7 +2341,7 @@
             "description": "A list of probe ids to be included in the slice",
             "items": {
               "type": "string",
-              "format": "uuid",
+              "format": "uuid"
             }
           },
           "performance_monitoring": {
@@ -2489,7 +2489,7 @@
           "coverage": {
             "type": "array",
             "description": "A list with all the locations that are part of the slice",
-            "items":{
+            "items": {
               "type": "string",
               "description": " The location name for each site in the slice"
             }
@@ -2552,7 +2552,12 @@
           },
           "group_communication_support": {
             "type": "number",
-            "enum": [0, 1, 2, 3],
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
             "description": "0: not available 1: Single Cell Point to Multipoint (SCPTM) 2: Broadcast/Multicast 3: Broadcast/Multicast + SC-PTM"
           },
           "mtu": {
@@ -2571,7 +2576,13 @@
                 "description": "This attribute specifies whether or not the network slice supports MC push-to-talk, MC data, MC video, Isolated E-UTRAN Operation for Public Safety or MC interworking.",
                 "items": {
                   "type": "number",
-                  "enum": [1, 2, 3, 4, 5],
+                  "enum": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                  ],
                   "description": "1: MCPTT 2: MCData 3: MCVideo 4: IOPS 5: MC interworking"
                 }
               }
@@ -2602,7 +2613,15 @@
                 "description": "Describes if this attribute is provided by the network slice and contains a list of positioning methods provided by the slice.",
                 "items": {
                   "type": "number",
-                  "enum": [1, 2, 3, 4, 5, 6, 7],
+                  "enum": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7
+                  ],
                   "description": "1: CID 2: E-CID (LTE and NR) 3: OTDOA (LTE and NR) 4: RF fingerprinting 5: AECID 6: Hybrid positioning 7: NET-RTK"
                 }
               },
@@ -2637,7 +2656,11 @@
                 },
                 "resource_type": {
                   "type": "number",
-                  "enum": [0, 1, 2],
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ],
                   "description": "0: GBR (Mission Critical Video user plane) 1: Delay critical GBR (Intelligent Transport Systems) 2: Non-GBR (Voice, AR)"
                 },
                 "priority_level": {
@@ -2668,7 +2691,12 @@
           },
           "device_velocity": {
             "type": "number",
-            "enum": [1, 2, 3, 4],
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
             "description": "1: Stationary: 0 km/h 2: Pedestrian: 0 km/h to 10 km/h 3: Vehicular: 10 km/h to 120 km/h 4: High speed vehicular: 120 km/h to 500 km/h"
           },
           "terminal_density": {
@@ -2712,12 +2740,18 @@
                     },
                     "gen": {
                       "type": "number",
-                      "enum": [4, 5],
-                      "description" : "Type of the network function - 4: 4G, 5: 5G"
+                      "enum": [
+                        4,
+                        5
+                      ],
+                      "description": "Type of the network function - 4: 4G, 5: 5G"
                     },
-                    "func":{
+                    "func": {
                       "type": "number",
-                      "enum": [0, 1],
+                      "enum": [
+                        0,
+                        1
+                      ],
                       "description": "0: Core, 1: Radio"
                     },
                     "shared": {
@@ -2733,11 +2767,16 @@
                           "description": "Max number of slices - If availability is true and max_shared not defined, it will be assumed unlimited availability"
                         }
                       },
-                      "required": ["availability"]
+                      "required": [
+                        "availability"
+                      ]
                     },
                     "type": {
                       "type": "number",
-                      "enum": [0, 1],
+                      "enum": [
+                        0,
+                        1
+                      ],
                       "description": "0: Virtual, 1: Physical"
                     },
                     "location": {
@@ -2750,8 +2789,8 @@
                       "items": {
                         "type": "object",
                         "description": "A Network Service",
-                        "properties":{
-                          "nfvo-id":{
+                        "properties": {
+                          "nfvo-id": {
                             "type": "string",
                             "description": "The NFVO that will manage the life cycle of the NS"
                           },
@@ -2765,10 +2804,13 @@
                           },
                           "placement": {
                             "type": "number",
-                            "enum": [0, 1],
+                            "enum": [
+                              0,
+                              1
+                            ],
                             "description": "1: Core, 2: Edge"
                           },
-                          "optional":{
+                          "optional": {
                             "type": "boolean"
                           }
                         }
@@ -2800,7 +2842,7 @@
                             "type": "string",
                             "description": "The location of the PNF"
                           },
-                          "optional":{
+                          "optional": {
                             "type": "boolean"
                           }
                         }
@@ -2833,8 +2875,8 @@
             "items": {
               "type": "object",
               "description": "A Network Service",
-              "properties":{
-                "nfvo-id":{
+              "properties": {
+                "nfvo-id": {
                   "type": "string",
                   "description": "The NFVO that will manage the life cycle of the NS"
                 },
@@ -2848,10 +2890,13 @@
                 },
                 "placement": {
                   "type": "number",
-                  "enum": [0, 1],
+                  "enum": [
+                    0,
+                    1
+                  ],
                   "description": "1: Core, 2: Edge"
                 },
-                "optional":{
+                "optional": {
                   "type": "boolean"
                 },
                 "nsd-info": {
@@ -2923,7 +2968,7 @@
             "type": "object",
             "description": "The data that was sent to WIM",
             "properties": {
-              "slice_sla":{
+              "slice_sla": {
                 "type": "object",
                 "description": "Slice parameteres as defiend in NEST",
                 "properties": {
@@ -2964,14 +3009,14 @@
               "core_connections": {
                 "type": "array",
                 "description": "List of connections that are part of the slice and must be implemented by the WIM",
-                "items":{
+                "items": {
                   "type": "object",
                   "description": "The endpoints of the connections",
                   "properties": {
                     "core": {
                       "type": "object",
                       "description": "The core part of the radio connection",
-                      "properties":{
+                      "properties": {
                         "ns": {
                           "type": "array",
                           "description": "A list of VIMs where the NSs have been instantiated",
@@ -3016,7 +3061,7 @@
                                 "type": "string",
                                 "description": "The location of the PNF"
                               },
-                              "optional":{
+                              "optional": {
                                 "type": "boolean"
                               }
                             }
@@ -3027,7 +3072,7 @@
                     "radio": {
                       "type": "object",
                       "description": "The core part of the radio connection",
-                      "properties":{
+                      "properties": {
                         "ns": {
                           "type": "array",
                           "description": "A list of VIMs where the NSs have been instantiated",
@@ -3072,7 +3117,7 @@
                                 "type": "string",
                                 "description": "The location of the PNF"
                               },
-                              "optional":{
+                              "optional": {
                                 "type": "boolean"
                               }
                             }
@@ -3083,7 +3128,7 @@
                   }
                 }
               },
-              "extra_ns" : {
+              "extra_ns": {
                 "type": "array",
                 "description": "A list of VIMs where the NSs that are not part of the core slice have been instantiated",
                 "items": {
@@ -3157,7 +3202,13 @@
           }
         },
         "description": "A new VIM",
-        "required": ["id", "auth_url", "username", "password", "admin_project_name"]
+        "required": [
+          "id",
+          "auth_url",
+          "username",
+          "password",
+          "admin_project_name"
+        ]
       },
       "nfvo": {
         "type": "object",
@@ -3203,7 +3254,13 @@
           }
         },
         "description": "A new NFVO",
-        "required": ["id", "nfvousername", "nfvopassword", "nfvoip", "tenantname"]
+        "required": [
+          "id",
+          "nfvousername",
+          "nfvopassword",
+          "nfvoip",
+          "tenantname"
+        ]
       },
       "wim": {
         "type": "object",
@@ -3231,7 +3288,11 @@
           }
         },
         "description": "A new WIM",
-        "required": ["id", "url", "type"]
+        "required": [
+          "id",
+          "url",
+          "type"
+        ]
       },
       "ems": {
         "type": "object",
@@ -3259,7 +3320,11 @@
           }
         },
         "description": "A new EMS",
-        "required": ["id", "url", "type"]
+        "required": [
+          "id",
+          "url",
+          "type"
+        ]
       },
       "resources": {
         "type": "object",
@@ -3387,7 +3452,7 @@
                         "type": "string",
                         "description": "The location of the PNF"
                       },
-                      "optional":{
+                      "optional": {
                         "type": "boolean"
                       }
                     }
@@ -3411,7 +3476,7 @@
         "type": "object",
         "description": "A new Policy Management System",
         "properties": {
-          "id":{
+          "id": {
             "type": "string",
             "format": "uuid",
             "description": "Unique id"
@@ -3429,7 +3494,11 @@
             "description": "The type for new Policy Management System"
           }
         },
-        "required": ["id", "url", "type"]
+        "required": [
+          "id",
+          "url",
+          "type"
+        ]
       },
       "net_func": {
         "type": "object",
@@ -3445,12 +3514,18 @@
           },
           "gen": {
             "type": "number",
-            "enum": [4, 5],
-            "description" : "Type of the network function - 4: 4G, 5: 5G"
+            "enum": [
+              4,
+              5
+            ],
+            "description": "Type of the network function - 4: 4G, 5: 5G"
           },
-          "func":{
+          "func": {
             "type": "number",
-            "enum": [0, 1],
+            "enum": [
+              0,
+              1
+            ],
             "description": "0: Core, 1: Radio"
           },
           "shared": {
@@ -3466,11 +3541,16 @@
                 "description": "Max number of slices - If availability is true and max_shared not defined, it will be assumed unlimited availability"
               }
             },
-            "required": ["availability"]
+            "required": [
+              "availability"
+            ]
           },
           "type": {
             "type": "number",
-            "enum": [0, 1],
+            "enum": [
+              0,
+              1
+            ],
             "description": "0: Virtual, 1: Physical"
           },
           "location": {
@@ -3495,7 +3575,7 @@
             "type": "string",
             "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
           },
-          "other_required_functions":{
+          "other_required_functions": {
             "type": "array",
             "description": "A list with the IDs of other functions that are required to be deployed along with this",
             "items": {
@@ -3503,7 +3583,7 @@
               "description": "ID of a network function"
             }
           },
-          "other_supported_functions":{
+          "other_supported_functions": {
             "type": "array",
             "description": "A list with the IDs of other functions that can be deployed along with this",
             "items": {
@@ -3512,13 +3592,20 @@
             }
           }
         },
-        "required": ["id", "gen", "func", "shared", "type", "location"]
+        "required": [
+          "id",
+          "gen",
+          "func",
+          "shared",
+          "type",
+          "location"
+        ]
       },
       "ns": {
         "type": "object",
         "description": "A Network Service",
-        "properties":{
-          "nfvo-id":{
+        "properties": {
+          "nfvo-id": {
             "type": "string",
             "description": "The NFVO that will manage the life cycle of the NS"
           },
@@ -3532,10 +3619,13 @@
           },
           "placement": {
             "type": "number",
-            "enum": [0, 1],
+            "enum": [
+              0,
+              1
+            ],
             "description": "1: Core, 2: Edge"
           },
-          "optional":{
+          "optional": {
             "type": "boolean"
           }
         }
@@ -3563,7 +3653,7 @@
             "type": "string",
             "description": "The location of the PNF"
           },
-          "optional":{
+          "optional": {
             "type": "boolean"
           }
         }

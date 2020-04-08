@@ -106,7 +106,7 @@ def add(file):
     Add new slice
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/slice"
     r = None
@@ -157,7 +157,7 @@ def update(file, id):
     Update slice
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/slice/" + id
     r = None

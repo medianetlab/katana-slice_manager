@@ -80,7 +80,7 @@ def add(file):
     Add new EMS
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/ems"
     r = None
@@ -131,7 +131,7 @@ def update(file, id):
     Update EMS
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/ems/" + id
     r = None

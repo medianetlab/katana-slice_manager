@@ -81,7 +81,7 @@ def add(file):
     Add new WIM
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/wim"
     r = None
@@ -132,7 +132,7 @@ def update(file, id):
     Update WIM
     """
     with open(file, "r") as stream:
-        data = yaml.load(stream)
+        data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/wim/" + id
     r = None

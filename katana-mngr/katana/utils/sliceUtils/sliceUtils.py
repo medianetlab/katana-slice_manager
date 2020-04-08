@@ -1,5 +1,5 @@
 from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.osmUtils import osmUtils
+from katana.shared_utils.nfvoUtils import osmUtils
 import pickle
 import time
 import logging
@@ -116,6 +116,12 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
                 "ns_list": [new_ns["ns-name"]],
                 "nfvo_list": [new_ns["nfvo-id"]],
             }
+        resources = vim_dict[selected_vim].get(
+            "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
+        )
+        for key in resources:
+            resources[key] += nsd["flavor"][key]
+        vim_dict[selected_vim]["resources"] = resources
         new_ns["placement_loc"]["vim"] = selected_vim
         # 0) Create an uuid for the ns
         new_ns["ns-id"] = str(uuid.uuid4())
@@ -224,12 +230,19 @@ def add_slice(nest_req):
         tenant_project_description = "vim_{0}_katana_{1}".format(num, nest["_id"])
         tenant_project_user = "vim_{0}_katana_{1}".format(num, nest["_id"])
         tenant_project_password = "password"
+        # If the vim is Openstack type, set quotas
+        quotas = (
+            vim_info["resources"]
+            if target_vim["type"] == "openstack" or target_vim["type"] == "Openstack"
+            else None
+        )
         ids = target_vim_obj.create_slice_prerequisites(
             tenant_project_name,
             tenant_project_description,
             tenant_project_user,
             tenant_project_password,
             nest["_id"],
+            quotas=quotas,
         )
         # Register the tenant to the mongo db
         target_vim["tenants"][nest["_id"]] = tenant_project_name
@@ -269,7 +282,7 @@ def add_slice(nest_req):
     else:
         wan_start_time = time.time()
         # Crate the data for the WIM
-        wim_data = {"core_connections": [], "extra_ns": []}
+        wim_data = {"core_connections": [], "extra_ns": [], "slice_sla": {}}
         # i) Create the slice_sla data for the WIM
         wim_data["slice_sla"] = {
             "network_DL_throughput": nest["network_DL_throughput"],
@@ -328,7 +341,7 @@ def add_slice(nest_req):
     ns_inst_info = {}
     nest["deployment_time"]["NS_Deployment_Time"] = {}
     for ns in total_ns_list:
-        ns_start_time = time.time()
+        ns["start_time"] = time.time()
         ns_inst_info[ns["ns-id"]] = {}
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
@@ -351,7 +364,7 @@ def add_slice(nest_req):
             time.sleep(10)
             insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
         nest["deployment_time"]["NS_Deployment_Time"][ns["ns-name"]] = format(
-            time.time() - ns_start_time, ".4f"
+            time.time() - ns["start_time"], ".4f"
         )
         # Get the IPs of the instantiated NS
         vnf_list = []
@@ -433,11 +446,11 @@ def add_slice(nest_req):
             # Send the message
             for imessage in ems_message:
                 target_ems_obj.conf_radio(imessage)
+            nest["conf_comp"]["ems"].append(ems_id)
         nest["ems_data"] = ems_messages
         nest["deployment_time"]["Radio_Configuration_Time"] = format(
             time.time() - radio_start_time, ".4f"
         )
-        nest["conf_comp"]["ems"].append(ems_id)
 
     # *** STEP-4: Finalize ***
     logger.info("Status: Running")

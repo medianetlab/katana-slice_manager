@@ -1,13 +1,13 @@
-import openstack
 import functools
+import logging
+from logging import handlers
 from multiprocessing import Process
 
-# openstack.enable_logging(debug=True)
-import logging
+import openstack
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
-file_handler = logging.handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
+file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 stream_formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -209,20 +209,19 @@ class Openstack:
             except openstack.exceptions.ResourceNotFound as e:
                 logger.exception("Failed. Security group trying to delete, doesn'texist", e)
 
-    def set_quotas(self, conn, name, **kwargs):
+    def set_quotas(self, conn, name, quotas):
         """
-        Sets the quotas of the user
+        Sets the quotas of the tenant
         """
+        kwargs = {}
+        kwargs["ram"] = round((quotas["memory-mb"] + 200) / 100) * 100
+        kwargs["cores"] = quotas["vcpu-count"]
+        kwargs["instances"] = quotas["instances"]
+
         try:
             conn.set_compute_quotas(name_or_id=name, **kwargs)
         except (openstack.exceptions.BadRequestException, TypeError) as e:
             logger.exception("Bad set quota request was made. Quotas didn't change", e)
-        # example of quotas_list
-        # quotas_list = {'injected_file_content_bytes': 10240, 'metadata_items': 128, 'server_group_members': 10, 'server_groups': 10, 'ram': 51200, 'floating_ips': 13, 'key_pairs': 100,
-        #       'instances': 18, 'security_group_rules': 20, 'cores': 25, 'fixed_ips': -1, 'injected_file_path_bytes': 255, 'security_groups': 10}
-        # new_quotas = conn.get_compute_quotas(name_or_id='test3')
-        # logger.debug(new_quotas)
-        # return (new_quotas)
 
     def create_slice_prerequisites(
         self,
@@ -231,6 +230,7 @@ class Openstack:
         tenant_project_user,
         tenant_project_password,
         slice_uuid,
+        quotas=None,
     ):
         """
         Creates the tenant (project, user, security_group) on the specivied vim
@@ -255,6 +255,9 @@ class Openstack:
 
         # creates the security group and rules
         sec_group = self.create_sec_group(conn, tenant_project_name, project)
+
+        if quotas:
+            self.set_quotas(conn, project.name, quotas)
         return {
             "sliceProjectName": project.name,
             "sliceUserName": user.name,
