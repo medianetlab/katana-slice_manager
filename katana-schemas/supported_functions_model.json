@@ -1,12 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-
   "definitions": {
     "ns": {
       "type": "object",
       "description": "A Network Service",
-      "properties":{
-        "nfvo-id":{
+      "properties": {
+        "nfvo-id": {
           "type": "string",
           "description": "The NFVO that will manage the life cycle of the NS"
         },
@@ -20,10 +19,13 @@
         },
         "placement": {
           "type": "number",
-          "enum": [0, 1],
+          "enum": [
+            0,
+            1
+          ],
           "description": "1: Core, 2: Edge"
         },
-        "optional":{
+        "optional": {
           "type": "boolean"
         }
       }
@@ -47,17 +49,20 @@
           "type": "string",
           "description": "The management IP of the PNF"
         },
+        "ip_s1": {
+          "type": "string",
+          "description": "Optional - The IP of the S1 Interface"
+        },
         "location": {
           "type": "string",
           "description": "The location of the PNF"
         },
-        "optional":{
+        "optional": {
           "type": "boolean"
         }
       }
     }
   },
-
   "type": "object",
   "description": "A core slice network function",
   "properties": {
@@ -71,12 +76,18 @@
     },
     "gen": {
       "type": "number",
-      "enum": [4, 5],
-      "description" : "Type of the network function - 4: 4G, 5: 5G"
+      "enum": [
+        4,
+        5
+      ],
+      "description": "Type of the network function - 4: 4G, 5: 5G"
     },
-    "func":{
+    "func": {
       "type": "number",
-      "enum": [0, 1],
+      "enum": [
+        0,
+        1
+      ],
       "description": "0: Core, 1: Radio"
     },
     "shared": {
@@ -92,11 +103,16 @@
           "description": "Max number of slices - If availability is true and max_shared not defined, it will be assumed unlimited availability"
         }
       },
-      "required": ["availability"]
+      "required": [
+        "availability"
+      ]
     },
     "type": {
       "type": "number",
-      "enum": [0, 1],
+      "enum": [
+        0,
+        1
+      ],
       "description": "0: Virtual, 1: Physical"
     },
     "location": {
@@ -122,5 +138,12 @@
       "description": "Optional - Defines the EMS that is responsible for D1&2 configuration"
     }
   },
-  "required": ["id", "gen", "func", "shared", "type", "location"]
+  "required": [
+    "id",
+    "gen",
+    "func",
+    "shared",
+    "type",
+    "location"
+  ]
 }
