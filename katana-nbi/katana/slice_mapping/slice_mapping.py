@@ -55,7 +55,7 @@ def calc_find_data(gen, location, func):
     if gen == 5:
         return {"location": location, "gen": 5, "func": func}
     else:
-        return {"location": location, "gen": 5, "func": func}
+        return {"location": location, "gen": 4, "func": func}
 
 
 def nest_mapping(req):
