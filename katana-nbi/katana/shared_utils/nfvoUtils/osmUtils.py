@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 import uuid
+import traceback
 
 import pymongo
 import requests
@@ -245,23 +246,27 @@ class Osm:
                 osm_vnfd_list = response.json()
                 new_vnfd = {}
                 for osm_vnfd in osm_vnfd_list:
-                    new_vnfd["vnfd-id"] = osm_vnfd["_id"]
-                    new_vnfd["name"] = osm_vnfd["id"]
-                    new_vnfd["flavor"] = {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0}
-                    instances = 0
-                    for vdu in osm_vnfd["vdu"]:
-                        for key in new_vnfd["flavor"]:
-                            new_vnfd["flavor"][key] += int(vdu["vm-flavor"][key])
-                        instances += 1
-                    new_vnfd["flavor"]["instances"] = instances
-                    new_vnfd["mgmt"] = osm_vnfd["mgmt-interface"]["cp"]
-                    new_vnfd["nfvo_id"] = self.nfvo_id
-                    new_vnfd["_id"] = str(uuid.uuid4())
-                    try:
-                        mongoUtils.add("vnfd", new_vnfd)
-                    except pymongo.errors.DuplicateKeyError:
-                        continue
-                    new_vnfd = {}
+                    if all(key in osm_vnfd for key in ("id", "_id", "mgmt-interface", "vdu")):
+                        logger.info("VNFD_List_element")
+                        logger.info(osm_vnfd)
+                        new_vnfd["vnfd-id"] = osm_vnfd["_id"]
+                        new_vnfd["name"] = osm_vnfd["id"]
+                        new_vnfd["flavor"] = {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0}
+                        instances = 0
+                        for vdu in osm_vnfd["vdu"]:
+                            if 'vm-flavor' in vdu.keys():
+                                for key in new_vnfd["flavor"]:
+                                    new_vnfd["flavor"][key] += int(vdu["vm-flavor"][key])
+                                instances += 1
+                        new_vnfd["flavor"]["instances"] = instances
+                        new_vnfd["mgmt"] = osm_vnfd["mgmt-interface"]["cp"]
+                        new_vnfd["nfvo_id"] = self.nfvo_id
+                        new_vnfd["_id"] = str(uuid.uuid4())
+                        try:
+                            mongoUtils.add("vnfd", new_vnfd)
+                        except pymongo.errors.DuplicateKeyError:
+                            continue
+                        new_vnfd = {}
                 break
             else:
                 self.getToken()

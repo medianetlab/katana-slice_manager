@@ -110,7 +110,10 @@ class NFVOView(FlaskView):
                     return f"NFVO with id {nfvo_id} already exists", 400
                 mongoUtils.add("nfvo_obj", obj_json)
                 # Get information regarding VNFDs and NSDs
-                osmUtils.bootstrapNfvo(osm)
+                try:
+                    osmUtils.bootstrapNfvo(osm)
+                except:
+                    return f"Failed to Bootstrap OSM", 400
                 return f"Created {new_uuid}", 201
         else:
             response = dumps({"error": "This type nfvo is not supported"})
