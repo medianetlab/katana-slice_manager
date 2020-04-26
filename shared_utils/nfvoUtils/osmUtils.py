@@ -1,7 +1,6 @@
 import logging
 import logging.handlers
 import uuid
-import traceback
 
 import pymongo
 import requests
