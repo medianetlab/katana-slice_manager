@@ -169,6 +169,6 @@ cli.add_command(update)
 
 
 def console_formatter(uuid, func_id, gen, func, _type, loc, created_at):
-    return "{0: <40}{1: <20}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}".format(
+    return "{0: <40}{1: <30}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}".format(
         uuid, func_id, gen, func, _type, loc, created_at
     )
