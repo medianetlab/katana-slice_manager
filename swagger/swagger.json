@@ -10,7 +10,7 @@
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "2.2.0"
+    "version": "2.2.2"
   },
   "servers": [
     {
@@ -2838,6 +2838,10 @@
                             "type": "string",
                             "description": "The management IP of the PNF"
                           },
+                          "ip_s1": {
+                            "type": "string",
+                            "description": "Optional - The IP of the S1 Interface"
+                          },
                           "location": {
                             "type": "string",
                             "description": "The location of the PNF"
@@ -3057,6 +3061,10 @@
                                 "type": "string",
                                 "description": "The management IP of the PNF"
                               },
+                              "ip_s1": {
+                                "type": "string",
+                                "description": "Optional - The IP of the S1 Interface"
+                              },
                               "location": {
                                 "type": "string",
                                 "description": "The location of the PNF"
@@ -3112,6 +3120,10 @@
                               "ip": {
                                 "type": "string",
                                 "description": "The management IP of the PNF"
+                              },
+                              "ip_s1": {
+                                "type": "string",
+                                "description": "Optional - The IP of the S1 Interface"
                               },
                               "location": {
                                 "type": "string",
@@ -3448,6 +3460,10 @@
                         "type": "string",
                         "description": "The management IP of the PNF"
                       },
+                      "ip_s1": {
+                        "type": "string",
+                        "description": "Optional - The IP of the S1 Interface"
+                      },
                       "location": {
                         "type": "string",
                         "description": "The location of the PNF"
@@ -3648,6 +3664,10 @@
           "ip": {
             "type": "string",
             "description": "The management IP of the PNF"
+          },
+          "ip_s1": {
+            "type": "string",
+            "description": "Optional - The IP of the S1 Interface"
           },
           "location": {
             "type": "string",
