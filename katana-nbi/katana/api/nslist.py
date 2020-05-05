@@ -35,7 +35,7 @@ class NslistView(FlaskView):
         nfvo_obj_list = list(mongoUtils.find_all("nfvo_obj"))
         for infvo in nfvo_obj_list:
             nfvo = pickle.loads(infvo["obj"])
-            osmUtils.bootstrapNfvo(nfvo)
+            nfvo.bootstrapNfvo()
 
         # Return the list
         ns_list = mongoUtils.find_all("nsd")

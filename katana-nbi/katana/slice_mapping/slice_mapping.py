@@ -52,6 +52,10 @@ TEST_DES_LIST = ("probe_list",)
 
 # Calculate the Required generation
 def calc_find_data(gen, location, func):
+    """
+    Calculate the Required radio service generation (4G or 5G) and return a dictionary
+    with all the information
+    """
     if gen == 5:
         return {"location": location, "gen": 5, "func": func}
     else:

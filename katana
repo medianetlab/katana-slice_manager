@@ -15,10 +15,16 @@ case $key in
     dock_copy=true
     ;;
     logs)
+    if [[ $2 == "-l" ]] || [[ $2 == "--limit" ]];
+    then
+    limit=$3
+    else
+    limit="all"
+    fi
     printf "\n\t\t\t%s\n\t\t\t%s\n\t\t\t%s\n" "+----------------------------+" "|      katana-mngr logs      |" "+----------------------------+"
-    docker logs katana-mngr
+    docker logs --tail $limit katana-mngr
     printf "\n\t\t\t%s\n\t\t\t%s\n\t\t\t%s\n" "+---------------------------+" "|      katana-nbi logs      |" "+---------------------------+"
-    docker logs katana-nbi
+    docker logs --tail $limit katana-nbi
     printf "\n"
     exit 0
     ;;

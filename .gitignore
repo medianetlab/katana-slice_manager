@@ -130,6 +130,7 @@ zk-kafka/
 .vscode
 pyright*
 dev/
+dev_shared_utils/
 
 # log files
 *.log.*

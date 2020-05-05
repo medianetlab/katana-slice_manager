@@ -15,12 +15,7 @@ docker image rm python:3.7.4-slim
 docker image rm mongo:4.0.5
 docker image rm confluentinc/cp-zookeeper:5.3.2
 docker image rm confluentinc/cp-enterprise-kafka:5.3.2
+docker image prune -y
 
 # Remove katana commands
 rm /usr/local/bin/katana
-
-# Remove the shared_utils from katana-nbi and katana-mngr containers
-for file in $(ls shared_utils/) ; do
-    rm -rf katana-mngr/katana/utils/$file
-    rm -rf katana-nbi/katana/utils/$file
-done

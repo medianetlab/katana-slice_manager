@@ -110,7 +110,7 @@ class NFVOView(FlaskView):
                     return f"NFVO with id {nfvo_id} already exists", 400
                 mongoUtils.add("nfvo_obj", obj_json)
                 # Get information regarding VNFDs and NSDs
-                osmUtils.bootstrapNfvo(osm)
+                osm.bootstrapNfvo()
                 return f"Created {new_uuid}", 201
         else:
             response = dumps({"error": "This type nfvo is not supported"})
@@ -196,7 +196,7 @@ class NFVOView(FlaskView):
                         return f"NFVO with id {nfvo_id} already exists", 400
                     mongoUtils.add("nfvo_obj", obj_json)
                     # Get information regarding VNFDs and NSDs
-                    osmUtils.bootstrapNfvo(osm)
+                    osm.bootstrapNfvo()
             else:
                 response = dumps({"error": "This type nfvo is not supported"})
                 return response, 400

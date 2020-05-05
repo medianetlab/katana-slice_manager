@@ -79,7 +79,7 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
                 logger.error("There is no NFVO with id {}".format(new_ns["nfvo-id"]))
                 return 1, []
             nfvo = pickle.loads(nfvo_obj_json["obj"])
-            osmUtils.bootstrapNfvo(nfvo)
+            nfvo.bootstrapNfvo()
             nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"], "nfvo_id": new_ns["nfvo-id"]})
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)

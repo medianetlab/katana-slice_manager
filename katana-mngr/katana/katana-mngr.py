@@ -1,7 +1,8 @@
-from katana.utils.sliceUtils import sliceUtils
-from katana.shared_utils.kafkaUtils import kafkaUtils
 import logging
 import logging.handlers
+
+from katana.shared_utils.kafkaUtils import kafkaUtils
+from katana.utils.sliceUtils import sliceUtils
 
 
 # Logging Parameters
