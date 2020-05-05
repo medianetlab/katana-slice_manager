@@ -20,25 +20,6 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-def bootstrapNfvo(nfvo_obj):
-    """
-    Reads info from NSDs/VNFDs in the NFVO and stores them in mongodb
-    """
-    nfvo_obj.readVnfd()
-    nfvo_obj.readNsd()
-
-
-def select_OSM(id=None):
-    """
-    Selects a registered OSM instance from the DB and returns it
-    """
-    if id is None:
-        # Assume that there is only one OSM registered
-        nfvo_list = list(mongoUtils.index("nfvo"))
-        nfvo = nfvo_list[0]
-        return nfvo
-
-
 class Osm:
     """
     Class implementing the communication API with OSM
@@ -229,6 +210,13 @@ class Osm:
             else:
                 self.getToken()
 
+    def bootstrapNfvo(self):
+        """
+        Reads info from NSDs/VNFDs in the NFVO and stores them in mongodb
+        """
+        self.readVnfd()
+        self.readNsd()
+
     def readVnfd(self):
         """
         Reads and returns required information from nsd/vnfd
@@ -246,14 +234,12 @@ class Osm:
                 new_vnfd = {}
                 for osm_vnfd in osm_vnfd_list:
                     if all(key in osm_vnfd for key in ("id", "_id", "mgmt-interface", "vdu")):
-                        logger.info("VNFD_List_element")
-                        logger.info(osm_vnfd)
                         new_vnfd["vnfd-id"] = osm_vnfd["_id"]
                         new_vnfd["name"] = osm_vnfd["id"]
                         new_vnfd["flavor"] = {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0}
                         instances = 0
                         for vdu in osm_vnfd["vdu"]:
-                            if 'vm-flavor' in vdu.keys():
+                            if "vm-flavor" in vdu.keys():
                                 for key in new_vnfd["flavor"]:
                                     new_vnfd["flavor"][key] += int(vdu["vm-flavor"][key])
                                 instances += 1

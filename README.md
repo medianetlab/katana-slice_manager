@@ -25,17 +25,27 @@ sudo ./install.sh
 
 ### Start
 
-Start katana Slice Manager service without the web UI module, run:
+Start katana Slice Manager service without the web UI module:
 
 ```bash
 ./start.sh
 ```
 
-Start katana Slice Manager service and the web UI module, run:
+Start katana Slice Manager service and the web UI module:
 
 ```bash
 ./start-ui.sh
 ```
+
+### Logs
+
+Get the logs of katana-mngr and katana-nbi modules:
+
+```bash
+katana logs [-l | --limit N]
+```
+
+> limit option will show limited number of lines from the end of the logs (default "all")
 
 ### Stop
 
