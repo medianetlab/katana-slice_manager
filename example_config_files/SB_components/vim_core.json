@@ -10,6 +10,6 @@
   "version": "Queens",
   "description": "Core VIM - MNL Cloud",
   "config": {
-      "security_groups": "TBD"
-  },
+    "security_groups": "TBD"
+  }
 }

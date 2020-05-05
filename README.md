@@ -12,7 +12,7 @@ Katana Slice Manager is based on a highly modular architecture, built as a mess 
 
 ## Features
 
-- Start, Stop. Inspect End-to-End Network SLices
+- Start, Stop, Inspect End-to-End Network SLices
 - OpenAPIs supported by Swagger-io tool
 - Modular architecture for supporting different infrastructure technologies
 - Lightweight web UI

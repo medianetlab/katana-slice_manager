@@ -6,7 +6,7 @@
   "nfvopassword": "******",
   "tenantname": "******",
   "type": "OSM",
-  "version": "6",
+  "version": "5",
   "description": "NCSRD OSM Release 5",
   "config": {}
 }
