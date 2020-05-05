@@ -10,6 +10,15 @@ Katana Slice Manager is a central software component responsible for controlling
 
 Katana Slice Manager is based on a highly modular architecture, built as a mess of microservices, each of whom is running on a docker container. The key advantages of this architectural approach are that it offers simplicity in building and maintaining applications, flexibility and scalability, while the containerized approach makes the applications independent of the underlying system.
 
+## Features
+
+- Start, Stop. Inspect End-to-End Network SLices
+- OpenAPIs supported by Swagger-io tool
+- Modular architecture for supporting different infrastructure technologies
+- Lightweight web UI
+- Integrated CLI tool
+- Slice Deployment and Configuration measurements
+
 ## Quick Start
 
 ### Requirements
