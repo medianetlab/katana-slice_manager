@@ -1,8 +1,8 @@
 import os
 import click
 
-cmd_folder = os.path.join(os.path.dirname(__file__), 'commands')
-cmd_prefix = 'cmd_'
+cmd_folder = os.path.join(os.path.dirname(__file__), "commands")
+cmd_prefix = "cmd_"
 
 
 class CLI(click.MultiCommand):
@@ -16,7 +16,7 @@ class CLI(click.MultiCommand):
         commands = []
 
         for filename in os.listdir(cmd_folder):
-            if filename.endswith('.py') and filename.startswith(cmd_prefix):
+            if filename.endswith(".py") and filename.startswith(cmd_prefix):
                 commands.append(filename[4:-3])
 
         commands.sort()
@@ -33,13 +33,19 @@ class CLI(click.MultiCommand):
         """
         ns = {}
 
-        filename = os.path.join(cmd_folder, cmd_prefix + name + '.py')
+        filename = os.path.join(cmd_folder, cmd_prefix + name + ".py")
 
-        with open(filename) as f:
-            code = compile(f.read(), filename, 'exec')
+        try:
+            f = open(filename)
+        except FileNotFoundError:
+            raise click.ClickException(
+                f"Wrong command: {name} \nAvailable commands: {self.list_commands(ctx)}"
+            )
+        with f:
+            code = compile(f.read(), filename, "exec")
             eval(code, ns, ns)
 
-        return ns['cli']
+        return ns["cli"]
 
 
 @click.command(cls=CLI)
