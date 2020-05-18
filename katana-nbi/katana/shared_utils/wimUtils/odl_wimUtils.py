@@ -4,6 +4,8 @@ from logging import handlers
 
 import requests
 
+from katana.shared_utils.kafkaUtils import kafkaUtils
+
 # Logging Parameters
 logger = logging.getLogger(__name__)
 file_handler = handlers.RotatingFileHandler("katana.log", maxBytes=10000, backupCount=5)
@@ -28,50 +30,34 @@ class Wim:
         """
         self.url = url
 
-    def register_vim(self, vim):
-        """
-        Register the added vim to the wim
-        """
-        wim_url = self.url
-        api_prefix = "/api/addvim"
-        url = wim_url + api_prefix
-        data = vim
-        r = None
-        try:
-            r = requests.post(url, json=json.loads(json.dumps(data)), timeout=10)
-            logger.info(r.json())
-            r.raise_for_status()
-        except requests.exceptions.HTTPError as errh:
-            logger.exception("Http Error:", errh)
-        except requests.exceptions.ConnectionError as errc:
-            logger.exception("Error Connecting:", errc)
-        except requests.exceptions.Timeout as errt:
-            logger.exception("Timeout Error:", errt)
-        except requests.exceptions.RequestException as err:
-            logger.exception("Error:", err)
-
     def create_slice(self, wsd):
         """
         Create the transport network slice
         """
-        wim_url = self.url
-        api_prefix = "/api/sm"
-        url = wim_url + api_prefix
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        data = wsd
-        r = None
-        try:
-            r = requests.post(url, headers=headers, json=json.loads(json.dumps(data)), timeout=10)
-            logger.info(r.json())
-            r.raise_for_status()
-        except requests.exceptions.HTTPError as errh:
-            logger.exception("Http Error:", errh)
-        except requests.exceptions.ConnectionError as errc:
-            logger.exception("Error Connecting:", errc)
-        except requests.exceptions.Timeout as errt:
-            logger.exception("Timeout Error:", errt)
-        except requests.exceptions.RequestException as err:
-            logger.exception("Error:", err)
+        # wim_url = self.url
+        # api_prefix = "/api/sm"
+        # url = wim_url + api_prefix
+        # headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        # data = wsd
+        # r = None
+        # try:
+        #     r = requests.post(url, headers=headers, json=json.loads(json.dumps(data)), timeout=10)
+        #     logger.info(r.json())
+        #     r.raise_for_status()
+        # except requests.exceptions.HTTPError as errh:
+        #     logger.exception("Http Error:", errh)
+        # except requests.exceptions.ConnectionError as errc:
+        #     logger.exception("Error Connecting:", errc)
+        # except requests.exceptions.Timeout as errt:
+        #     logger.exception("Timeout Error:", errt)
+        # except requests.exceptions.RequestException as err:
+        #     logger.exception("Error:", err)
+        wim_message = {"action": "create", "data": wsd}
+
+        # Create the kafka producer
+        bootstrap_servers = [f"{self.url}:9092"]
+        producer = kafkaUtils.create_producer(bootstrap_servers=bootstrap_servers)
+        producer.send("wan-slice", value=wim_message)
 
     def del_slice(self, wsd):
         """

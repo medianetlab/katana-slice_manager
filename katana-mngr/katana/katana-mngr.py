@@ -18,10 +18,10 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 # Create Kafka topic
-kafkaUtils.create_topic()
+kafkaUtils.create_topic("slice")
 
 # Create the Kafka Consumer
-consumer = kafkaUtils.create_consumer()
+consumer = kafkaUtils.create_consumer("slice")
 
 # Check for new messages
 for message in consumer:

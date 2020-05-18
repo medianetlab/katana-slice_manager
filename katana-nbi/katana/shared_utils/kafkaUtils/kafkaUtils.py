@@ -21,22 +21,23 @@ logger.addHandler(stream_handler)
 consumer, producer, topic = None, None, None
 
 
-def create_consumer():
+def create_consumer(topic_name, bootstrap_servers=None):
     global consumer
 
+    bootstrap_servers = bootstrap_servers or ["kafka:19092"]
     # Create the kafka consumer
     tries = 30
     exit = False
     while not exit:
         try:
             consumer = KafkaConsumer(
-                "slice",
-                bootstrap_servers=["kafka:19092"],
+                topic_name,
+                bootstrap_servers=bootstrap_servers,
                 auto_offset_reset="earliest",
                 enable_auto_commit=True,
                 auto_commit_interval_ms=10000,
                 group_id="katana-mngr-group",
-                value_deserializer=lambda m: json.loads(m.decode("ascii")),
+                value_deserializer=lambda m: json.loads(m.decode("utf-8")),
             )
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
@@ -52,17 +53,18 @@ def create_consumer():
     return consumer
 
 
-def create_producer():
+def create_producer(bootstrap_servers=None):
     global producer
 
+    bootstrap_servers = bootstrap_servers or ["kafka:19092"]
     # Create the kafka producer
     tries = 30
     exit = False
     while not exit:
         try:
             producer = KafkaProducer(
-                bootstrap_servers=["kafka:19092"],
-                value_serializer=lambda m: json.dumps(m).encode("ascii"),
+                bootstrap_servers=bootstrap_servers,
+                value_serializer=lambda m: json.dumps(m).encode("utf-8"),
             )
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
@@ -78,17 +80,18 @@ def create_producer():
     return producer
 
 
-def create_topic():
+def create_topic(topic_name, bootstrap_servers=None):
     global topic
 
+    bootstrap_servers = bootstrap_servers or ["kafka:19092"]
     # Create the kafka topic
     tries = 30
     exit = False
     while not exit:
         try:
             try:
-                topic = admin.NewTopic(name="slice", num_partitions=1, replication_factor=1)
-                broker = KafkaAdminClient(bootstrap_servers="kafka:19092")
+                topic = admin.NewTopic(name=topic_name, num_partitions=1, replication_factor=1)
+                broker = KafkaAdminClient(bootstrap_servers=bootstrap_servers)
                 broker.create_topics([topic])
             except errors.TopicAlreadyExistsError:
                 logger.warning("Topic exists already")
