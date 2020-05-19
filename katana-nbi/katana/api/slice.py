@@ -103,7 +103,7 @@ class SliceView(FlaskView):
         else:
             # Send the message to katana-mngr
             producer = kafkaUtils.create_producer()
-            slice_message = {"action": "delete", "message": delete_json}
+            slice_message = {"action": "delete", "message": uuid}
             producer.send("slice", value=slice_message)
             return "Deleting {0}".format(uuid), 200
 
