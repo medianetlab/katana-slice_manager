@@ -451,7 +451,7 @@ def add_slice(nest_req):
     mongoUtils.update("slice", nest["_id"], nest)
 
 
-def delete_slice(slice_id):
+def delete_slice(slice_id, force=False):
     """
     Deletes the given network slice
     """
@@ -488,8 +488,12 @@ def delete_slice(slice_id):
             target_wim_id = target_wim["id"]
             target_wim_obj = pickle.loads(mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
             target_wim_obj.del_slice(wim_data)
-            del target_wim["slices"][slice_json["_id"]]
-            mongoUtils.update("wim", target_wim["_id"], target_wim)
+            try:
+                del target_wim["slices"][slice_json["_id"]]
+            except KeyError:
+                logger.warning(f"Slice {slice_id} not in WIM {target_wim_id}")
+            else:
+                mongoUtils.update("wim", target_wim["_id"], target_wim)
         else:
             err = "Cannot find WIM - WAN Slice will not be deleted"
             logger.warning(err)
@@ -548,8 +552,12 @@ def delete_slice(slice_id):
                 target_nfvo_obj.deleteVim(vim_account)
                 target_nfvo["tenants"][slice_json["_id"]].remove(vim_account)
                 if len(target_nfvo["tenants"][slice_json["_id"]]) == 0:
-                    del target_nfvo["tenants"][slice_json["_id"]]
-                mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+                    try:
+                        del target_nfvo["tenants"][slice_json["_id"]]
+                    except KeyError:
+                        logger.warning(f"Slice {slice_id} not in NFO {nfvo}")
+                    else:
+                        mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
             # Delete the tenants from every vim
             if vim not in vim_error_list:
                 # Get the VIM
@@ -559,8 +567,12 @@ def delete_slice(slice_id):
                     continue
                 target_vim_obj = pickle.loads(mongoUtils.find("vim_obj", {"id": vim})["obj"])
                 target_vim_obj.delete_proj_user(target_vim["tenants"][slice_json["_id"]])
-                del target_vim["tenants"][slice_json["_id"]]
-                mongoUtils.update("vim", target_vim["_id"], target_vim)
+                try:
+                    del target_vim["tenants"][slice_json["_id"]]
+                except KeyError:
+                    logger.warning(f"Slice {slice_id} not in VIM {vim}")
+                else:
+                    mongoUtils.update("vim", target_vim["_id"], target_vim)
         except KeyError as e:
             err = f"Error, not all tenants created or removed correctly {e}"
             logger.warning(err)
@@ -570,9 +582,15 @@ def delete_slice(slice_id):
 
     if "error" not in slice_json:
         mongoUtils.delete("slice", slice_json["_id"])
+    elif "error" in slice_json and force:
+        mongoUtils.delete("slice", slice_json["_id"])
 
     # Remove Slice from the tenants list on functions
     for func_id in slice_json["functions"]:
         ifunc = mongoUtils.get("func", func_id)
-        ifunc["tenants"].remove(slice_json["_id"])
-        mongoUtils.update("func", func_id, ifunc)
+        try:
+            ifunc["tenants"].remove(slice_json["_id"])
+        except (KeyError, ValueError):
+            logger.warning(f"Slice {slice_id} not in function {func_id}")
+        else:
+            mongoUtils.update("func", func_id, ifunc)

@@ -246,6 +246,14 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

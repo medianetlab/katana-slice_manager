@@ -34,10 +34,13 @@ for message in consumer:
     # Commit the latest received message
     consumer.commit()
     action = message.value["action"]
-    payload = message.value["message"]
     # Add slice
     if action == "add":
+        payload = message.value["message"]
         sliceUtils.add_slice(payload)
     # Delete slice
     elif action == "delete":
-        sliceUtils.delete_slice(payload)
+        payload = message.value["message"]
+        force = message.value["force"]
+        logger.debug(force)
+        sliceUtils.delete_slice(slice_id=payload, force=force)

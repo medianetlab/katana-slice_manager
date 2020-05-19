@@ -127,26 +127,31 @@ def add(file):
 
 
 @click.command()
-@click.argument("id")
-def rm(id):
+@click.argument("id_list", nargs=-1)
+@click.option("--force", required=False, default=False, is_flag=True, help="Force delete a slice")
+def rm(id_list, force):
     """
-    Remove slice
+    Remove slices
     """
-    url = "http://localhost:8000/api/slice/" + id
-    r = None
-    try:
-        r = requests.delete(url, timeout=30)
-        r.raise_for_status()
-        click.echo(r.content)
-    except requests.exceptions.HTTPError as errh:
-        print("Http Error:", errh)
-        click.echo(r.content)
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-    except requests.exceptions.RequestException as err:
-        print("Error:", err)
+    for _id in id_list:
+
+        force_arg = "?force=true" if force else ""
+
+        url = "http://localhost:8000/api/slice/" + _id + force_arg
+        r = None
+        try:
+            r = requests.delete(url, timeout=30)
+            r.raise_for_status()
+            click.echo(r.content)
+        except requests.exceptions.HTTPError as errh:
+            print("Http Error:", errh)
+            click.echo(r.content)
+        except requests.exceptions.ConnectionError as errc:
+            print("Error Connecting:", errc)
+        except requests.exceptions.Timeout as errt:
+            print("Timeout Error:", errt)
+        except requests.exceptions.RequestException as err:
+            print("Error:", err)
 
 
 @click.command()

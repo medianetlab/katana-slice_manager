@@ -97,13 +97,19 @@ class SliceView(FlaskView):
 
         # Check if slice uuid exists
         delete_json = mongoUtils.get("slice", uuid)
+        try:
+            force = request.args["force"]
+        except KeyError:
+            force = None
+        else:
+            force = force if force == "true" else None
 
         if not delete_json:
             return "Error: No such slice: {}".format(uuid), 404
         else:
             # Send the message to katana-mngr
             producer = kafkaUtils.create_producer()
-            slice_message = {"action": "delete", "message": uuid}
+            slice_message = {"action": "delete", "message": uuid, "force": force}
             producer.send("slice", value=slice_message)
             return "Deleting {0}".format(uuid), 200
 
