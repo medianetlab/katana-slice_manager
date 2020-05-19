@@ -80,7 +80,12 @@ def add(file):
     """
     Add new WIM
     """
-    with open(file, "r") as stream:
+    try:
+        stream = open(file, mode="r")
+    except FileNotFoundError:
+        raise click.ClickException(f"Error: File {file} not found")
+
+    with stream:
         data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/wim"
@@ -131,7 +136,12 @@ def update(file, id):
     """
     Update WIM
     """
-    with open(file, "r") as stream:
+    try:
+        stream = open(file, mode="r")
+    except FileNotFoundError:
+        raise click.ClickException(f"Error: File {file} not found")
+
+    with stream:
         data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/wim/" + id

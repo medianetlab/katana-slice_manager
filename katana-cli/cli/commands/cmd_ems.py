@@ -79,7 +79,13 @@ def add(file):
     """
     Add new EMS
     """
-    with open(file, "r") as stream:
+
+    try:
+        stream = open(file, mode="r")
+    except FileNotFoundError:
+        raise click.ClickException(f"Error: File {file} not found")
+
+    with stream:
         data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/ems"
@@ -130,7 +136,12 @@ def update(file, id):
     """
     Update EMS
     """
-    with open(file, "r") as stream:
+    try:
+        stream = open(file, mode="r")
+    except FileNotFoundError:
+        raise click.ClickException(f"Error: File {file} not found")
+
+    with stream:
         data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/ems/" + id
