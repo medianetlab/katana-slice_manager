@@ -10,7 +10,7 @@ services:
       - "mongo-configdb:/data/configdb"
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.3.2
+    image: confluentinc/cp-zookeeper:5.4.2
     container_name: katana-zookeeper
     hostname: zookeeper
     ports:
@@ -21,11 +21,12 @@ services:
         ZOOKEEPER_CLIENT_PORT: 2181
     restart: always
     volumes:
-      - ./zk-kafka/zookeeper/data:/data
-      - ./zk-kafka/zookeeper/datalog:/datalog
+      - zk-data:/var/lib/zookeeper/data
+      - zk-log:/var/lib/zookeeper/log
+      - zk-secrets:/etc/zookeeper/secrets
 
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.3.2
+    image: confluentinc/cp-enterprise-kafka:5.4.2
     container_name: katana-kafka
     hostname: kafka
     ports:
@@ -41,7 +42,8 @@ services:
       KAFKA_CREATE_TOPICS: "slice:1:1"
     restart: always
     volumes:
-      - ./zk-kafka/kafka/data:/var/lib/kafka/data
+      - kafka-data:/var/lib/kafka/data
+      - kafka-secrets:/etc/kafka/secrets
     depends_on:
       - zookeeper
 
@@ -144,21 +146,12 @@ services:
       - katana-mngr
       - postgres
 
-  # nginx reverse-proxy
-  #
-  # katana-nginx: 
-  #   image: nginx:1.17-alpine
-  #   container_name: katana-nginx
-  #   depends_on:
-  #     - "katana-mngr"
-  #     - "katana-ui"
-  #   volumes:
-  #     - ./katana-nginx/nginx.conf:/etc/nginx/nginx.conf
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-
 volumes:
   mongo-datadb: {}
   mongo-configdb: {}
   postgres: {}
+  zk-data: {}
+  zk-log: {}
+  zk-secrets: {}
+  kafka-data: {}
+  kafka-secrets: {}
