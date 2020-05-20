@@ -74,7 +74,7 @@ def add(file):
     try:
         stream = open(file, mode="r")
     except FileNotFoundError:
-        raise click.ClickException(f"Error: File {file} not found")
+        raise click.ClickException(f"File {file} not found")
 
     with stream:
         data = yaml.safe_load(stream)
