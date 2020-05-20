@@ -4,7 +4,23 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.3] - 05/04/2020
+## [2.2.4] - 20/05/2020
+
+### Added
+
+- katana CLI: Delete multiple slices with a single command
+- katana CLI: --force option for Errored slices
+- Expose Kafka and swagger to external components
+
+### Changed
+
+- Improved Slice Termination process
+- Improved Binary files for start, stop
+- Katana CLI: More accurate error messages
+- Bug fixed on Slice Termination process
+- ODL-WIM Plugin: Send messages using Kafka
+
+## [2.2.3] - 04/05/2020
 
 ### Added
 

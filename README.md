@@ -8,7 +8,7 @@ Network slicing is a 5G cutting edge technology, that enables the creation of mu
 
 Katana Slice Manager is a central software component responsible for controlling all the devices comprising the network, providing an interface for creating, modifying, monitoring and deleting slices. Through the NBI, Katana interacts with a coordination layer or directly with the network operator. It receives the Network Slice Template (NEST) for creating network slices and provides the API for managing and monitoring them. Through the South Bound Interface (SBI), it talks to the components of the Management and Orchestration Layer (MANO), namely the NFV Orchestrator (NFVO), the Virtual Infrastructure Manager (VIM), the Element Management System (EMS) and the WAN Infrastructure Management (WIM), in order to manage the functions in the network and perform CRUD operations on End-to-End network slices.
 
-Katana Slice Manager is based on a highly modular architecture, built as a mess of microservices, each of whom is running on a docker container. The key advantages of this architectural approach are that it offers simplicity in building and maintaining applications, flexibility and scalability, while the containerized approach makes the applications independent of the underlying system.
+Katana Slice Manager is based on a highly modular architecture, built as a mess of microservices, each of which is running on a docker container. The key advantages of this architectural approach are that it offers simplicity in building and maintaining applications, flexibility and scalability, while the containerized approach makes the applications independent of the underlying system.
 
 ## Features
 
@@ -37,14 +37,12 @@ sudo ./install.sh
 Start katana Slice Manager service without the web UI module:
 
 ```bash
-./start.sh
+./start.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]
 ```
 
-Start katana Slice Manager service and the web UI module:
-
-```bash
-./start-ui.sh
-```
+- __-p | --publish__: Expose Kafka end Swagger-ui using katana public IP
+- __-g | --graphical-ui__: Start katana Slice Manager service and the web UI module
+- __-h | --help__: Print help message and quit
 
 ### Logs
 
@@ -54,21 +52,18 @@ Get the logs of katana-mngr and katana-nbi modules:
 katana logs [-l | --limit N]
 ```
 
-> limit option will show limited number of lines from the end of the logs (default "all")
+- __-l | --limit__: Show limited number of lines from the end of the logs (default "all")
 
 ### Stop
 
 Stop Katana service, but keep the databases with any associated data:
 
 ```bash
-./stop.sh
+./stop.sh [-c | --clear] [-h | --help]
 ```
 
-Stop Katana service, and clean any associated data:
-
-```bash
-sudo ./clear.sh
-```
+- __-c | --clear__: Remove the container volumes
+- __-h | --help__: Print help message and quit
 
 ### Uninstall
 
