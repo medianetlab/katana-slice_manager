@@ -272,7 +272,7 @@ def add_slice(nest_req):
     else:
         wan_start_time = time.time()
         # Crate the data for the WIM
-        wim_data = {"core_connections": [], "extra_ns": [], "slice_sla": {}}
+        wim_data = {"_id": nest["_id"], "core_connections": [], "extra_ns": [], "slice_sla": {}}
         # i) Create the slice_sla data for the WIM
         wim_data["slice_sla"] = {
             "network_DL_throughput": nest["network_DL_throughput"],

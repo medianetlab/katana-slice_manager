@@ -42,5 +42,4 @@ for message in consumer:
     elif action == "delete":
         payload = message.value["message"]
         force = message.value["force"]
-        logger.debug(force)
         sliceUtils.delete_slice(slice_id=payload, force=force)
