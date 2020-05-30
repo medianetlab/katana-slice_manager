@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check for help option
-if [[ " $@ " =~ " -h " ]] || [[ " $@ " =~ " --help " ]];
+if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
     printf "Usage:\n\tstart.sh [-c | --clear] [-h | --help]\nOptions:
     \t[-c | --clear] : Remove the container volumes
@@ -19,7 +19,7 @@ do
         shift
     ;;
     *)
-    printf "Wrong option ${key}\n--------\n"
+    printf "Wrong option %s\n--------\n" "${key}"
     printf "Usage:\n\tstart.sh [-c | --clear] [-h | --help]\nOptions:
     \t[-c | --clear] : Remove the container volumes
     \t[-h | --help] : Print this message and quit\n"
@@ -29,7 +29,7 @@ do
 done
 
 # Stop the containers
-docker-compose down $options
+docker-compose down "${options}"
 
 # Remove the katana-container-log file
 file=katana-container-logs
@@ -38,6 +38,4 @@ if [[ -L "$file" ]]; then
 fi
 
 # Remove the katana-log files
-file1=katana-nbi/katana.log*
-file2=katana-mngr/katana.log*
-rm -f $file1 $file2
+rm -f katana-nbi/katana.log* katana-mngr/katana.log*

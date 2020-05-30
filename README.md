@@ -34,7 +34,7 @@ sudo ./install.sh
 
 ### Start
 
-Start katana Slice Manager service without the web UI module:
+Start katana Slice Manager service:
 
 ```bash
 ./start.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]
@@ -56,7 +56,7 @@ katana logs [-l | --limit N]
 
 ### Stop
 
-Stop Katana service, but keep the databases with any associated data:
+Stop Katana Slice Manager:
 
 ```bash
 ./stop.sh [-c | --clear] [-h | --help]

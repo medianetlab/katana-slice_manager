@@ -37,7 +37,7 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [ "$dock_copy" = true ]; then
-    docker cp $FILE katana-cli:/katana-cli/"$file_name"
+    docker cp "${FILE}" katana-cli:/katana-cli/"$file_name"
     file_name=${FILE##*/}
     docker container exec -it katana-cli katana "${POSITIONAL[@]}" "$file_name"
 else

@@ -6,7 +6,7 @@ if [[ "$1" == "--dev" ]];
 then
     echo "Installing development environment"
     # Copy hard links of the shared utils in katana-mngr and katana-nbi
-    read -p "Any dev_shared_utils will be lost. Continue? (Y/n) > " ans
+    read -r -p "Any dev_shared_utils will be lost. Continue? (Y/n) > " ans
     if [[ $ans =~ ^n.* ]];
     then
     exit 9999

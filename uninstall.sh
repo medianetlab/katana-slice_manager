@@ -3,7 +3,7 @@
 # Uninstall katana processes
 
 # Stop all the containers and remove the db
-./clear.sh
+./stop.sh
 
 # Remove the docker images
 docker image rm katana-mngr

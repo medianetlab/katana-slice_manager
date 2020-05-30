@@ -10,7 +10,7 @@ from bson.json_util import dumps
 from flask import request
 from flask_classful import FlaskView
 import pymongo
-from requests import ConnectTimeout, ConnectionError
+from requests import ConnectTimeout, ConnectionError  # type: ignore
 
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.nfvoUtils import osmUtils
