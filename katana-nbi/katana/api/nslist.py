@@ -5,6 +5,7 @@ import pickle
 
 from bson.json_util import dumps
 from flask_classful import FlaskView
+from flask import request
 
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.nfvoUtils import osmUtils
@@ -37,6 +38,14 @@ class NslistView(FlaskView):
             nfvo = pickle.loads(infvo["obj"])
             nfvo.bootstrapNfvo()
 
+        nsd_id = request.args.get("nsd-id", None)
+        nfvo_id = request.args.get("nfvo-id", None)
+        search_params = {}
+        if nsd_id:
+            search_params["nsd-id"] = nsd_id
+        if nfvo_id:
+            search_params["nfvo_id"] = nfvo_id
+
         # Return the list
-        ns_list = mongoUtils.find_all("nsd")
+        ns_list = mongoUtils.find_all("nsd", search_params)
         return dumps(ns_list), 200

@@ -93,6 +93,10 @@
     {
       "name": "Resources",
       "description": "Read the available/max resources"
+    },
+    {
+      "name": "Network Service Descriptors",
+      "description": "A list of the available Network Service Descriptors on the all NFVOs registered on the SM"
     }
   ],
   "paths": {
@@ -1740,6 +1744,55 @@
           "405": {
             "description": "Invalid Input",
             "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/nslist": {
+      "get": {
+        "tags": [
+          "Network Service Descriptors"
+        ],
+        "summary": "Returns a list of the available Network Service Descriptors on the all NFVOs registered on the SM",
+        "parameters": [
+          {
+            "name": "nsd-id",
+            "in": "query",
+            "required": false,
+            "description": "The id for a specific NSD",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nfvo-id",
+            "in": "query",
+            "description": "The id for a specific NFVO",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "A list of NSDs",
+                  "items": {
+                    "$ref": "#/components/schemas/nsd",
+                    "description": "An NSD"
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "Server Error",
@@ -3683,6 +3736,60 @@
           },
           "optional": {
             "type": "boolean"
+          }
+        }
+      },
+      "nsd": {
+        "type": "object",
+        "description": "A NSD",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The id on the SM Database"
+          },
+          "nfvo_id": {
+            "type": "string",
+            "description": "The id of the NFVO where the NSD is onboarded"
+          },
+          "nsd_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The id of the NSD as it is stored in the NFVO"
+          },
+          "nsd_name": {
+            "type": "string",
+            "description": "The name of the NSD as it is stored in the NFVO"
+          },
+          "vnfd_list": {
+            "type": "array",
+            "description": "The list of VNFDs in the NSD",
+            "items": {
+              "type": "string",
+              "description": "VNFD name"
+            }
+          },
+          "flavor": {
+            "type": "object",
+            "description": "Total resource requirements for the NSD Deployment",
+            "properties": {
+              "instances": {
+                "type": "number",
+                "description": "The number of VMs that will be deployed as part of the NS"
+              },
+              "memory-mb": {
+                "type": "number",
+                "description": "The total amount of required RAM in megabytes"
+              },
+              "storage-gb": {
+                "type": "number",
+                "description": "The total amount of required disk storage in gigabytes"
+              },
+              "vcpu-count": {
+                "type": "number",
+                "description": "The total amount of required virtual cpus"
+              }
+            }
           }
         }
       }
