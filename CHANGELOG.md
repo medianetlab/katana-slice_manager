@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.5] - 02/06/2020
+
+### Changed
+
+Integration with ELCM:
+
+- Added `?nsd-id={id}&nfvo-id={id}` query parameters in `/api/nslist` endpoint
+- Removed `nfvo-id` from NEST
+- Explicitily define a string location in NS placement in service_descriptor part of the NEST
+
 ## [2.2.4] - 20/05/2020
 
 ### Added
