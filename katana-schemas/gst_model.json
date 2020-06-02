@@ -302,12 +302,15 @@
                 "description": "The name of the NS"
               },
               "placement": {
-                "type": "number",
+                "type": [
+                  "number",
+                  "string"
+                ],
                 "enum": [
                   0,
                   1
                 ],
-                "description": "1: Core, 2: Edge"
+                "description": "1: Deploy on Core - 2: Deploy on all Edge locations of the cloud - Explicitily define a string location (it must be included in the Slice Coverage"
               },
               "ems-id": {
                 "type": "string",

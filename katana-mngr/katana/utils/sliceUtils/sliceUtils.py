@@ -88,9 +88,12 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
         new_ns["nfvo-id"] = nsd["nfvo_id"]
         new_ns["nsd-info"] = nsd
         # B) ****** Replace placement value with location info ******
-        new_ns["placement_loc"] = (
-            lambda x: {"location": "Core"} if not x else {"location": edge_loc}
-        )(new_ns["placement"])
+        if type(new_ns["placement"]) is str:
+            new_ns["placement_loc"] = {"location": new_ns["placement"]}
+        else:
+            new_ns["placement_loc"] = (
+                lambda x: {"location": "Core"} if not x else {"location": edge_loc}
+            )(new_ns["placement"])
 
         # C) ****** Get the VIM info ******
         new_ns["vims"] = []

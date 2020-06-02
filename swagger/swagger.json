@@ -2379,8 +2379,15 @@
                   "description": "The name of the NS"
                 },
                 "placement": {
-                  "type": "integer",
-                  "description": "1: Core, 2: Edge"
+                  "type": [
+                    "number",
+                    "string"
+                  ],
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "description": "1: Deploy on Core - 2: Deploy on all Edge locations of the cloud - Explicitily define a string location (it must be included in the Slice Coverage"
                 }
               },
               "description": "A NS"
