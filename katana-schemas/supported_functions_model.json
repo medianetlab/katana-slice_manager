@@ -5,10 +5,6 @@
       "type": "object",
       "description": "A Network Service",
       "properties": {
-        "nfvo-id": {
-          "type": "string",
-          "description": "The NFVO that will manage the life cycle of the NS"
-        },
         "nsd-id": {
           "type": "string",
           "description": "The NSD id as defined on the NFVO"

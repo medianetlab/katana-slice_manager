@@ -29,13 +29,7 @@ do
 done
 
 # Stop the containers
-docker-compose down "${options}"
-
-# Remove the katana-container-log file
-file=katana-container-logs
-if [[ -L "$file" ]]; then
-    rm -f $file
-fi
+docker-compose down ${options}
 
 # Remove the katana-log files
 rm -f katana-nbi/katana.log* katana-mngr/katana.log*

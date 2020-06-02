@@ -2369,11 +2369,6 @@
             "items": {
               "type": "object",
               "properties": {
-                "nfvo-id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "description": "The NFVO that will manage the life cycle of the NS"
-                },
                 "nsd-id": {
                   "type": "string",
                   "format": "uuid",
@@ -2851,10 +2846,6 @@
                         "type": "object",
                         "description": "A Network Service",
                         "properties": {
-                          "nfvo-id": {
-                            "type": "string",
-                            "description": "The NFVO that will manage the life cycle of the NS"
-                          },
                           "nsd-id": {
                             "type": "string",
                             "description": "The NSD id as defined on the NFVO"
@@ -2941,10 +2932,6 @@
               "type": "object",
               "description": "A Network Service",
               "properties": {
-                "nfvo-id": {
-                  "type": "string",
-                  "description": "The NFVO that will manage the life cycle of the NS"
-                },
                 "nsd-id": {
                   "type": "string",
                   "description": "The NSD id as defined on the NFVO"
@@ -3682,10 +3669,6 @@
         "type": "object",
         "description": "A Network Service",
         "properties": {
-          "nfvo-id": {
-            "type": "string",
-            "description": "The NFVO that will manage the life cycle of the NS"
-          },
           "nsd-id": {
             "type": "string",
             "description": "The NSD id as defined on the NFVO"

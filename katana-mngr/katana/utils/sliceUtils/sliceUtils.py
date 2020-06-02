@@ -67,28 +67,25 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
             new_ns = ns
         # A) ****** Get the NSD ******
         # Search the nsd collection in Mongo for the nsd
-        nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"], "nfvo_id": new_ns["nfvo-id"]})
+        nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
         if not nsd:
-            # Bootstrap the NFVO to check for NSDs that are not in mongo
+            # Bootstrap the NFVOs to check for NSDs that are not in mongo
             # If again is not found, check if NS is optional.
             # If it is just remove it, else error
-            nfvo_obj_json = mongoUtils.find("nfvo_obj", {"id": new_ns["nfvo-id"]})
-            if not nfvo_obj_json:
-                # Error handling: There is no OSM for that ns -
-                # Stop and return
-                logger.error("There is no NFVO with id {}".format(new_ns["nfvo-id"]))
-                return 1, []
-            nfvo = pickle.loads(nfvo_obj_json["obj"])
-            nfvo.bootstrapNfvo()
-            nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"], "nfvo_id": new_ns["nfvo-id"]})
+            nfvo_obj_list = list(mongoUtils.find_all("nfvo_obj"))
+            for infvo in nfvo_obj_list:
+                nfvo = pickle.loads(infvo["obj"])
+                nfvo.bootstrapNfvo()
+            nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
             if not nsd and ns.get("optional", False):
                 pop_list.append(ns)
                 continue
             else:
                 # Error handling: The ns is not optional and the nsd is not
                 # on the NFVO - stop and return
-                logger.error(f"NSD {new_ns['nsd-id']} not found on OSM {new_ns['nfvo-id']}")
+                logger.error(f"NSD {new_ns['nsd-id']} not found on any NFVO registered to SM")
                 return 1, []
+        new_ns["nfvo-id"] = nsd["nfvo_id"]
         new_ns["nsd-info"] = nsd
         # B) ****** Replace placement value with location info ******
         new_ns["placement_loc"] = (
