@@ -42,8 +42,12 @@ class Wim:
         producer.send("wan-slice", value=wim_message)
         logger.info("Sent WAN Slice Creation request to WIM")
 
-    def del_slice(self, wsd):
+    def del_slice(self, slice_id):
         """
         Delete the transport network slice
         """
-        logger.info("Deleting Transport Network Slice")
+        wim_message = {"action": "terminate", "data": slice_id}
+        bootstrap_servers = [f"{self.url}:9092"]
+        producer = kafkaUtils.create_producer(bootstrap_servers=bootstrap_servers)
+        producer.send("wan-slice", value=wim_message)
+        logger.info("Sent WAN Slice Termination request to WIM")

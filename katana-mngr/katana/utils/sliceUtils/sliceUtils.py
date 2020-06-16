@@ -487,7 +487,7 @@ def delete_slice(slice_id, force=False):
             target_wim = wim_list[0]
             target_wim_id = target_wim["id"]
             target_wim_obj = pickle.loads(mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
-            target_wim_obj.del_slice(wim_data)
+            target_wim_obj.del_slice(slice_id)
             try:
                 del target_wim["slices"][slice_json["_id"]]
             except KeyError:
