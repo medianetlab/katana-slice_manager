@@ -420,6 +420,7 @@ def add_slice(nest_req):
                     data[key] = key_data
             if data:
                 data["slice_sla"] = ems_radio_data
+                data["slice_id"] = nest["_id"]
                 for ems_id in ems_id_list:
                     messages = ems_messages.get(ems_id, [])
                     messages.append(data)

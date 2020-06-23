@@ -33,7 +33,7 @@ class Ems:
         Configure radio components for the newly created slice
         """
         ems_url = self.url
-        api_prefix = "/deploy"
+        api_prefix = "/slice"
         url = ems_url + api_prefix
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
         data = emsd
