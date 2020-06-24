@@ -146,6 +146,16 @@ services:
       - katana-mngr
       - postgres
 
+  katana-prometheus:
+    image: prom/prometheus:v2.19.1
+    container_name: katana-prometheus
+    volumes:
+      - "prometheus:/prometheus"
+      - "./katana-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    restart: unless-stopped
+    ports: 
+      - "9090:9090"
+
 volumes:
   mongo-datadb: {}
   mongo-configdb: {}
@@ -155,3 +165,4 @@ volumes:
   zk-secrets: {}
   kafka-data: {}
   kafka-secrets: {}
+  prometheus: {}

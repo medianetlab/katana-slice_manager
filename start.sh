@@ -6,9 +6,10 @@ containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli swagger"
 # Check for help option
 if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
-     printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]\nOptions:
+     printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
         \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
         \t[-g | --graphical-ui] : Start Web User Interface
+        \t[-m | --monitoring] : Start the monitoring module
         \t[-h | --help] : Print this message and quit\n"
         exit 0
 fi
@@ -33,15 +34,20 @@ do
         shift
     ;;
     -g | --graphical-ui)
-        containers=""
+        containers="${containers} postgres katana-ui"
         gui=true
+        shift
+    ;;
+    -m | --monitoring)
+        containers="${containers} katana-prometheus"
         shift
     ;;
     *)
     printf "Wrong option %s\n--------\n" "${key}"
-    printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]\nOptions:
+    printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
     \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
     \t[-g | --graphical-ui] : Start Web User Interface
+    \t[-m | --monitoring] : Start the monitoring module
     \t[-h | --help] : Print this message and quit\n"
     exit 9999
     ;;
