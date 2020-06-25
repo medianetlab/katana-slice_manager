@@ -119,6 +119,16 @@ class WimView(FlaskView):
                 return "Cannot delete wim {} - In use".format(uuid), 400
             mongoUtils.delete("wim_obj", uuid)
             mongoUtils.delete("wim", uuid)
+            try:
+                monitoring_url = wim["monitoring-url"]
+            except KeyError:
+                pass
+            else:
+                with open("/wim_targets.json", mode="r") as prom_file:
+                    prom = json.load(prom_file)
+                    prom.remove({"targets": [monitoring_url], "labels": {"wim_id": wim["id"]}})
+                with open("/wim_targets.json", mode="w") as prom_file:
+                    json.dump(prom, prom_file)
             return "Deleted WIM {}".format(uuid), 200
         else:
             # if uuid is not found, return error

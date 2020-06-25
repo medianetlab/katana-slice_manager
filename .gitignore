@@ -131,6 +131,7 @@ zk-kafka/
 pyright*
 dev/
 dev_shared_utils/
+katana-prometheus/wim_targets.json
 
 # log files
 *.log.*
