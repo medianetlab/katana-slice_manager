@@ -164,6 +164,9 @@ services:
     restart: unless-stopped
     ports: 
       - "3000:3000"
+    volumes: 
+      - "./katana-grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
+    env_file: katana-grafana/.env
     depends_on: 
       - katana-prometheus
 
