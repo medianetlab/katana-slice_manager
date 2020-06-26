@@ -39,7 +39,7 @@ do
         shift
     ;;
     -m | --monitoring)
-        containers="${containers} katana-prometheus"
+        containers="${containers} katana-prometheus katana-grafana"
         shift
     ;;
     *)

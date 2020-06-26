@@ -158,6 +158,15 @@ services:
     ports: 
       - "9090:9090"
 
+  katana-grafana:
+    image: grafana/grafana:7.0.4
+    container_name: katana-grafana
+    restart: unless-stopped
+    ports: 
+      - "3000:3000"
+    depends_on: 
+      - katana-prometheus
+
 volumes:
   mongo-datadb: {}
   mongo-configdb: {}
