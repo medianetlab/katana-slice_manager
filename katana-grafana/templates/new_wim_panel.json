@@ -43,14 +43,7 @@
     "spaceLength": 10,
     "stack": false,
     "steppedLine": false,
-    "targets": [
-        {
-            "expr": "rate(SLICE_ID_flows[1m])",
-            "interval": "",
-            "legendFormat": "",
-            "refId": "A"
-        }
-    ],
+    "targets": [],
     "thresholds": [],
     "timeFrom": null,
     "timeRegions": [],

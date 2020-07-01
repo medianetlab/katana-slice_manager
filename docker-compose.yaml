@@ -77,8 +77,10 @@ services:
     command: python3 katana/katana-mngr.py
     volumes:
       - "./katana-mngr:/katana-mngr"
-    environment:
-      PYTHONWARNINGS: "ignore:Unverified HTTPS request"
+      - "./katana-grafana/templates:/katana-grafana/templates" 
+    env_file:
+      - "katana-mngr/.env"
+      - "katana-grafana/.env" 
     restart: always
     depends_on:
       - katana-nbi

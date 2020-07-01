@@ -33,7 +33,7 @@
         "gnetId": null,
         "graphTooltip": 0,
         "hideControls": false,
-        "id": null,
+        "id": "katana",
         "links": [],
         "panels": [],
         "schemaVersion": 25,

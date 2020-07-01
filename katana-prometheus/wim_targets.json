@@ -1,6 +1,1 @@
-[
-    {
-        "targets": [],
-        "labels": {}
-    }
-]
+[{"targets": [], "labels": {}}, {"targets": ["10.200.64.55:9091"], "labels": {"wim_id": "test-wim"}}, {"targets": ["10.30.0.168:8888"], "labels": {"wim_id": "odl-wim"}}]
