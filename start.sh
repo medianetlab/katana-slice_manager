@@ -25,7 +25,13 @@ do
 
         if [[ $ans != "n" ]];
         then
-            read -r -p "katana host public IP > " HOST_IP
+            message="katana host public IP"
+            ip_list=$(hostname -I 2> /dev/null)
+            if (( $? == 0 ));
+            then
+                message="${message} (Available: $ip_list)"
+            fi
+            read -r -p "${message} >> " HOST_IP
             export "DOCKER_HOST_IP=${HOST_IP}"
 
             # Insert Katana's IP in swagger conf file
@@ -40,6 +46,12 @@ do
     ;;
     -m | --monitoring)
         containers="${containers} katana-prometheus katana-grafana"
+        # Check if katana-grafana/.env file exists - If not create it
+        if [ ! -f ./katana-grafana/.env ];
+        then
+        echo "GF_SECURITY_ADMIN_PASSWORD=admin" > katana-grafana/.env
+        echo "GF_SECURITY_ADMIN_USER=admin" >> katana-grafana/.env
+        fi
         shift
     ;;
     *)
@@ -55,8 +67,8 @@ do
 done
 
 # Start the docker containers on the background
-docker-compose up -d ${containers}
-
+echo docker-compose up -d ${containers}
+exit 0
 if [ "$gui" = true ];
 then
     docker exec -it katana-ui ui db init
