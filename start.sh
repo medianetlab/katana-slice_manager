@@ -52,6 +52,7 @@ do
         echo "GF_SECURITY_ADMIN_PASSWORD=admin" > katana-grafana/.env
         echo "GF_SECURITY_ADMIN_USER=admin" >> katana-grafana/.env
         fi
+        sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' katana-mngr/.env
         shift
     ;;
     *)
@@ -67,8 +68,8 @@ do
 done
 
 # Start the docker containers on the background
-echo docker-compose up -d ${containers}
-exit 0
+docker-compose up -d ${containers}
+
 if [ "$gui" = true ];
 then
     docker exec -it katana-ui ui db init

@@ -171,7 +171,11 @@ def add_slice(nest_req):
     vim_dict = {}
     total_ns_list = []
     ems_messages = {}
-    monitoring = {}
+
+    # Check if slice monitoring has been enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    if monitoring:
+        nest["slice_monitoring"] = {}
 
     # Get Details for the Network Services
     # i) The extra NS of the slice
@@ -325,9 +329,10 @@ def add_slice(nest_req):
         nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
         # Create Grafana Dashboard for WIM monitoring if defined by the WIM
         try:
-            _ = target_wim["monitoring-url"]
-        except KeyError:
-            pass
+            wim_monitoring = target_wim["monitoring-url"]
+            nest["slice_monitoring"]["WIM"] = wim_monitoring
+        except KeyError as e:
+            logger.debug(e)
         else:
             monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
             # Read and fill the panel template
