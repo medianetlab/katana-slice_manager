@@ -87,7 +87,12 @@ def add(file):
     """
     Add new supported Network Function
     """
-    with open(file, "r") as stream:
+    try:
+        stream = open(file, mode="r")
+    except FileNotFoundError:
+        raise click.ClickException(f"File {file} not found")
+
+    with stream:
         data = yaml.safe_load(stream)
 
     url = "http://localhost:8000/api/function"
