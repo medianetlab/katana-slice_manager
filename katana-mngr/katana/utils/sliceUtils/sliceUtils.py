@@ -325,6 +325,7 @@ def add_slice(nest_req):
         target_wim_obj.create_slice(wim_data)
         nest["wim_data"] = wim_data
         target_wim["slices"][nest["_id"]] = nest["_id"]
+        mongoUtils.update("slice", nest["_id"], nest)
         mongoUtils.update("wim", target_wim["_id"], target_wim)
         nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
         # Create Grafana Dashboard for WIM monitoring if defined by the WIM
