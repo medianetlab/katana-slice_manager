@@ -333,7 +333,7 @@ def add_slice(nest_req):
             wim_monitoring = target_wim["monitoring-url"]
             nest["slice_monitoring"]["WIM"] = wim_monitoring
         except KeyError as e:
-            logger.debug(e)
+            pass
         else:
             monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
             # Read and fill the panel template
@@ -352,7 +352,7 @@ def add_slice(nest_req):
                 new_dashboard = json.load(dashboard_file)
                 new_dashboard["dashboard"]["panels"].append(new_panel)
                 new_dashboard["dashboard"]["title"] = monitoring_slice_id
-                new_dashboard["meta"]["slug"] = monitoring_slice_id
+                new_dashboard["dashboard"]["uid"] = nest["_id"]
             # Use the Grafana API in order to create the new dashboard for the new slice
             grafana_url = "http://katana-grafana:3000/api/dashboards/db"
             headers = {"accept": "application/json", "content-type": "application/json"}
@@ -641,3 +641,16 @@ def delete_slice(slice_id, force=False):
             logger.warning(f"Slice {slice_id} not in function {func_id}")
         else:
             mongoUtils.update("func", func_id, ifunc)
+
+    # Remove Slice dashboard
+    # Check if slice monitoring has been enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    slice_monitoring = slice_json.get("slice_monitoring", None)
+    if monitoring and slice_monitoring:
+        # Use the Grafana API in order to create the new dashboard for the new slice
+        grafana_url = f"http://katana-grafana:3000/api/dashboards/uid/{slice_id}"
+        headers = {"accept": "application/json", "content-type": "application/json"}
+        grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
+        grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+        r = requests.delete(url=grafana_url, headers=headers, auth=(grafana_user, grafana_passwd),)
+        logger.info(f"Deleted Grafana dashboard for slice {slice_id}")

@@ -5,7 +5,6 @@
         "canEdit": true,
         "canAdmin": true,
         "canStar": true,
-        "slug": "SLICE_ID",
         "version": 1,
         "hasAcl": false,
         "isFolder": false,
@@ -49,7 +48,7 @@
         "timepicker": {},
         "timezone": "",
         "title": "SLICE_ID",
-        "uid": "null",
+        "uid": "SLICE_ID",
         "version": 1
     }
 }
