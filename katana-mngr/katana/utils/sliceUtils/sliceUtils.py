@@ -1,11 +1,14 @@
-from katana.shared_utils.mongoUtils import mongoUtils
-from katana.shared_utils.nfvoUtils import osmUtils
-import pickle
-import time
+import copy
+import json
 import logging
 import logging.handlers
+import pickle
+import time
 import uuid
-import copy
+import os
+import requests
+
+from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -169,6 +172,11 @@ def add_slice(nest_req):
     total_ns_list = []
     ems_messages = {}
 
+    # Check if slice monitoring has been enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    if monitoring:
+        nest["slice_monitoring"] = {}
+
     # Get Details for the Network Services
     # i) The extra NS of the slice
     for location in nest["coverage"]:
@@ -317,8 +325,46 @@ def add_slice(nest_req):
         target_wim_obj.create_slice(wim_data)
         nest["wim_data"] = wim_data
         target_wim["slices"][nest["_id"]] = nest["_id"]
+        mongoUtils.update("slice", nest["_id"], nest)
         mongoUtils.update("wim", target_wim["_id"], target_wim)
         nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
+        # Create Grafana Dashboard for WIM monitoring if defined by the WIM
+        try:
+            wim_monitoring = target_wim["monitoring-url"]
+            nest["slice_monitoring"]["WIM"] = wim_monitoring
+        except KeyError as e:
+            pass
+        else:
+            monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
+            # Read and fill the panel template
+            with open("/katana-grafana/templates/new_wim_panel.json", mode="r") as panel_file:
+                new_panel = json.load(panel_file)
+                new_panel["targets"].append(
+                    {
+                        "expr": f"rate({monitoring_slice_id}_flows[1m])",
+                        "interval": "",
+                        "legendFormat": "",
+                        "refId": "A",
+                    }
+                )
+            # Read and fill the dashboard template
+            with open("/katana-grafana/templates/new_dashboard.json", mode="r") as dashboard_file:
+                new_dashboard = json.load(dashboard_file)
+                new_dashboard["dashboard"]["panels"].append(new_panel)
+                new_dashboard["dashboard"]["title"] = monitoring_slice_id
+                new_dashboard["dashboard"]["uid"] = nest["_id"]
+            # Use the Grafana API in order to create the new dashboard for the new slice
+            grafana_url = "http://katana-grafana:3000/api/dashboards/db"
+            headers = {"accept": "application/json", "content-type": "application/json"}
+            grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
+            grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+            r = requests.post(
+                url=grafana_url,
+                headers=headers,
+                auth=(grafana_user, grafana_passwd),
+                data=json.dumps(new_dashboard),
+            )
+            logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
     nest["deployment_time"]["Provisioning_Time"] = format(time.time() - prov_start_time, ".4f")
 
     # **** STEP-3: Slice Activation Phase****
@@ -595,3 +641,16 @@ def delete_slice(slice_id, force=False):
             logger.warning(f"Slice {slice_id} not in function {func_id}")
         else:
             mongoUtils.update("func", func_id, ifunc)
+
+    # Remove Slice dashboard
+    # Check if slice monitoring has been enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    slice_monitoring = slice_json.get("slice_monitoring", None)
+    if monitoring and slice_monitoring:
+        # Use the Grafana API in order to create the new dashboard for the new slice
+        grafana_url = f"http://katana-grafana:3000/api/dashboards/uid/{slice_id}"
+        headers = {"accept": "application/json", "content-type": "application/json"}
+        grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
+        grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+        r = requests.delete(url=grafana_url, headers=headers, auth=(grafana_user, grafana_passwd),)
+        logger.info(f"Deleted Grafana dashboard for slice {slice_id}")

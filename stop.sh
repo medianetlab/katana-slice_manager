@@ -31,5 +31,8 @@ done
 # Stop the containers
 docker-compose down ${options}
 
+# Remove the monitoring variable
+sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=/' katana-mngr/.env
+
 # Remove the katana-log files
 rm -f katana-nbi/katana.log* katana-mngr/katana.log*

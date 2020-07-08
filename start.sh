@@ -6,9 +6,10 @@ containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli swagger"
 # Check for help option
 if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
-     printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]\nOptions:
+     printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
         \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
         \t[-g | --graphical-ui] : Start Web User Interface
+        \t[-m | --monitoring] : Start the monitoring module
         \t[-h | --help] : Print this message and quit\n"
         exit 0
 fi
@@ -24,7 +25,13 @@ do
 
         if [[ $ans != "n" ]];
         then
-            read -r -p "katana host public IP > " HOST_IP
+            message="katana host public IP"
+            ip_list=$(hostname -I 2> /dev/null)
+            if (( $? == 0 ));
+            then
+                message="${message} (Available: $ip_list)"
+            fi
+            read -r -p "${message} >> " HOST_IP
             export "DOCKER_HOST_IP=${HOST_IP}"
 
             # Insert Katana's IP in swagger conf file
@@ -33,15 +40,27 @@ do
         shift
     ;;
     -g | --graphical-ui)
-        containers=""
+        containers="${containers} postgres katana-ui"
         gui=true
+        shift
+    ;;
+    -m | --monitoring)
+        containers="${containers} katana-prometheus katana-grafana"
+        # Check if katana-grafana/.env file exists - If not create it
+        if [ ! -f ./katana-grafana/.env ];
+        then
+        echo "GF_SECURITY_ADMIN_PASSWORD=admin" > katana-grafana/.env
+        echo "GF_SECURITY_ADMIN_USER=admin" >> katana-grafana/.env
+        fi
+        sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' katana-mngr/.env
         shift
     ;;
     *)
     printf "Wrong option %s\n--------\n" "${key}"
-    printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]\nOptions:
+    printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
     \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
     \t[-g | --graphical-ui] : Start Web User Interface
+    \t[-m | --monitoring] : Start the monitoring module
     \t[-h | --help] : Print this message and quit\n"
     exit 9999
     ;;

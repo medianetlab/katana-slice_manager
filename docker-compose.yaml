@@ -54,6 +54,7 @@ services:
     command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload "katana.app:create_app()"
     volumes:
       - "./katana-nbi:/katana-nbi"
+      - "./katana-prometheus/wim_targets.json:/wim_targets.json"
     ports:
       - "8000:8000"
     environment:
@@ -76,8 +77,10 @@ services:
     command: python3 katana/katana-mngr.py
     volumes:
       - "./katana-mngr:/katana-mngr"
-    environment:
-      PYTHONWARNINGS: "ignore:Unverified HTTPS request"
+      - "./katana-grafana/templates:/katana-grafana/templates" 
+    env_file:
+      - "katana-mngr/.env"
+      - "katana-grafana/.env" 
     restart: always
     depends_on:
       - katana-nbi
@@ -146,6 +149,29 @@ services:
       - katana-mngr
       - postgres
 
+  katana-prometheus:
+    image: prom/prometheus:v2.19.1
+    container_name: katana-prometheus
+    volumes:
+      - "prometheus:/prometheus"
+      - "./katana-prometheus/wim_targets.json:/etc/prometheus/wim_targets.json"
+      - "./katana-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    restart: unless-stopped
+    ports: 
+      - "9090:9090"
+
+  katana-grafana:
+    image: grafana/grafana:7.0.4
+    container_name: katana-grafana
+    restart: unless-stopped
+    ports: 
+      - "3000:3000"
+    volumes: 
+      - "./katana-grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
+    env_file: katana-grafana/.env
+    depends_on: 
+      - katana-prometheus
+
 volumes:
   mongo-datadb: {}
   mongo-configdb: {}
@@ -155,3 +181,4 @@ volumes:
   zk-secrets: {}
   kafka-data: {}
   kafka-secrets: {}
+  prometheus: {}
