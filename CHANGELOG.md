@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.6] - 14/07/2020
+
+### Added
+
+- Monitoring module: Prometheus and Grafana containers
+- Integrate ODL prometheus exporter to collect traffic metrics per flow
+- Create a Grafana Dashboard for every new slice
+
+### Changed
+
+- base_slice_des bug fixed
+
 ## [2.2.5] - 02/06/2020
 
 ### Changed
