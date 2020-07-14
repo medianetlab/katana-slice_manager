@@ -16,7 +16,7 @@ def ls():
     List Slice Descriptors
     """
 
-    url = "http://localhost:8000/api/slice_des"
+    url = "http://localhost:8000/api/base_slice_des"
     r = None
     try:
         r = requests.get(url, timeout=30)
@@ -45,7 +45,7 @@ def inspect(id):
     """
     Display detailed information of Slice Descriptor
     """
-    url = "http://localhost:8000/api/slice_des/" + id
+    url = "http://localhost:8000/api/base_slice_des/" + id
     r = None
     try:
         r = requests.get(url, timeout=30)
@@ -66,10 +66,12 @@ def inspect(id):
 
 
 @click.command()
-@click.option("-f", "--file", required=True, type=str, help="yaml file with EMS details")
+@click.option(
+    "-f", "--file", required=True, type=str, help="yaml file with Base Slice Descriptor details"
+)
 def add(file):
     """
-    Add new EMS
+    Add new Base Slice Descriptor
     """
     try:
         stream = open(file, mode="r")
@@ -79,7 +81,7 @@ def add(file):
     with stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/ems"
+    url = "http://localhost:8000/api/base_slice_des"
     r = None
     try:
         r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
@@ -103,7 +105,7 @@ def rm(id):
     """
     Remove a Base Slice Descriptor
     """
-    url = "http://localhost:8000/api/slice_des/" + id
+    url = "http://localhost:8000/api/base_slice_des/" + id
     r = None
     try:
         r = requests.delete(url, timeout=30)
@@ -132,7 +134,7 @@ def update(file, id):
     with open(file, "r") as stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/slice_des/" + id
+    url = "http://localhost:8000/api/base_slice_des/" + id
     r = None
     try:
         r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)

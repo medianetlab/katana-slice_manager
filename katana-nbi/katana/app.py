@@ -10,7 +10,7 @@ from katana.api.nslist import NslistView
 from katana.api.policy import PolicyView
 from katana.api.resource import ResourcesView
 from katana.api.slice import SliceView
-from katana.api.slice_des import Slice_desView
+from katana.api.slice_des import Base_slice_desView
 from katana.api.vim import VimView
 from katana.api.wim import WimView
 
@@ -35,7 +35,7 @@ def create_app():
     NFVOView.register(app, trailing_slash=False)
     SliceView.register(app, trailing_slash=False)
     FunctionView.register(app, trailing_slash=False)
-    Slice_desView.register(app, trailing_slash=False)
+    Base_slice_desView.register(app, trailing_slash=False)
     GstView.register(app, trailing_slash=False)
     ResourcesView.register(app, trailing_slash=False)
     PolicyView.register(app, trailing_slash=False)

@@ -22,7 +22,7 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-class Slice_desView(FlaskView):
+class Base_slice_desView(FlaskView):
     route_prefix = "/api/"
 
     def index(self):
@@ -46,7 +46,7 @@ class Slice_desView(FlaskView):
         new_uuid = str(uuid.uuid4())
         data = request.json
         data["_id"] = new_uuid
-        return str(mongoUtils.add("base_slice_des_id", data)), 201
+        return str(mongoUtils.add("base_slice_des_ref", data)), 201
 
     def get(self, uuid):
         """
