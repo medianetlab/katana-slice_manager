@@ -19,7 +19,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 
-def start(ns_list):
+def mon_start(ns_list):
     """
     Starts the monitoring of new network services
     """
@@ -28,7 +28,7 @@ def start(ns_list):
         ns_status = Gauge(ns_name, "Status of the NS")
 
 
-def stop(ns_list):
+def mon_stop(ns_list):
     """
     Stops the monitoring os new network services
     """
@@ -52,9 +52,9 @@ def start_exporter():
     for message in consumer:
         ns_list = message.value["ns_list"]
         if message.value["action"] == "create":
-            start(ns_list)
+            mon_start(ns_list)
         else:
-            stop(ns_list)
+            mon_stop(ns_list)
 
 
 if __name__ == "__main__":
