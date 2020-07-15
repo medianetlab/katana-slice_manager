@@ -1,0 +1,5 @@
+# Prometheus Client
+prometheus_client
+
+# Python modules
+requests

@@ -172,6 +172,16 @@ services:
     depends_on: 
       - katana-prometheus
 
+  katana-nfv_mon:
+    image: katana-nfv_mon
+    build: ./katana-nfv_mon
+    container_name: katana-nfv_mon
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    depends_on: 
+      - katana-mngr
+
 volumes:
   mongo-datadb: {}
   mongo-configdb: {}
