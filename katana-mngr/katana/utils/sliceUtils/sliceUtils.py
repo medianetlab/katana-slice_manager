@@ -9,6 +9,7 @@ import os
 import requests
 
 from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.kafkaUtils.kafkaUtils import create_producer
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -379,6 +380,7 @@ def add_slice(nest_req):
     for ns in total_ns_list:
         ns["start_time"] = time.time()
         ns_inst_info[ns["ns-id"]] = {}
+        ns_inst_info[ns["ns-id"]]["ns-name"] = ns["ns-name"]
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
         selected_vim = ns["placement_loc"]["vim"]
@@ -412,6 +414,12 @@ def add_slice(nest_req):
 
     nest["ns_inst_info"] = ns_inst_info
     mongoUtils.update("slice", nest["_id"], nest)
+
+    # If monitoring parameter is set, send the ns_list to nfv_mon module
+    if monitoring:
+        # Create the Kafka producer
+        producer = create_producer()
+        producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
 
     # *** STEP-3b: Radio Slice Configuration ***
     if mongoUtils.count("ems") <= 0:

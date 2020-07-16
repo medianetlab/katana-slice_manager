@@ -45,7 +45,7 @@ do
         shift
     ;;
     -m | --monitoring)
-        containers="${containers} katana-prometheus katana-grafana"
+        containers="${containers} katana-prometheus katana-grafana katana-nfv_mon"
         # Check if katana-grafana/.env file exists - If not create it
         if [ ! -f ./katana-grafana/.env ];
         then

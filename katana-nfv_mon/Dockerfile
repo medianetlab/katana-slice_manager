@@ -1,8 +1,12 @@
 FROM python:3.7.4-slim
 
-RUN mkdir -p /prom_exporter
+RUN mkdir -p /nfv_mon
 
-WORKDIR /prom_exporter
+WORKDIR /nfv_mon
 COPY . .
 
 RUN pip install -r requirements.txt
+
+ENV PYTHONPATH=.
+
+CMD [ "python", katana/exporter.py ]

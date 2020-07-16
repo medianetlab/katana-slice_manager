@@ -30,11 +30,12 @@ class MonThread(object):
         The function that will run to check the NS status
         """
         while not self.stopped:
-            target_nfvo = mongoUtils.find("nfvo", {"id": self.ns["nfvo-id"]})
             target_nfvo_obj = pickle.loads(
                 mongoUtils.find("nfvo_obj", {"id": self.ns["nfvo-id"]})["obj"]
             )
             insr = target_nfvo_obj.getNsr(self.ns["nfvo_inst_ns_id"])
+            if not insr or insr["operational-status"] != "running":
+                self.ns_status.set(0)
             self._stop.wait(timeout=30)
 
     def stopped(self):

@@ -23,16 +23,17 @@ def mon_start(ns_list):
     """
     Starts the monitoring of new network services
     """
-    for ns in ns_list:
-        ns_name = ns["name"].replace("-", "_")
-        ns_status = Gauge(ns_name, "Status of the NS")
+    # for ns in ns_list:
+    #     ns_name = ns["name"].replace("-", "_")
+    #     ns_status = Gauge(ns_name, "Status of the NS")
+    logger.debug(ns_list)
 
 
 def mon_stop(ns_list):
     """
     Stops the monitoring os new network services
     """
-    pass
+    logger.debug(ns_list)
 
 
 def start_exporter():

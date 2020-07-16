@@ -124,11 +124,13 @@ class Osm:
                 "Authorization": f"Bearer {self.token}",
             }
             response = requests.get(osm_url, headers=headers, verify=False)
-            if response.status_code != 401:
+            if response.status_code == 200:
                 nsr = response.json()
                 break
-            else:
+            elif response.status_code == 401:
                 self.getToken()
+            else:
+                return {}
         return nsr
 
     def getVnfrId(self, nsr):

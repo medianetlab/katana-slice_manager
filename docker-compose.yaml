@@ -177,6 +177,8 @@ services:
     build: ./katana-nfv_mon
     container_name: katana-nfv_mon
     restart: unless-stopped
+    command: >
+      python katana/exporter.py
     ports:
       - "8002:8002"
     depends_on: 
