@@ -7,6 +7,7 @@ Read the collected NFV metrics and expose them to Prometheus
 import logging
 
 from katana.utils.kafkaUtils.kafkaUtils import create_consumer, create_topic
+from katana.utils.threadingUtis.threadingUtils import MonThread
 from prometheus_client import start_http_server, Gauge
 
 # Create the logger
@@ -19,17 +20,27 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 
-def mon_start(ns_list):
+def mon_start(ns_list, ns_thread_dict):
     """
     Starts the monitoring of new network services
     """
-    # for ns in ns_list:
-    #     ns_name = ns["name"].replace("-", "_")
-    #     ns_status = Gauge(ns_name, "Status of the NS")
-    logger.debug(ns_list)
+    for ns_id, ns in ns_list.items():
+        ns_name, location, ns_info = "", "", {}
+        for key, value in ns.items():
+            if key == "ns-name":
+                ns_name = value.replace("-", "_")
+            else:
+                location = key.replace("-", "_")
+                ns_info = value
+        metric_name = ns_name + "_" + location
+        ns_status = Gauge(metric_name, "Network Service Status")
+        ns_status.set(1)
+        new_thread = MonThread(ns_info, ns_status)
+        new_thread.start()
+        ns_thread_dict[ns_id] = new_thread
 
 
-def mon_stop(ns_list):
+def mon_stop(ns_list, ns_thread_dict):
     """
     Stops the monitoring os new network services
     """
@@ -53,9 +64,9 @@ def start_exporter():
     for message in consumer:
         ns_list = message.value["ns_list"]
         if message.value["action"] == "create":
-            mon_start(ns_list)
+            mon_start(ns_list, ns_thread_dict)
         else:
-            mon_stop(ns_list)
+            mon_stop(ns_list, ns_thread_dict)
 
 
 if __name__ == "__main__":

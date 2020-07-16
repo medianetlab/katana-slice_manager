@@ -14,7 +14,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 
-class MonThread(object):
+class MonThread(threading.Thread):
     """
     Class that implements a per Network Service thread for monitoring purposes
     """
