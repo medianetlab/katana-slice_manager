@@ -24,20 +24,18 @@ def mon_start(ns_list, ns_thread_dict):
     """
     Starts the monitoring of new network services
     """
+    logger.debug("New Message Start")
     for ns_id, ns in ns_list.items():
-        ns_name, location, ns_info = "", "", {}
         for key, value in ns.items():
-            if key == "ns-name":
-                ns_name = value.replace("-", "_")
-            else:
-                location = key.replace("-", "_")
-                ns_info = value
-        metric_name = ns_name + "_" + location
-        ns_status = Gauge(metric_name, "Network Service Status")
-        ns_status.set(1)
-        new_thread = MonThread(ns_info, ns_status)
-        new_thread.start()
-        ns_thread_dict[ns_id] = new_thread
+            location = key.replace("-", "_")
+            ns_name = value["ns-name"].replace("-", "_")
+            metric_name = ns_name + "_" + location
+            ns_status = Gauge(metric_name, "Network Service Status")
+            ns_status.set(1)
+            new_thread = MonThread(value, ns_status)
+            new_thread.start()
+            ns_thread_dict[ns_id] = new_thread
+    logger.debug(ns_list)
 
 
 def mon_stop(ns_list, ns_thread_dict):

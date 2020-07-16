@@ -380,13 +380,16 @@ def add_slice(nest_req):
     for ns in total_ns_list:
         ns["start_time"] = time.time()
         ns_inst_info[ns["ns-id"]] = {}
-        ns_inst_info[ns["ns-id"]]["ns-name"] = ns["ns-name"]
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
         selected_vim = ns["placement_loc"]["vim"]
         nfvo_vim_account = vim_dict[selected_vim]["nfvo_vim_account"][ns["nfvo-id"]]
         nfvo_inst_ns = target_nfvo_obj.instantiateNs(ns["ns-name"], ns["nsd-id"], nfvo_vim_account)
-        ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]] = {"nfvo_inst_ns": nfvo_inst_ns}
+        ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]] = {
+            "nfvo_inst_ns": nfvo_inst_ns,
+            "nfvo-id": ns["nfvo-id"],
+            "ns-name": ns["ns-name"],
+        }
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
         time.sleep(2)
