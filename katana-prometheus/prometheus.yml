@@ -15,3 +15,4 @@ scrape_configs:
   static_configs:
   - targets:
     - localhost:9090
+    - katana-nfv_mon:8002
