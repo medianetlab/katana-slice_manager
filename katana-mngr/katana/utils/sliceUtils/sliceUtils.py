@@ -423,6 +423,7 @@ def add_slice(nest_req):
         # Create the Kafka producer
         producer = create_producer()
         producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
+        nest["slice_monitoring"]["nfv_ns_status_monitoring"] = True
 
     # *** STEP-3b: Radio Slice Configuration ***
     if mongoUtils.count("ems") <= 0:
@@ -658,10 +659,15 @@ def delete_slice(slice_id, force=False):
     monitoring = os.getenv("KATANA_MONITORING", None)
     slice_monitoring = slice_json.get("slice_monitoring", None)
     if monitoring and slice_monitoring:
-        # Use the Grafana API in order to create the new dashboard for the new slice
+        # Use the Grafana API in order to delete the new dashboard for the new slice
         grafana_url = f"http://katana-grafana:3000/api/dashboards/uid/{slice_id}"
         headers = {"accept": "application/json", "content-type": "application/json"}
         grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
         grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
         r = requests.delete(url=grafana_url, headers=headers, auth=(grafana_user, grafana_passwd),)
         logger.info(f"Deleted Grafana dashboard for slice {slice_id}")
+        # Stop the threads monitoring NS status of the slice
+        # Create the Kafka producer
+        producer = create_producer()
+        ns_inst_info = slice_json["ns_inst_info"]
+        producer.send(topic="nfv_mon", value={"action": "delete", "ns_list": ns_inst_info})

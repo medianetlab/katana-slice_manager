@@ -177,6 +177,8 @@ services:
     build: ./katana-nfv_mon
     container_name: katana-nfv_mon
     restart: unless-stopped
+    environment:
+      PYTHONWARNINGS: "ignore:Unverified HTTPS request"
     command: >
       python katana/exporter.py
     ports:

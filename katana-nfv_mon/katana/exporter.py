@@ -5,6 +5,7 @@ Read the collected NFV metrics and expose them to Prometheus
 """
 
 import logging
+import threading
 
 from katana.utils.kafkaUtils.kafkaUtils import create_consumer, create_topic
 from katana.utils.threadingUtis.threadingUtils import MonThread
@@ -24,7 +25,7 @@ def mon_start(ns_list, ns_thread_dict):
     """
     Starts the monitoring of new network services
     """
-    logger.debug("New Message Start")
+    logger.info("Starting Network Function Status monitoring")
     for ns_id, ns in ns_list.items():
         for key, value in ns.items():
             location = key.replace("-", "_")
@@ -35,14 +36,15 @@ def mon_start(ns_list, ns_thread_dict):
             new_thread = MonThread(value, ns_status)
             new_thread.start()
             ns_thread_dict[ns_id] = new_thread
-    logger.debug(ns_list)
 
 
 def mon_stop(ns_list, ns_thread_dict):
     """
     Stops the monitoring os new network services
     """
-    logger.debug(ns_list)
+    logger.info("Stoping Network Function Status monitoring")
+    for ns_id in ns_list.keys():
+        ns_thread_dict[ns_id].stop()
 
 
 def start_exporter():

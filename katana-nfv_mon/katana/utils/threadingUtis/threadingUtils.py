@@ -31,30 +31,21 @@ class MonThread(threading.Thread):
         """
         The function that will run to check the NS status
         """
-        logger.debug("Running")
-        logger.debug(self.stopped())
         while not self.stopped():
-            logger.debug("In iterations")
             target_nfvo = mongoUtils.find("nfvo", {"id": self.ns["nfvo-id"]})
             if target_nfvo["type"] == "OSM":
-                logger.debug("Creating new OSM obj")
                 target_nfvo_obj = osmUtils.Osm(
                     target_nfvo["id"],
                     target_nfvo["nfvoip"],
                     target_nfvo["nfvousername"],
                     target_nfvo["nfvopassword"],
                 )
-                logger.debug(target_nfvo_obj)
             else:
                 logger.error("Not supported NFVO type")
                 return
-
             insr = target_nfvo_obj.getNsr(self.ns["nfvo_inst_ns"])
-            logger.debug(insr)
             if not insr or insr["operational-status"] != "running":
-                logger.debug("ERROR")
                 self.ns_status.set(0)
-            logger.debug("Everything is alright")
             self._stop.wait(timeout=30)
 
     def stopped(self):
