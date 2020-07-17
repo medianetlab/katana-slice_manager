@@ -389,6 +389,7 @@ def add_slice(nest_req):
             "nfvo_inst_ns": nfvo_inst_ns,
             "nfvo-id": ns["nfvo-id"],
             "ns-name": ns["ns-name"],
+            "slice_id": nest["_id"],
         }
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)

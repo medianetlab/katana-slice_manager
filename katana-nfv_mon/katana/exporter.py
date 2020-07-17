@@ -30,12 +30,17 @@ def mon_start(ns_list, ns_thread_dict):
         for key, value in ns.items():
             location = key.replace("-", "_")
             ns_name = value["ns-name"].replace("-", "_")
-            metric_name = ns_name + "_" + location
-            ns_status = Gauge(metric_name, "Network Service Status")
-            ns_status.set(1)
+            metric_name = "ns_" + ns_name + "_" + location
+            dict_entry = ns_thread_dict.get(metric_name, {})
+            if not dict_entry:
+                ns_status = Gauge(metric_name, "Network Service Status", ["slice_id"])
+            else:
+                ns_status = next(iter(dict_entry.values()))["metric"]
+            ns_status.labels(value["slice_id"]).set(1)
             new_thread = MonThread(value, ns_status)
             new_thread.start()
-            ns_thread_dict[ns_id] = new_thread
+            dict_entry[ns_id] = {"thread": new_thread, "metric": ns_status}
+            ns_thread_dict[metric_name] = dict_entry
 
 
 def mon_stop(ns_list, ns_thread_dict):
@@ -43,8 +48,13 @@ def mon_stop(ns_list, ns_thread_dict):
     Stops the monitoring os new network services
     """
     logger.info("Stoping Network Function Status monitoring")
-    for ns_id in ns_list.keys():
-        ns_thread_dict[ns_id].stop()
+    for ns_id, ns in ns_list.items():
+        for key, value in ns.items():
+            location = key.replace("-", "_")
+            ns_name = value["ns-name"].replace("-", "_")
+            metric_name = "ns_" + ns_name + "_" + location
+            mon_thread = ns_thread_dict[metric_name][ns_id]["thread"]
+            mon_thread.stop()
 
 
 def start_exporter():
