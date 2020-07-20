@@ -175,6 +175,7 @@ def add_slice(nest_req):
 
     # Check if slice monitoring has been enabled
     monitoring = os.getenv("KATANA_MONITORING", None)
+    wim_monitoring = {}
     if monitoring:
         nest["slice_monitoring"] = {}
 
@@ -328,44 +329,13 @@ def add_slice(nest_req):
         target_wim["slices"][nest["_id"]] = nest["_id"]
         mongoUtils.update("slice", nest["_id"], nest)
         mongoUtils.update("wim", target_wim["_id"], target_wim)
-        nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
-        # Create Grafana Dashboard for WIM monitoring if defined by the WIM
+        # Add monitoring from WIM in nest
         try:
             wim_monitoring = target_wim["monitoring-url"]
             nest["slice_monitoring"]["WIM"] = wim_monitoring
-        except KeyError as e:
+        except KeyError:
             pass
-        else:
-            monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
-            # Read and fill the panel template
-            with open("/katana-grafana/templates/new_wim_panel.json", mode="r") as panel_file:
-                new_panel = json.load(panel_file)
-                new_panel["targets"].append(
-                    {
-                        "expr": f"rate({monitoring_slice_id}_flows[1m])",
-                        "interval": "",
-                        "legendFormat": "",
-                        "refId": "A",
-                    }
-                )
-            # Read and fill the dashboard template
-            with open("/katana-grafana/templates/new_dashboard.json", mode="r") as dashboard_file:
-                new_dashboard = json.load(dashboard_file)
-                new_dashboard["dashboard"]["panels"].append(new_panel)
-                new_dashboard["dashboard"]["title"] = monitoring_slice_id
-                new_dashboard["dashboard"]["uid"] = nest["_id"]
-            # Use the Grafana API in order to create the new dashboard for the new slice
-            grafana_url = "http://katana-grafana:3000/api/dashboards/db"
-            headers = {"accept": "application/json", "content-type": "application/json"}
-            grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
-            grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
-            r = requests.post(
-                url=grafana_url,
-                headers=headers,
-                auth=(grafana_user, grafana_passwd),
-                data=json.dumps(new_dashboard),
-            )
-            logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
+        nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
     nest["deployment_time"]["Provisioning_Time"] = format(time.time() - prov_start_time, ".4f")
 
     # **** STEP-3: Slice Activation Phase****
@@ -503,6 +473,57 @@ def add_slice(nest_req):
         )
 
     # *** STEP-4: Finalize ***
+    # Create Grafana Dashboard for monitoring
+    # Careate the NS status panel
+    if monitoring:
+        # Open the Grafana Dashboard template
+        monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
+        with open("/katana-grafana/templates/new_dashboard.json", mode="r") as dashboard_file:
+            new_dashboard = json.load(dashboard_file)
+            new_dashboard["dashboard"]["title"] = monitoring_slice_id
+            new_dashboard["dashboard"]["uid"] = nest["_id"]
+        # Add the dashboard panels
+        # Add the NS Status panels
+        targets = []
+        for ns in ns_inst_info.values():
+            for key, value in ns.items():
+                location = key.replace("-", "_")
+                ns_name = value["ns-name"].replace("-", "_")
+                metric_name = "ns_" + ns_name + "_" + location
+                expr = f"{metric_name}" + '{slice_id="' + nest["_id"] + '"}'
+                new_target = {"expr": expr, "interval": "", "legendFormat": ""}
+                targets.append(new_target)
+        # Read and fill the panel template
+        with open("/katana-grafana/templates/new_ns_status_panel.json", mode="r") as panel_file:
+            ns_panel = json.load(panel_file)
+            ns_panel["targets"] = targets
+            new_dashboard["dashboard"]["panels"].append(ns_panel)
+        # Add the WIM Monitoring panel
+        if wim_monitoring:
+            # Read and fill the panel template
+            with open("/katana-grafana/templates/new_wim_panel.json", mode="r") as panel_file:
+                wim_panel = json.load(panel_file)
+                wim_panel["targets"].append(
+                    {
+                        "expr": f"rate({monitoring_slice_id}_flows[1m])",
+                        "interval": "",
+                        "legendFormat": "",
+                        "refId": "A",
+                    }
+                )
+                new_dashboard["dashboard"]["panels"].append(wim_panel)
+        # Use the Grafana API in order to create the new dashboard for the new slice
+        grafana_url = "http://katana-grafana:3000/api/dashboards/db"
+        headers = {"accept": "application/json", "content-type": "application/json"}
+        grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
+        grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+        r = requests.post(
+            url=grafana_url,
+            headers=headers,
+            auth=(grafana_user, grafana_passwd),
+            data=json.dumps(new_dashboard),
+        )
+        logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
     logger.info(f"{nest['_id']} Status: Running")
     nest["status"] = "Running"
     nest["deployment_time"]["Slice_Deployment_Time"] = format(
