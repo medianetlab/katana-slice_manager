@@ -9,6 +9,7 @@ import os
 import requests
 
 from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.kafkaUtils.kafkaUtils import create_producer
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -174,6 +175,7 @@ def add_slice(nest_req):
 
     # Check if slice monitoring has been enabled
     monitoring = os.getenv("KATANA_MONITORING", None)
+    wim_monitoring = {}
     if monitoring:
         nest["slice_monitoring"] = {}
 
@@ -327,44 +329,13 @@ def add_slice(nest_req):
         target_wim["slices"][nest["_id"]] = nest["_id"]
         mongoUtils.update("slice", nest["_id"], nest)
         mongoUtils.update("wim", target_wim["_id"], target_wim)
-        nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
-        # Create Grafana Dashboard for WIM monitoring if defined by the WIM
+        # Add monitoring from WIM in nest
         try:
             wim_monitoring = target_wim["monitoring-url"]
             nest["slice_monitoring"]["WIM"] = wim_monitoring
-        except KeyError as e:
+        except KeyError:
             pass
-        else:
-            monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
-            # Read and fill the panel template
-            with open("/katana-grafana/templates/new_wim_panel.json", mode="r") as panel_file:
-                new_panel = json.load(panel_file)
-                new_panel["targets"].append(
-                    {
-                        "expr": f"rate({monitoring_slice_id}_flows[1m])",
-                        "interval": "",
-                        "legendFormat": "",
-                        "refId": "A",
-                    }
-                )
-            # Read and fill the dashboard template
-            with open("/katana-grafana/templates/new_dashboard.json", mode="r") as dashboard_file:
-                new_dashboard = json.load(dashboard_file)
-                new_dashboard["dashboard"]["panels"].append(new_panel)
-                new_dashboard["dashboard"]["title"] = monitoring_slice_id
-                new_dashboard["dashboard"]["uid"] = nest["_id"]
-            # Use the Grafana API in order to create the new dashboard for the new slice
-            grafana_url = "http://katana-grafana:3000/api/dashboards/db"
-            headers = {"accept": "application/json", "content-type": "application/json"}
-            grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
-            grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
-            r = requests.post(
-                url=grafana_url,
-                headers=headers,
-                auth=(grafana_user, grafana_passwd),
-                data=json.dumps(new_dashboard),
-            )
-            logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
+        nest["deployment_time"]["WAN_Deployment_Time"] = format(time.time() - wan_start_time, ".4f")
     nest["deployment_time"]["Provisioning_Time"] = format(time.time() - prov_start_time, ".4f")
 
     # **** STEP-3: Slice Activation Phase****
@@ -384,7 +355,12 @@ def add_slice(nest_req):
         selected_vim = ns["placement_loc"]["vim"]
         nfvo_vim_account = vim_dict[selected_vim]["nfvo_vim_account"][ns["nfvo-id"]]
         nfvo_inst_ns = target_nfvo_obj.instantiateNs(ns["ns-name"], ns["nsd-id"], nfvo_vim_account)
-        ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]] = {"nfvo_inst_ns": nfvo_inst_ns}
+        ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]] = {
+            "nfvo_inst_ns": nfvo_inst_ns,
+            "nfvo-id": ns["nfvo-id"],
+            "ns-name": ns["ns-name"],
+            "slice_id": nest["_id"],
+        }
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
         time.sleep(2)
@@ -412,6 +388,13 @@ def add_slice(nest_req):
 
     nest["ns_inst_info"] = ns_inst_info
     mongoUtils.update("slice", nest["_id"], nest)
+
+    # If monitoring parameter is set, send the ns_list to nfv_mon module
+    if monitoring:
+        # Create the Kafka producer
+        producer = create_producer()
+        producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
+        nest["slice_monitoring"]["nfv_ns_status_monitoring"] = True
 
     # *** STEP-3b: Radio Slice Configuration ***
     if mongoUtils.count("ems") <= 0:
@@ -490,6 +473,57 @@ def add_slice(nest_req):
         )
 
     # *** STEP-4: Finalize ***
+    # Create Grafana Dashboard for monitoring
+    # Careate the NS status panel
+    if monitoring:
+        # Open the Grafana Dashboard template
+        monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
+        with open("/katana-grafana/templates/new_dashboard.json", mode="r") as dashboard_file:
+            new_dashboard = json.load(dashboard_file)
+            new_dashboard["dashboard"]["title"] = monitoring_slice_id
+            new_dashboard["dashboard"]["uid"] = nest["_id"]
+        # Add the dashboard panels
+        # Add the NS Status panels
+        targets = []
+        for ns in ns_inst_info.values():
+            for key, value in ns.items():
+                location = key.replace("-", "_")
+                ns_name = value["ns-name"].replace("-", "_")
+                metric_name = "ns_" + ns_name + "_" + location
+                expr = f"{metric_name}" + '{slice_id="' + nest["_id"] + '"}'
+                new_target = {"expr": expr, "interval": "", "legendFormat": ""}
+                targets.append(new_target)
+        # Read and fill the panel template
+        with open("/katana-grafana/templates/new_ns_status_panel.json", mode="r") as panel_file:
+            ns_panel = json.load(panel_file)
+            ns_panel["targets"] = targets
+            new_dashboard["dashboard"]["panels"].append(ns_panel)
+        # Add the WIM Monitoring panel
+        if wim_monitoring:
+            # Read and fill the panel template
+            with open("/katana-grafana/templates/new_wim_panel.json", mode="r") as panel_file:
+                wim_panel = json.load(panel_file)
+                wim_panel["targets"].append(
+                    {
+                        "expr": f"rate({monitoring_slice_id}_flows[1m])",
+                        "interval": "",
+                        "legendFormat": "",
+                        "refId": "A",
+                    }
+                )
+                new_dashboard["dashboard"]["panels"].append(wim_panel)
+        # Use the Grafana API in order to create the new dashboard for the new slice
+        grafana_url = "http://katana-grafana:3000/api/dashboards/db"
+        headers = {"accept": "application/json", "content-type": "application/json"}
+        grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
+        grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+        r = requests.post(
+            url=grafana_url,
+            headers=headers,
+            auth=(grafana_user, grafana_passwd),
+            data=json.dumps(new_dashboard),
+        )
+        logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
     logger.info(f"{nest['_id']} Status: Running")
     nest["status"] = "Running"
     nest["deployment_time"]["Slice_Deployment_Time"] = format(
@@ -647,10 +681,15 @@ def delete_slice(slice_id, force=False):
     monitoring = os.getenv("KATANA_MONITORING", None)
     slice_monitoring = slice_json.get("slice_monitoring", None)
     if monitoring and slice_monitoring:
-        # Use the Grafana API in order to create the new dashboard for the new slice
+        # Use the Grafana API in order to delete the new dashboard for the new slice
         grafana_url = f"http://katana-grafana:3000/api/dashboards/uid/{slice_id}"
         headers = {"accept": "application/json", "content-type": "application/json"}
         grafana_user = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
         grafana_passwd = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
         r = requests.delete(url=grafana_url, headers=headers, auth=(grafana_user, grafana_passwd),)
         logger.info(f"Deleted Grafana dashboard for slice {slice_id}")
+        # Stop the threads monitoring NS status of the slice
+        # Create the Kafka producer
+        producer = create_producer()
+        ns_inst_info = slice_json["ns_inst_info"]
+        producer.send(topic="nfv_mon", value={"action": "delete", "ns_list": ns_inst_info})

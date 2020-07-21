@@ -13,13 +13,13 @@
     "fill": 1,
     "fillGradient": 0,
     "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 0,
-        "y": 9
+        "y": 0
     },
     "hiddenSeries": false,
-    "id": 4,
+    "id": 2,
     "legend": {
         "avg": false,
         "current": false,
@@ -43,12 +43,19 @@
     "spaceLength": 10,
     "stack": false,
     "steppedLine": false,
-    "targets": [],
+    "targets": [
+        {
+            "expr": "ns_dummy_ns_Core{slice_id=\"d88f18ca-0205-4cdb-95fd-87d3d0c8cd61\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+        }
+    ],
     "thresholds": [],
     "timeFrom": null,
     "timeRegions": [],
     "timeShift": null,
-    "title": "WIM Flows Metrics",
+    "title": "Network Service Status",
     "tooltip": {
         "shared": true,
         "sort": 0,

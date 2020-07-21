@@ -5,7 +5,7 @@ import uuid
 import pymongo
 import requests
 
-from katana.shared_utils.mongoUtils import mongoUtils
+from katana.utils.mongoUtils import mongoUtils
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
