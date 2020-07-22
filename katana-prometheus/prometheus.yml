@@ -2,13 +2,14 @@ global:
   evaluation_interval: 30s
   scrape_interval: 10s
 scrape_configs:
-- job_name: wim
+- job_name: SB_Components
   scheme: http
   static_configs:
   - targets: []
   file_sd_configs:
     - files: 
       - /etc/prometheus/wim_targets.json
+      - /etc/prometheus/vim_targets.json
       refresh_interval: 30s
 - job_name: katana
   scheme: http

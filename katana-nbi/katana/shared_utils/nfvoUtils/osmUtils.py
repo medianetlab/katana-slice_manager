@@ -167,10 +167,17 @@ class Osm:
         vnf_name = vnfr["vnfd-ref"]
         mgmt_ip = vnfr["ip-address"]
         vdu_ips = []
+        vm_list = []
         for i in vnfr["vdur"]:
             for ip in i["interfaces"]:
                 vdu_ips.append(ip["ip-address"])
-        vnf_info = {"vnf_name": vnf_name, "mgmt_ip": mgmt_ip, "vdu_ips": vdu_ips}
+            vm_list.append(i["name"])
+        vnf_info = {
+            "vnf_name": vnf_name,
+            "mgmt_ip": mgmt_ip,
+            "vdu_ips": vdu_ips,
+            "vm_list": vm_list,
+        }
         return vnf_info
 
     def deleteNs(self, nsId):

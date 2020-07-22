@@ -124,11 +124,14 @@ class WimView(FlaskView):
             except KeyError:
                 pass
             else:
-                with open("/wim_targets.json", mode="r") as prom_file:
-                    prom = json.load(prom_file)
-                    prom.remove({"targets": [monitoring_url], "labels": {"wim_id": wim["id"]}})
-                with open("/wim_targets.json", mode="w") as prom_file:
-                    json.dump(prom, prom_file)
+                try:
+                    with open("/wim_targets.json", mode="r") as prom_file:
+                        prom = json.load(prom_file)
+                        prom.remove({"targets": [monitoring_url], "labels": {"wim_id": wim["id"]}})
+                    with open("/wim_targets.json", mode="w") as prom_file:
+                        json.dump(prom, prom_file)
+                except ValueError:
+                    pass
             return "Deleted WIM {}".format(uuid), 200
         else:
             # if uuid is not found, return error
@@ -177,5 +180,15 @@ class WimView(FlaskView):
                 new_uuid = mongoUtils.add("wim", data)
             except pymongo.errors.DuplicateKeyError:
                 return f"WIM with id {wim_id} already exists", 400
+            try:
+                monitoring_url = request.json["monitoring-url"]
+            except KeyError:
+                pass
+            else:
+                with open("/wim_targets.json", mode="r") as prom_file:
+                    prom = json.load(prom_file)
+                    prom.append({"targets": [monitoring_url], "labels": {"wim_id": wim_id}})
+                with open("/wim_targets.json", mode="w") as prom_file:
+                    json.dump(prom, prom_file)
             mongoUtils.add("wim_obj", obj_json)
             return f"Created {new_uuid}", 201

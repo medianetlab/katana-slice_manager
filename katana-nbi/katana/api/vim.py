@@ -4,6 +4,7 @@ from logging import handlers
 import pickle
 import time
 import uuid
+import json
 
 from bson.binary import Binary
 from bson.json_util import dumps
@@ -104,6 +105,16 @@ class VimView(FlaskView):
                 request.json["resources"] = new_vim.get_resources()
                 thebytes = pickle.dumps(new_vim)
                 obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
+                try:
+                    vim_monitoring = request.json["infrastructure_monitoring"]
+                except KeyError:
+                    pass
+                else:
+                    with open("/vim_targets.json", mode="r") as prom_file:
+                        prom = json.load(prom_file)
+                        prom.append({"targets": [vim_monitoring], "labels": {}})
+                    with open("/vim_targets.json", mode="w") as prom_file:
+                        json.dump(prom, prom_file)
         elif request.json["type"] == "opennebula":
             try:
                 new_vim = opennebulaUtils.Opennebula(
@@ -222,5 +233,15 @@ class VimView(FlaskView):
                 new_uuid = mongoUtils.add("vim", request.json)
             except pymongo.errors.DuplicateKeyError:
                 return f"VIM with id {vim_id} already exists", 400
+            try:
+                vim_monitoring = request.json["infrastructure_monitoring"]
+            except KeyError:
+                pass
+            else:
+                with open("/vim_targets.json", mode="r") as prom_file:
+                    prom = json.load(prom_file)
+                    prom.append({"targets": [vim_monitoring], "labels": {}})
+                with open("/vim_targets.json", mode="w") as prom_file:
+                    json.dump(prom, prom_file)
             mongoUtils.add("vim_obj", obj_json)
             return f"Created {new_uuid}", 201

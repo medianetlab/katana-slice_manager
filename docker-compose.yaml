@@ -55,6 +55,7 @@ services:
     volumes:
       - "./katana-nbi:/katana-nbi"
       - "./katana-prometheus/wim_targets.json:/wim_targets.json"
+      - "./katana-prometheus/vim_targets.json:/vim_targets.json"
     ports:
       - "8000:8000"
     environment:
@@ -155,6 +156,7 @@ services:
     volumes:
       - "prometheus:/prometheus"
       - "./katana-prometheus/wim_targets.json:/etc/prometheus/wim_targets.json"
+      - "./katana-prometheus/vim_targets.json:/etc/prometheus/vim_targets.json"
       - "./katana-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
     restart: unless-stopped
     ports: 
