@@ -82,6 +82,7 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
                 nfvo.bootstrapNfvo()
             nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
             if not nsd and ns.get("optional", False):
+                # The NS is optional - continue to next
                 pop_list.append(ns)
                 continue
             else:
@@ -103,10 +104,14 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
         new_ns["vims"] = []
         loc = new_ns["placement_loc"]["location"]
         get_vim = list(mongoUtils.find_all("vim", {"location": loc}))
-        if not get_vim:
+        if not get_vim and not new_ns.get("optional", False):
             # Error handling: There is no VIM at that location
             logger.error(f"VIM not found in location {loc}")
             return 1, []
+        elif new_ns.get("optional", False):
+            # The NS is optional - continue to next
+            pop_list.append(ns)
+            continue
         # TODO: Check the available resources and select vim
         # Temporary use the first element
         selected_vim = get_vim[0]["id"]
@@ -184,7 +189,7 @@ def add_slice(nest_req):
     for location in nest["coverage"]:
         err, _ = ns_details(nest["ns_list"], location, vim_dict, total_ns_list)
         if err:
-            delete_slice(nest)
+            delete_slice(nest["_id"])
             return
     del nest["ns_list"]
     nest["ns_list"] = copy.deepcopy(total_ns_list)
@@ -204,7 +209,7 @@ def add_slice(nest_req):
                         x for x in connection[key]["ns_list"] if x not in pop_list
                     ]
                 if err:
-                    delete_slice(nest)
+                    delete_slice(nest["_id"])
                     return
                 inst_functions[connection[key]["_id"]] = connection[key]
             except KeyError:
@@ -360,6 +365,7 @@ def add_slice(nest_req):
             "nfvo-id": ns["nfvo-id"],
             "ns-name": ns["ns-name"],
             "slice_id": nest["_id"],
+            "vim": selected_vim,
         }
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
@@ -474,7 +480,7 @@ def add_slice(nest_req):
 
     # *** STEP-4: Finalize ***
     # Create Grafana Dashboard for monitoring
-    # Careate the NS status panel
+    # Create the NS status panel
     if monitoring:
         # Open the Grafana Dashboard template
         monitoring_slice_id = "slice_" + nest["_id"].replace("-", "_")
@@ -485,6 +491,7 @@ def add_slice(nest_req):
         # Add the dashboard panels
         # Add the NS Status panels
         targets = []
+        infra_targets = {}
         for ns in ns_inst_info.values():
             for key, value in ns.items():
                 location = key.replace("-", "_")
@@ -493,7 +500,43 @@ def add_slice(nest_req):
                 expr = f"{metric_name}" + '{slice_id="' + nest["_id"] + '"}'
                 new_target = {"expr": expr, "interval": "", "legendFormat": ""}
                 targets.append(new_target)
-        # Read and fill the panel template
+                # Check if the VIM supports infrastructure monitoring
+                selected_vim = mongoUtils.find("vim", {"id": value["vim"]})
+                try:
+                    vim_monitoring = selected_vim["type"]
+                    vim_monitoring_list = infra_targets.get(vim_monitoring, [])
+                    for ivnf in value["vnfr"]:
+                        vim_monitoring_list += ivnf["vm_list"]
+                    infra_targets[vim_monitoring] = vim_monitoring_list
+                except KeyError:
+                    pass
+        # Create the VM Monitoring panels
+        PANELS = [
+            "vm_state",
+            "vm_cpu_cpu_time",
+            "vm_cpu_overall_cpu_usage",
+            "vm_memory_actual",
+            "vm_memory_available",
+            "vm_memory_usage",
+            "vm_disk_read_bytes",
+            "vm_disk_write_bytes",
+            "vm_disk_errors",
+        ]
+        with open("/katana-grafana/templates/new_vm_monitoring_panel.json", mode="r") as panel_file:
+            vm_panel_template = json.load(panel_file)
+            for i, panel in enumerate(PANELS):
+                vm_panel = copy.deepcopy(vm_panel_template)
+                vm_panel["title"] = panel
+                vm_panel["gridPos"] = {"h": 8, "w": 12, "x": 13, "y": i * 9}
+                vm_panel["id"] = 10 + i
+                vm_targets = []
+                for vim_type, vm_list in infra_targets.items():
+                    for vm in vm_list:
+                        expr = vim_type + "_" + panel + '{vm_name="' + vm + '"}'
+                        vm_targets.append({"expr": expr, "interval": "", "legendFormat": ""})
+                vm_panel["targets"] = vm_targets
+                new_dashboard["dashboard"]["panels"].append(vm_panel)
+        # Read and fill the NS Status panel template
         with open("/katana-grafana/templates/new_ns_status_panel.json", mode="r") as panel_file:
             ns_panel = json.load(panel_file)
             ns_panel["targets"] = targets
@@ -621,7 +664,7 @@ def delete_slice(slice_id, force=False):
         slice_json["error"] = slice_json.get("error", "") + err
         mongoUtils.update("slice", slice_json["_id"], slice_json)
 
-    vim_dict = slice_json["vim_list"]
+    vim_dict = slice_json.get("vim_list", {})
     for vim, vim_info in vim_dict.items():
         try:
             # Delete the new tenants from the NFVO
