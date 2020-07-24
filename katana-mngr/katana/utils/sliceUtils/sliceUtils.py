@@ -104,14 +104,15 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
         new_ns["vims"] = []
         loc = new_ns["placement_loc"]["location"]
         get_vim = list(mongoUtils.find_all("vim", {"location": loc}))
-        if not get_vim and not new_ns.get("optional", False):
-            # Error handling: There is no VIM at that location
-            logger.error(f"VIM not found in location {loc}")
-            return 1, []
-        elif new_ns.get("optional", False):
-            # The NS is optional - continue to next
-            pop_list.append(ns)
-            continue
+        if not get_vim:
+            if not new_ns.get("optional", False):
+                # Error handling: There is no VIM at that location
+                logger.error(f"VIM not found in location {loc}")
+                return 1, []
+            else:
+                # The NS is optional - continue to next
+                pop_list.append(ns)
+                continue
         # TODO: Check the available resources and select vim
         # Temporary use the first element
         selected_vim = get_vim[0]["id"]
