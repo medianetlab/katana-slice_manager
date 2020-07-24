@@ -532,7 +532,17 @@ def add_slice(nest_req):
                 vm_targets = []
                 for vim_type, vm_list in infra_targets.items():
                     for vm in vm_list:
-                        expr = vim_type + "_" + panel + '{vm_name="' + vm + '"}'
+                        expr = (
+                            vim_type
+                            + "_"
+                            + panel
+                            + '{project=~".*'
+                            + nest["_id"]
+                            + '",vm_name="'
+                            + vm
+                            + '"}'
+                        )
+                        logger.debug(expr)
                         vm_targets.append({"expr": expr, "interval": "", "legendFormat": ""})
                 vm_panel["targets"] = vm_targets
                 new_dashboard["dashboard"]["panels"].append(vm_panel)
