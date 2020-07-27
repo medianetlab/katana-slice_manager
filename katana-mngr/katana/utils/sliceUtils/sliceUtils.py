@@ -491,16 +491,13 @@ def add_slice(nest_req):
             new_dashboard["dashboard"]["uid"] = nest["_id"]
         # Add the dashboard panels
         # Add the NS Status panels
-        targets = []
+        expr = "ns_status" + '{slice_id="' + nest["_id"] + '"}'
+        targets = [
+            {"expr": expr, "legendFormat": "", "interval": "", "format": "table", "instant": True}
+        ]
         infra_targets = {}
         for ns in ns_inst_info.values():
             for key, value in ns.items():
-                location = key.replace("-", "_")
-                ns_name = value["ns-name"].replace("-", "_")
-                metric_name = "ns_" + ns_name + "_" + location
-                expr = f"{metric_name}" + '{slice_id="' + nest["_id"] + '"}'
-                new_target = {"expr": expr, "interval": "", "legendFormat": ""}
-                targets.append(new_target)
                 # Check if the VIM supports infrastructure monitoring
                 selected_vim = mongoUtils.find("vim", {"id": value["vim"]})
                 try:
@@ -543,7 +540,6 @@ def add_slice(nest_req):
                             + vm
                             + '"}'
                         )
-                        logger.debug(expr)
                         vm_targets.append({"expr": expr, "interval": "", "legendFormat": ""})
                 vm_panel["targets"] = vm_targets
                 new_dashboard["dashboard"]["panels"].append(vm_panel)
