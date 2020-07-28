@@ -6,6 +6,8 @@ Read the collected NFV metrics and expose them to Prometheus
 
 import logging
 import threading
+import requests
+import json
 
 from katana.utils.kafkaUtils.kafkaUtils import create_consumer, create_topic
 from katana.utils.threadingUtis.threadingUtils import MonThread
@@ -21,12 +23,11 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 
-def mon_start(ns_list, ns_thread_dict):
+def mon_start(ns_list, ns_thread_dict, ns_status):
     """
     Starts the monitoring of new network services
     """
     logger.info("Starting Network Function Status monitoring")
-    ns_status = Gauge("ns_status", "Network Service Status", ["slice_id", "ns_name"])
     for ns_id, ns in ns_list.items():
         for key, value in ns.items():
             location = key.replace("-", "_")
@@ -54,13 +55,37 @@ def mon_stop(ns_list, ns_thread_dict):
             mon_thread.stop()
 
 
+def katana_mon(metric, slice_info):
+    """
+    Updates the slice monitoring status
+    """
+    if slice_info["status"] == "running":
+        metric.labels(slice_info["slice_id"]).set(0)
+    elif slice_info["status"] == "placement":
+        metric.labels(slice_info["slice_id"]).set(1)
+    elif slice_info["status"] == "provisioning":
+        metric.labels(slice_info["slice_id"]).set(2)
+    elif slice_info["status"] == "activation":
+        metric.labels(slice_info["slice_id"]).set(3)
+    elif slice_info["status"] == "terminating":
+        metric.labels(slice_info["slice_id"]).set(10)
+    elif slice_info["status"] == "error":
+        metric.labels(slice_info["slice_id"]).set(11)
+    elif slice_info["status"] == "deleted":
+        metric.labels(slice_info["slice_id"]).set(12)
+
+
 def start_exporter():
     """
     Starts the NFV Monitoring. Creates the Kafka consumer
     """
 
-    # Create the thread dictionary
+    # Create the Katana Home Monitoring metric
+    katana_home = Gauge("katana_status", "Katana Slice Status", ["slice_id"])
+
+    # Create the thread dictionary and the prometheus ns status metric
     ns_thread_dict = {}
+    ns_status = Gauge("ns_status", "Network Service Status", ["slice_id", "ns_name"])
 
     # Create the Kafka topic
     create_topic("nfv_mon")
@@ -69,11 +94,14 @@ def start_exporter():
     consumer = create_consumer("nfv_mon")
 
     for message in consumer:
-        ns_list = message.value["ns_list"]
         if message.value["action"] == "create":
-            mon_start(ns_list, ns_thread_dict)
-        else:
+            ns_list = message.value["ns_list"]
+            mon_start(ns_list, ns_thread_dict, ns_status)
+        elif message.value["action"] == "delete":
+            ns_list = message.value["ns_list"]
             mon_stop(ns_list, ns_thread_dict)
+        elif message.value["action"] == "katana_mon":
+            katana_mon(katana_home, message.value["slice_info"])
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import threading
 import logging
-import pickle
 
 from katana.utils.mongoUtils import mongoUtils
 from katana.utils.nfvoUtils import osmUtils
