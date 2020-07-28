@@ -55,12 +55,13 @@ def mon_stop(ns_list, ns_thread_dict):
             mon_thread.stop()
 
 
-def katana_mon(metric, slice_info):
+def katana_mon(metric, n_slices, slice_info):
     """
     Updates the slice monitoring status
     """
     if slice_info["status"] == "running":
         metric.labels(slice_info["slice_id"]).set(0)
+        n_slices.inc()
     elif slice_info["status"] == "placement":
         metric.labels(slice_info["slice_id"]).set(1)
     elif slice_info["status"] == "provisioning":
@@ -73,6 +74,7 @@ def katana_mon(metric, slice_info):
         metric.labels(slice_info["slice_id"]).set(11)
     elif slice_info["status"] == "deleted":
         metric.labels(slice_info["slice_id"]).set(12)
+        n_slices.dec()
 
 
 def start_exporter():
@@ -82,6 +84,7 @@ def start_exporter():
 
     # Create the Katana Home Monitoring metric
     katana_home = Gauge("katana_status", "Katana Slice Status", ["slice_id"])
+    total_slices = Gauge("total_slices", "Number of running slices")
 
     # Create the thread dictionary and the prometheus ns status metric
     ns_thread_dict = {}
@@ -101,7 +104,7 @@ def start_exporter():
             ns_list = message.value["ns_list"]
             mon_stop(ns_list, ns_thread_dict)
         elif message.value["action"] == "katana_mon":
-            katana_mon(katana_home, message.value["slice_info"])
+            katana_mon(katana_home, total_slices, message.value["slice_info"])
 
 
 if __name__ == "__main__":
