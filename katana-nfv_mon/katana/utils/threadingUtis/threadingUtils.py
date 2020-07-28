@@ -20,10 +20,11 @@ class MonThread(threading.Thread):
     Class that implements a per Network Service thread for monitoring purposes
     """
 
-    def __init__(self, ns, ns_status):
+    def __init__(self, ns, ns_status, ns_name):
         super().__init__()
         self.ns = ns
         self.ns_status = ns_status
+        self.ns_name = ns_name
         # Create the stop parameter
         self._stop = threading.Event()
 
@@ -44,8 +45,10 @@ class MonThread(threading.Thread):
                 logger.error("Not supported NFVO type")
                 return
             insr = target_nfvo_obj.getNsr(self.ns["nfvo_inst_ns"])
-            if not insr or insr["operational-status"] != "running":
-                self.ns_status.labels(self.ns["slice_id"]).set(0)
+            if not insr:
+                self.ns_status.labels(self.ns["slice_id"], self.ns_name).set(2)
+            elif insr["operational-status"] != "running":
+                self.ns_status.labels(self.ns["slice_id"], self.ns_name).set(3)
             self._stop.wait(timeout=30)
 
     def stopped(self):

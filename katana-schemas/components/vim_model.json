@@ -1,10 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-
   "type": "object",
   "description": "A new VIM",
   "properties": {
-    "id":{
+    "id": {
       "type": "string",
       "description": "Unique id"
     },
@@ -44,10 +43,20 @@
       "type": "string",
       "description": "A description for the VIM"
     },
+    "infrastructure_monitoring": {
+      "type": "string",
+      "description": "Optional - The URL of the Prometheus system that is responsible for monitoring the VIM"
+    },
     "config": {
       "type": "object",
       "description": "Optional parameters regarding the VIM operation - example: Security group"
     }
   },
-  "required": ["id", "auth_url", "username", "password", "admin_project_name"]
+  "required": [
+    "id",
+    "auth_url",
+    "username",
+    "password",
+    "admin_project_name"
+  ]
 }

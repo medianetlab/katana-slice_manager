@@ -26,18 +26,15 @@ def mon_start(ns_list, ns_thread_dict):
     Starts the monitoring of new network services
     """
     logger.info("Starting Network Function Status monitoring")
+    ns_status = Gauge("ns_status", "Network Service Status", ["slice_id", "ns_name"])
     for ns_id, ns in ns_list.items():
         for key, value in ns.items():
             location = key.replace("-", "_")
             ns_name = value["ns-name"].replace("-", "_")
             metric_name = "ns_" + ns_name + "_" + location
             dict_entry = ns_thread_dict.get(metric_name, {})
-            if not dict_entry:
-                ns_status = Gauge(metric_name, "Network Service Status", ["slice_id"])
-            else:
-                ns_status = next(iter(dict_entry.values()))["metric"]
-            ns_status.labels(value["slice_id"]).set(1)
-            new_thread = MonThread(value, ns_status)
+            ns_status.labels(value["slice_id"], metric_name).set(1)
+            new_thread = MonThread(value, ns_status, metric_name)
             new_thread.start()
             dict_entry[ns_id] = {"thread": new_thread, "metric": ns_status}
             ns_thread_dict[metric_name] = dict_entry

@@ -1,94 +1,88 @@
 {
-    "aliasColors": {},
-    "bars": false,
-    "dashLength": 10,
-    "dashes": false,
     "datasource": "katana-prometheus",
     "fieldConfig": {
         "defaults": {
-            "custom": {}
+            "custom": {
+                "align": null,
+                "displayMode": "color-background"
+            },
+            "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                    {
+                        "color": "purple",
+                        "value": null
+                    },
+                    {
+                        "color": "green",
+                        "value": 1
+                    },
+                    {
+                        "color": "red",
+                        "value": 2
+                    },
+                    {
+                        "color": "red",
+                        "value": 3
+                    }
+                ]
+            },
+            "mappings": [
+                {
+                    "id": 0,
+                    "text": "Running",
+                    "type": 1,
+                    "value": "1"
+                },
+                {
+                    "id": 1,
+                    "text": "Terminated",
+                    "type": 1,
+                    "value": "2"
+                },
+                {
+                    "id": 2,
+                    "text": "Error",
+                    "type": 1,
+                    "value": "3"
+                }
+            ]
         },
         "overrides": []
     },
-    "fill": 1,
-    "fillGradient": 0,
     "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
         "y": 0
     },
-    "hiddenSeries": false,
-    "id": 2,
-    "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-    },
-    "lines": true,
-    "linewidth": 1,
-    "nullPointMode": "null",
+    "id": 1,
     "options": {
-        "dataLinks": []
+        "showHeader": true
     },
-    "percentage": false,
-    "pointradius": 2,
-    "points": false,
-    "renderer": "flot",
-    "seriesOverrides": [],
-    "spaceLength": 10,
-    "stack": false,
-    "steppedLine": false,
-    "targets": [
-        {
-            "expr": "ns_dummy_ns_Core{slice_id=\"d88f18ca-0205-4cdb-95fd-87d3d0c8cd61\"}",
-            "interval": "",
-            "legendFormat": "",
-            "refId": "A"
-        }
-    ],
-    "thresholds": [],
+    "pluginVersion": "7.0.4",
+    "targets": [],
     "timeFrom": null,
-    "timeRegions": [],
     "timeShift": null,
     "title": "Network Service Status",
-    "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-    },
-    "type": "graph",
-    "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-    },
-    "yaxes": [
+    "transformations": [
         {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-        },
-        {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
+            "id": "organize",
+            "options": {
+                "excludeByName": {
+                    "Time": true,
+                    "__name__": true,
+                    "instance": true,
+                    "job": true,
+                    "slice_id": true
+                },
+                "indexByName": {},
+                "renameByName": {
+                    "Value": "Status",
+                    "ns_name": "NS Name"
+                }
+            }
         }
     ],
-    "yaxis": {
-        "align": false,
-        "alignLevel": null
-    }
+    "type": "table"
 }

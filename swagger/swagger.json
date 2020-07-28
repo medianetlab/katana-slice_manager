@@ -3262,6 +3262,10 @@
             "type": "string",
             "description": "A description for the VIM"
           },
+          "infrastructure_monitoring": {
+            "type": "string",
+            "description": "Optional - The URL of the Prometheus system that is responsible for monitoring the VIM"
+          },
           "config": {
             "type": "object",
             "properties": {},
