@@ -163,7 +163,7 @@ services:
       - "9090:9090"
 
   katana-grafana:
-    image: grafana/grafana:7.0.4
+    image: grafana/grafana:7.1.1
     container_name: katana-grafana
     restart: unless-stopped
     ports: 
@@ -179,14 +179,16 @@ services:
     build: ./katana-nfv_mon
     container_name: katana-nfv_mon
     restart: unless-stopped
-    environment:
-      PYTHONWARNINGS: "ignore:Unverified HTTPS request"
+    env_file: 
+      - "katana-grafana/.env"
+      - "katana-nfv_mon/.env"
     command: >
       python katana/exporter.py
     ports:
       - "8002:8002"
     depends_on: 
       - katana-mngr
+      - katana-grafana
 
 volumes:
   mongo-datadb: {}
