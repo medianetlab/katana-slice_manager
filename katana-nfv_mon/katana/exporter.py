@@ -85,7 +85,6 @@ def start_exporter():
     # Add the Grafana new Home Dashboard
     with open("katana/dashboards/katana.json", mode="r") as home_dash_file:
         home_dash = json.load(home_dash_file)
-        logger.debug(home_dash)
         # Use the Grafana API in order to create the new home dashboard
         grafana_url = "http://katana-grafana:3000/api/dashboards/db"
         headers = {"accept": "application/json", "content-type": "application/json"}
@@ -97,7 +96,16 @@ def start_exporter():
             auth=(grafana_user, grafana_passwd),
             data=json.dumps(home_dash),
         )
-        logger.debug(r.content)
+
+    # Set the default dashboard to the new katana home dashboard
+    grafana_url = "http://katana-grafana:3000/api/org/preferences"
+    preferences = {"theme": "", "homeDashboardId": 1, "timezone": "cet"}
+    r = requests.put(
+        url=grafana_url,
+        headers=headers,
+        auth=(grafana_user, grafana_passwd),
+        data=json.dumps(preferences),
+    )
 
     # Create the Katana Home Monitoring metric
     katana_home = Gauge("katana_status", "Katana Slice Status", ["slice_id"])

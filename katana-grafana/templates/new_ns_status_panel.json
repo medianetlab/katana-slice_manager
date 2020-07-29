@@ -24,6 +24,10 @@
                     {
                         "color": "red",
                         "value": 3
+                    },
+                    {
+                        "color": "yellow",
+                        "value": 4
                     }
                 ]
             },
@@ -45,6 +49,12 @@
                     "text": "Error",
                     "type": 1,
                     "value": "3"
+                },
+                {
+                    "id": 3,
+                    "text": "Terminating",
+                    "type": 1,
+                    "value": "4"
                 }
             ]
         },

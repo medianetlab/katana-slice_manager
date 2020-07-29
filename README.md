@@ -17,6 +17,7 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 - Modular architecture for supporting different infrastructure technologies
 - Lightweight web UI
 - Integrated CLI tool
+- Prometheus and Grafana Monitoring modules
 - Slice Deployment and Configuration measurements
 
 ## Quick Start
@@ -37,7 +38,7 @@ sudo ./install.sh
 Start katana Slice Manager service:
 
 ```bash
-./start.sh [-p | --publish] [-g | --graphical-ui] [-h | --help]
+./start.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]
 ```
 
 - __-p | --publish__: Expose Kafka end Swagger-ui using katana public IP
