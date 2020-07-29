@@ -46,9 +46,11 @@ class MonThread(threading.Thread):
             insr = target_nfvo_obj.getNsr(self.ns["nfvo_inst_ns"])
             if not insr:
                 self.ns_status.labels(self.ns["slice_id"], self.ns_name).set(2)
+            elif insr["operational-status"] == "terminating":
+                self.ns_status.labels(self.ns["slice_id"], self.ns_name).set(4)
             elif insr["operational-status"] != "running":
                 self.ns_status.labels(self.ns["slice_id"], self.ns_name).set(3)
-            self._stop.wait(timeout=30)
+            self._stop.wait(timeout=10)
 
     def stopped(self):
         """
