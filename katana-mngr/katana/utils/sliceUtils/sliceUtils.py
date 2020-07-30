@@ -167,8 +167,26 @@ def add_slice(nest_req):
     for nest_key in NEST_KEYS_LIST:
         nest[nest_key] = nest_req.get(nest_key, [])
 
+    # Check if slice monitoring has been enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    wim_monitoring = {}
+    mon_producer = None
+    if monitoring:
+        # Create the Kafka producer
+        mon_producer = create_producer()
+        nest["slice_monitoring"] = {}
+
     # **** STEP-1: Placement ****
     nest["status"] = "Placement"
+    if monitoring:
+        mon_producer.send(
+            "nfv_mon",
+            value={
+                "action": "katana_mon",
+                "slice_info": {"slice_id": nest["_id"], "status": "placement"},
+            },
+        )
+
     nest["conf_comp"] = {"nf": [], "ems": []}
     mongoUtils.update("slice", nest["_id"], nest)
     logger.info(f"{nest['_id']} Status: Placement")
@@ -178,12 +196,6 @@ def add_slice(nest_req):
     vim_dict = {}
     total_ns_list = []
     ems_messages = {}
-
-    # Check if slice monitoring has been enabled
-    monitoring = os.getenv("KATANA_MONITORING", None)
-    wim_monitoring = {}
-    if monitoring:
-        nest["slice_monitoring"] = {}
 
     # Get Details for the Network Services
     # i) The extra NS of the slice
@@ -222,6 +234,14 @@ def add_slice(nest_req):
 
     # **** STEP-2: Resource Provisioning ****
     nest["status"] = "Provisioning"
+    if monitoring:
+        mon_producer.send(
+            "nfv_mon",
+            value={
+                "action": "katana_mon",
+                "slice_info": {"slice_id": nest["_id"], "status": "provisioning"},
+            },
+        )
     mongoUtils.update("slice", nest["_id"], nest)
     logger.info(f"{nest['_id']} Status: Provisioning")
     prov_start_time = time.time()
@@ -346,6 +366,14 @@ def add_slice(nest_req):
 
     # **** STEP-3: Slice Activation Phase****
     nest["status"] = "Activation"
+    if monitoring:
+        mon_producer.send(
+            "nfv_mon",
+            value={
+                "action": "katana_mon",
+                "slice_info": {"slice_id": nest["_id"], "status": "activation"},
+            },
+        )
     mongoUtils.update("slice", nest["_id"], nest)
     logger.info(f"{nest['_id']} Status: Activation")
     # *** STEP-3a: Cloud ***
@@ -397,10 +425,8 @@ def add_slice(nest_req):
     mongoUtils.update("slice", nest["_id"], nest)
 
     # If monitoring parameter is set, send the ns_list to nfv_mon module
-    if monitoring:
-        # Create the Kafka producer
-        producer = create_producer()
-        producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
+    if monitoring and mon_producer:
+        mon_producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
         nest["slice_monitoring"]["nfv_ns_status_monitoring"] = True
 
     # *** STEP-3b: Radio Slice Configuration ***
@@ -562,6 +588,14 @@ def add_slice(nest_req):
                     }
                 )
                 new_dashboard["dashboard"]["panels"].append(wim_panel)
+        mon_producer.send(
+            "nfv_mon",
+            value={
+                "action": "katana_mon",
+                "slice_info": {"slice_id": nest["_id"], "status": "running"},
+            },
+        )
+
         # Use the Grafana API in order to create the new dashboard for the new slice
         grafana_url = "http://katana-grafana:3000/api/dashboards/db"
         headers = {"accept": "application/json", "content-type": "application/json"}
@@ -592,6 +626,22 @@ def delete_slice(slice_id, force=False):
     slice_json["status"] = "Terminating"
     mongoUtils.update("slice", slice_json["_id"], slice_json)
     logger.info(f"{slice_json['_id']} Status: Terminating")
+
+    # Check if slice monitoring has been enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    slice_monitoring = slice_json.get("slice_monitoring", None)
+    mon_producer = None
+
+    if monitoring:
+        # Create the Kafka producer
+        mon_producer = create_producer()
+        mon_producer.send(
+            "nfv_mon",
+            value={
+                "action": "katana_mon",
+                "slice_info": {"slice_id": slice_id, "status": "terminating"},
+            },
+        )
 
     # *** Step-1: Radio Slice Configuration ***
     if slice_json["conf_comp"]["ems"]:
@@ -629,6 +679,14 @@ def delete_slice(slice_id, force=False):
             err = "Cannot find WIM - WAN Slice will not be deleted"
             logger.warning(err)
             slice_json["status"] = "Error"
+            if monitoring:
+                mon_producer.send(
+                    "nfv_mon",
+                    value={
+                        "action": "katana_mon",
+                        "slice_info": {"slice_id": slice_id, "status": "error"},
+                    },
+                )
             slice_json["error"] = slice_json.get("error", "") + err
             mongoUtils.update("slice", slice_json["_id"], slice_json)
     else:
@@ -668,6 +726,14 @@ def delete_slice(slice_id, force=False):
         err = f"Error, not all NSs started or terminated correctly {e}"
         logger.warning(err)
         slice_json["status"] = "Error"
+        if monitoring:
+            mon_producer.send(
+                "nfv_mon",
+                value={
+                    "action": "katana_mon",
+                    "slice_info": {"slice_id": slice_id, "status": "error"},
+                },
+            )
         slice_json["error"] = slice_json.get("error", "") + err
         mongoUtils.update("slice", slice_json["_id"], slice_json)
 
@@ -708,13 +774,37 @@ def delete_slice(slice_id, force=False):
             err = f"Error, not all tenants created or removed correctly {e}"
             logger.warning(err)
             slice_json["status"] = "Error"
+            if monitoring:
+                mon_producer.send(
+                    "nfv_mon",
+                    value={
+                        "action": "katana_mon",
+                        "slice_info": {"slice_id": slice_id, "status": "error"},
+                    },
+                )
             slice_json["error"] = slice_json.get("error", "") + err
             mongoUtils.update("slice", slice_json["_id"], slice_json)
 
     if "error" not in slice_json:
         mongoUtils.delete("slice", slice_json["_id"])
+        if monitoring:
+            mon_producer.send(
+                "nfv_mon",
+                value={
+                    "action": "katana_mon",
+                    "slice_info": {"slice_id": slice_id, "status": "deleted"},
+                },
+            )
     elif "error" in slice_json and force:
         mongoUtils.delete("slice", slice_json["_id"])
+        if monitoring:
+            mon_producer.send(
+                "nfv_mon",
+                value={
+                    "action": "katana_mon",
+                    "slice_info": {"slice_id": slice_id, "status": "deleted"},
+                },
+            )
 
     # Remove Slice from the tenants list on functions
     for func_id in slice_json["functions"]:
@@ -727,9 +817,6 @@ def delete_slice(slice_id, force=False):
             mongoUtils.update("func", func_id, ifunc)
 
     # Remove Slice dashboard
-    # Check if slice monitoring has been enabled
-    monitoring = os.getenv("KATANA_MONITORING", None)
-    slice_monitoring = slice_json.get("slice_monitoring", None)
     if monitoring and slice_monitoring:
         # Use the Grafana API in order to delete the new dashboard for the new slice
         grafana_url = f"http://katana-grafana:3000/api/dashboards/uid/{slice_id}"
@@ -739,7 +826,5 @@ def delete_slice(slice_id, force=False):
         r = requests.delete(url=grafana_url, headers=headers, auth=(grafana_user, grafana_passwd),)
         logger.info(f"Deleted Grafana dashboard for slice {slice_id}")
         # Stop the threads monitoring NS status of the slice
-        # Create the Kafka producer
-        producer = create_producer()
         ns_inst_info = slice_json["ns_inst_info"]
-        producer.send(topic="nfv_mon", value={"action": "delete", "ns_list": ns_inst_info})
+        mon_producer.send(topic="nfv_mon", value={"action": "delete", "ns_list": ns_inst_info})
