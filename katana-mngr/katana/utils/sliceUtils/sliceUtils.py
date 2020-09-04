@@ -88,8 +88,9 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
             else:
                 # Error handling: The ns is not optional and the nsd is not
                 # on the NFVO - stop and return
-                logger.error(f"NSD {new_ns['nsd-id']} not found on any NFVO registered to SM")
-                return 1, []
+                error_message = f"NSD {new_ns['nsd-id']} not found on any NFVO registered to SM"
+                logger.error(error_message)
+                return error_message, []
         new_ns["nfvo-id"] = nsd["nfvo_id"]
         new_ns["nsd-info"] = nsd
         # B) ****** Replace placement value with location info ******
@@ -107,8 +108,9 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
         if not get_vim:
             if not new_ns.get("optional", False):
                 # Error handling: There is no VIM at that location
-                logger.error(f"VIM not found in location {loc}")
-                return 1, []
+                error_message = f"VIM not found in location {loc}"
+                logger.error(error_message)
+                return error_message, []
             else:
                 # The NS is optional - continue to next
                 pop_list.append(ns)
@@ -202,7 +204,10 @@ def add_slice(nest_req):
     for location in nest["coverage"]:
         err, _ = ns_details(nest["ns_list"], location, vim_dict, total_ns_list)
         if err:
-            delete_slice(nest["_id"])
+            nest["status"] = f"Failed - {err}"
+            nest["ns_inst_info"] = {}
+            nest["total_ns_list"] = []
+            mongoUtils.update("slice", nest["_id"], nest)
             return
     del nest["ns_list"]
     nest["ns_list"] = copy.deepcopy(total_ns_list)
@@ -222,7 +227,10 @@ def add_slice(nest_req):
                         x for x in connection[key]["ns_list"] if x not in pop_list
                     ]
                 if err:
-                    delete_slice(nest["_id"])
+                    nest["status"] = f"Failed - {err}"
+                    nest["ns_inst_info"] = {}
+                    nest["total_ns_list"] = []
+                    mongoUtils.update("slice", nest["_id"], nest)
                     return
                 inst_functions[connection[key]["_id"]] = connection[key]
             except KeyError:
@@ -408,6 +416,15 @@ def add_slice(nest_req):
         nfvo_inst_ns_id = ns_inst_info[ns["ns-id"]][site["location"]]["nfvo_inst_ns"]
         insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
         while insr["operational-status"] != "running" or insr["config-status"] != "configured":
+            if insr["operational-status"] == "failed":
+                error_message = (
+                    f"Network Service {ns['nsd-id']} failed to start on NFVO {ns['nfvo-id']}."
+                )
+                logger.error(error_message)
+                nest["ns_inst_info"] = ns_inst_info
+                nest["status"] = f"Failed - {error_message}"
+                mongoUtils.update("slice", nest["_id"], nest)
+                return
             time.sleep(10)
             insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
         nest["deployment_time"]["NS_Deployment_Time"][ns["ns-name"]] = format(
