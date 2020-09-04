@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.7] - 04/09/2020
+
+### Added
+
+- Support for OpenStack Stein release
+- Support for Open Source MANO release 8
+- Bootstrap API (/api/bootstrap) which allows Katana configuration with a single config file
+
+### Changed
+
+- Handle failed to start Network Services from Open Source MANO
+
 ## [2.2.6] - 30/07/2020
 
 ### Added
@@ -106,7 +118,7 @@ Integration with ELCM:
 - Required field for VIM, NFVO, WIM, EMS, PDU components
 - Check for that the required fields stay the same when update one of these components
 - Index in mongo to ID field for these components to avoid duplicate IDs
-- Support for "test" types of EMS and WIM 
+- Support for "test" types of EMS and WIM
 - This changelog
 
 ### Changed
