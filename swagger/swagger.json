@@ -10,7 +10,7 @@
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "2.2.5"
+    "version": "2.2.7"
   },
   "servers": [
     {
@@ -97,6 +97,10 @@
     {
       "name": "Network Service Descriptors",
       "description": "A list of the available Network Service Descriptors on the all NFVOs registered on the SM"
+    },
+    {
+      "name": "Bootstrap Katana",
+      "description": "Configure Katana Slice Manager using one JSON file"
     }
   ],
   "paths": {
@@ -2110,6 +2114,36 @@
           }
         }
       }
+    },
+    "/bootstrap": {
+      "post": {
+        "tags": [
+          "Bootstrap Katana"
+        ],
+        "summary": "Configure Katana using one JSON File",
+        "requestBody": {
+          "description": "Configuration Data",
+          "content": {
+            "Application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/bootstrap"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Configured SM",
+            "content": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {}
+          }
+        }
+      },
+      "x-codegen-request-body-name": "body"
     }
   },
   "components": {
@@ -2379,14 +2413,7 @@
                   "description": "The name of the NS"
                 },
                 "placement": {
-                  "type": [
-                    "number",
-                    "string"
-                  ],
-                  "enum": [
-                    0,
-                    1
-                  ],
+                  "type": "string",
                   "description": "1: Deploy on Core - 2: Deploy on all Edge locations of the cloud - Explicitily define a string location (it must be included in the Slice Coverage"
                 }
               },
@@ -3783,6 +3810,47 @@
                 "type": "number",
                 "description": "The total amount of required virtual cpus"
               }
+            }
+          }
+        }
+      },
+      "bootstrap": {
+        "type": "object",
+        "description": "Katana configuration data",
+        "properties": {
+          "vim": {
+            "type": "array",
+            "description": "A list with the VIM components to be added",
+            "items": {
+              "$ref": "#/components/schemas/vim"
+            }
+          },
+          "nfvo": {
+            "type": "array",
+            "description": "A list with the NFVO components to be added",
+            "items": {
+              "$ref": "#/components/schemas/nfvo"
+            }
+          },
+          "wim": {
+            "type": "array",
+            "description": "A list with the WIM components to be added",
+            "items": {
+              "$ref": "#/components/schemas/wim"
+            }
+          },
+          "ems": {
+            "type": "array",
+            "description": "A list with the EMS components to be added",
+            "items": {
+              "$ref": "#/components/schemas/ems"
+            }
+          },
+          "function": {
+            "type": "array",
+            "description": "A list with the Network Functions to be added",
+            "items": {
+              "$ref": "#/components/schemas/net_func"
             }
           }
         }
