@@ -2261,15 +2261,15 @@
             "type": "integer",
             "description": "0: not available 1: Single Cell Point to Multipoint (SCPTM) 2: Broadcast/Multicast 3: Broadcast/Multicast + SC-PTM"
           },
-          "isolation_level": {
-            "type": "object",
-            "properties": {
-              "isolation": {
-                "type": "integer",
-                "description": "0: No Isolation 1: Physical Isolation 2: Logical Isolation 3: Both Isolation"
-              }
-            },
-            "description": " A network slice instance may be fully or partly, logically and/or physically, isolated from another network slice instance"
+          "isolation": {
+            "type": "number",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "description": " A network slice instance may be fully or partly, isolated from another network slice instance. 0: No Isolation 1: Core Isolation 2: RAN Isolation 3: Both Isolation"
           },
           "mtu": {
             "type": "integer",

@@ -60,9 +60,9 @@ Katana Slice Information Model follows the JSON Schema model, on which OpenAPIs 
     - guaranteed
     - maximum
 * group_communication_support
-* isolation_level
-    - physical isolation
-    - logical isolation
+* isolation
+    - Core isolation
+    - RAN isolation
 * mtu
 * mission_critical_support
     - availability
