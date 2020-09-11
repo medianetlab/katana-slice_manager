@@ -50,7 +50,9 @@ NEST_KEYS_LIST = (
 )
 
 
-def ns_details(ns_list, edge_loc, vim_dict, total_ns_list, shared_function=0, ref_slice=None):
+def ns_details(
+    ns_list, edge_loc, vim_dict, total_ns_list, shared_function=0, shared_slice_list_key=None,
+):
     """
     Get details for the NS that are part of the slice
     A) Find the nsd details for each NS
@@ -71,7 +73,7 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list, shared_function=0, re
             new_ns = ns
         # 00) Check if the function is shared and if the ns is already instantiated
         new_ns["shared_function"] = shared_function
-        new_ns["ref_slice"] = ref_slice
+        new_ns["shared_slice_key"] = shared_slice_list_key
         # Search the nsd collection in Mongo for the nsd
         nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
         if not nsd:
@@ -130,6 +132,7 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list, shared_function=0, re
                 vim_dict[selected_vim] = {
                     "ns_list": [new_ns["ns-name"]],
                     "nfvo_list": [new_ns["nfvo-id"]],
+                    "shared": shared_slice_list_key,
                 }
             resources = vim_dict[selected_vim].get(
                 "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
@@ -225,17 +228,16 @@ def add_slice(nest_req):
             # Check if the function is shared with another slice
             # shared_check values: 0: No shared, 1: First shared, 2: Shared
             shared_check = 0
-            ref_slice = None
+            shared_slice_list_key = None
             try:
                 shared_slice_list_key = nest["shared"][key][connection[key]["_id"]]
                 shared_slice_list = connection[key]["shared"]["sharing_list"][shared_slice_list_key]
                 if len(shared_slice_list) > 1:
                     shared_check = 2
-                    ref_slice = next(filter(lambda x: x != nest["_id"], shared_slice_list))
                 else:
                     shared_check = 1
             except KeyError:
-                logger.debug("The function is not shared!!!")
+                pass
             try:
                 err, pop_list = ns_details(
                     connection[key]["ns_list"],
@@ -243,7 +245,7 @@ def add_slice(nest_req):
                     vim_dict,
                     total_ns_list,
                     shared_check,
-                    ref_slice,
+                    shared_slice_list_key,
                 )
                 if pop_list:
                     connection[key]["ns_list"] = [
@@ -283,9 +285,13 @@ def add_slice(nest_req):
         target_vim = mongoUtils.find("vim", {"id": vim})
         target_vim_obj = pickle.loads(mongoUtils.find("vim_obj", {"id": vim})["obj"])
         # Define project parameters
-        tenant_project_name = "vim_{0}_katana_{1}".format(num, nest["_id"])
-        tenant_project_description = "vim_{0}_katana_{1}".format(num, nest["_id"])
-        tenant_project_user = "vim_{0}_katana_{1}".format(num, nest["_id"])
+        if vim_info["shared"]:
+            name = "vim_{0}_katana_{1}_shared".format(num, vim_info["shared"])
+        else:
+            name = "vim_{0}_katana_{1}".format(num, nest["_id"])
+        tenant_project_name = name
+        tenant_project_description = name
+        tenant_project_user = name
         tenant_project_password = "password"
         # If the vim is Openstack type, set quotas
         quotas = (
@@ -414,6 +420,15 @@ def add_slice(nest_req):
     nest["deployment_time"]["NS_Deployment_Time"] = {}
     for ns in total_ns_list:
         ns["start_time"] = time.time()
+        if ns["shared_function"] == 2:
+            # The ns is already instantiated and there is no need to instantiate again
+            # Find the sharing list
+            shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
+            ns_inst_info[ns["ns-id"]] = shared_list["ns_list"][ns["nsd-id"]]
+            logger.debug(f"NS {ns['nsd-id']} is shared!!")
+            logger.debug(shared_list["ns_list"][ns["nsd-id"]])
+            nest["conf_comp"]["nf"].append(ns["nsd-id"])
+            continue
         ns_inst_info[ns["ns-id"]] = {}
         target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
         target_nfvo_obj = pickle.loads(mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"])
@@ -427,6 +442,13 @@ def add_slice(nest_req):
             "slice_id": nest["_id"],
             "vim": selected_vim,
         }
+        # Check if this the first slice of a sharing list
+        if ns["shared_function"] == 1:
+            shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
+            ns_inst_info[ns["ns-id"]]["shared"] = True
+            shared_list["ns_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
+            mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
+            logger.debug("Added NS to the shared list")
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
         time.sleep(2)

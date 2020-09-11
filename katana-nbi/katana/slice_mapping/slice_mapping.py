@@ -143,10 +143,19 @@ def nest_mapping(req):
                 if len(grouped_nest_list) < max_len or not max_len:
                     found_list_key = grouped_nest_key
                     grouped_nest_list.append(nest["_id"])
+                    sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                    sharing_list["nest_list"].append(nest["_id"])
+                    mongoUtils.update("sharing_lists", found_list_key, sharing_list)
                     break
             if not found_list_key:
                 found_list_key = str(uuid.uuid4())
                 epc["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                data = {
+                    "_id": found_list_key,
+                    "nest_list": [nest["_id"]],
+                    "ns_list": {},
+                }
+                mongoUtils.add("sharing_lists", data)
             nest["shared"]["core"] = {epc["_id"]: found_list_key}
         connections = []
         not_supp_loc = []
@@ -165,10 +174,19 @@ def nest_mapping(req):
                         if len(grouped_nest_list) < max_len or not max_len:
                             found_list_key = grouped_nest_key
                             grouped_nest_list.append(nest["_id"])
+                            sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                            sharing_list["nest_list"].append(nest["_id"])
+                            mongoUtils.update("sharing_lists", found_list_key, sharing_list)
                             break
                     if not found_list_key:
                         found_list_key = str(uuid.uuid4())
                         enb["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                        data = {
+                            "_id": found_list_key,
+                            "nest_list": [nest["_id"]],
+                            "ns_list": {},
+                        }
+                        mongoUtils.add("sharing_lists", data)
                     nest["shared"]["radio"] = nest["shared"].get("radio", {})
                     nest["shared"]["radio"][enb["_id"]] = found_list_key
                 connections.append({"core": epc, "radio": enb})
@@ -209,10 +227,19 @@ def nest_mapping(req):
                         if len(grouped_nest_list) < max_len or not max_len:
                             found_list_key = grouped_nest_key
                             grouped_nest_list.append(nest["_id"])
+                            sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                            sharing_list["nest_list"].append(nest["_id"])
+                            mongoUtils.update("sharing_lists", found_list_key, sharing_list)
                             break
                     if not found_list_key:
                         found_list_key = str(uuid.uuid4())
                         epc["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                        data = {
+                            "_id": found_list_key,
+                            "nest_list": [nest["_id"]],
+                            "ns_list": {},
+                        }
+                        mongoUtils.add("sharing_lists", data)
                     nest["shared"]["core"] = nest["shared"].get("core", {})
                     nest["shared"]["core"][epc["_id"]] = found_list_key
                 # For the RAN function
@@ -225,10 +252,19 @@ def nest_mapping(req):
                         if len(grouped_nest_list) < max_len or not max_len:
                             found_list_key = grouped_nest_key
                             grouped_nest_list.append(nest["_id"])
+                            sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                            sharing_list["nest_list"].append(nest["_id"])
+                            mongoUtils.update("sharing_lists", found_list_key, sharing_list)
                             break
                     if not found_list_key:
                         found_list_key = str(uuid.uuid4())
                         enb["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                        data = {
+                            "_id": found_list_key,
+                            "nest_list": [nest["_id"]],
+                            "ns_list": {},
+                        }
+                        mongoUtils.add("sharing_lists", data)
                     nest["shared"]["radio"] = nest["shared"].get("radio", {})
                     nest["shared"]["radio"][enb["_id"]] = found_list_key
                 connections.append({"core": epc, "radio": enb})
