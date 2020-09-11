@@ -50,7 +50,7 @@ NEST_KEYS_LIST = (
 )
 
 
-def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
+def ns_details(ns_list, edge_loc, vim_dict, total_ns_list, shared_function=0, ref_slice=None):
     """
     Get details for the NS that are part of the slice
     A) Find the nsd details for each NS
@@ -69,7 +69,9 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
         except KeyError:
             # No placement at all
             new_ns = ns
-        # A) ****** Get the NSD ******
+        # 00) Check if the function is shared and if the ns is already instantiated
+        new_ns["shared_function"] = shared_function
+        new_ns["ref_slice"] = ref_slice
         # Search the nsd collection in Mongo for the nsd
         nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
         if not nsd:
@@ -102,39 +104,40 @@ def ns_details(ns_list, edge_loc, vim_dict, total_ns_list):
             )(new_ns["placement"])
 
         # C) ****** Get the VIM info ******
-        new_ns["vims"] = []
-        loc = new_ns["placement_loc"]["location"]
-        get_vim = list(mongoUtils.find_all("vim", {"location": loc}))
-        if not get_vim:
-            if not new_ns.get("optional", False):
-                # Error handling: There is no VIM at that location
-                error_message = f"VIM not found in location {loc}"
-                logger.error(error_message)
-                return error_message, []
-            else:
-                # The NS is optional - continue to next
-                pop_list.append(ns)
-                continue
-        # TODO: Check the available resources and select vim
-        # Temporary use the first element
-        selected_vim = get_vim[0]["id"]
-        new_ns["vims"].append(selected_vim)
-        try:
-            vim_dict[selected_vim]["ns_list"].append(new_ns["ns-name"])
-            if new_ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
-                vim_dict[selected_vim]["nfvo_list"].append(new_ns["nfvo-id"])
-        except KeyError:
-            vim_dict[selected_vim] = {
-                "ns_list": [new_ns["ns-name"]],
-                "nfvo_list": [new_ns["nfvo-id"]],
-            }
-        resources = vim_dict[selected_vim].get(
-            "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
-        )
-        for key in resources:
-            resources[key] += nsd["flavor"][key]
-        vim_dict[selected_vim]["resources"] = resources
-        new_ns["placement_loc"]["vim"] = selected_vim
+        if shared_function != 2:
+            new_ns["vims"] = []
+            loc = new_ns["placement_loc"]["location"]
+            get_vim = list(mongoUtils.find_all("vim", {"location": loc}))
+            if not get_vim:
+                if not new_ns.get("optional", False):
+                    # Error handling: There is no VIM at that location
+                    error_message = f"VIM not found in location {loc}"
+                    logger.error(error_message)
+                    return error_message, []
+                else:
+                    # The NS is optional - continue to next
+                    pop_list.append(ns)
+                    continue
+            # TODO: Check the available resources and select vim
+            # Temporary use the first element
+            selected_vim = get_vim[0]["id"]
+            new_ns["vims"].append(selected_vim)
+            try:
+                vim_dict[selected_vim]["ns_list"].append(new_ns["ns-name"])
+                if new_ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
+                    vim_dict[selected_vim]["nfvo_list"].append(new_ns["nfvo-id"])
+            except KeyError:
+                vim_dict[selected_vim] = {
+                    "ns_list": [new_ns["ns-name"]],
+                    "nfvo_list": [new_ns["nfvo-id"]],
+                }
+            resources = vim_dict[selected_vim].get(
+                "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
+            )
+            for key in resources:
+                resources[key] += nsd["flavor"][key]
+            vim_dict[selected_vim]["resources"] = resources
+            new_ns["placement_loc"]["vim"] = selected_vim
         # 0) Create an uuid for the ns
         new_ns["ns-id"] = str(uuid.uuid4())
         total_ns_list.append(new_ns)
@@ -215,12 +218,32 @@ def add_slice(nest_req):
     inst_functions = {}
     for connection in nest["connections"]:
         for key in connection:
+            # Check if the function has been instantiated from another connection
             if connection[key]["_id"] in inst_functions:
                 connection[key] = inst_functions[connection[key]["_id"]]
                 continue
+            # Check if the function is shared with another slice
+            # shared_check values: 0: No shared, 1: First shared, 2: Shared
+            shared_check = 0
+            ref_slice = None
+            try:
+                shared_slice_list_key = nest["shared"][key][connection[key]["_id"]]
+                shared_slice_list = connection[key]["shared"]["sharing_list"][shared_slice_list_key]
+                if len(shared_slice_list) > 1:
+                    shared_check = 2
+                    ref_slice = next(filter(lambda x: x != nest["_id"], shared_slice_list))
+                else:
+                    shared_check = 1
+            except KeyError:
+                logger.debug("The function is not shared!!!")
             try:
                 err, pop_list = ns_details(
-                    connection[key]["ns_list"], connection[key]["location"], vim_dict, total_ns_list
+                    connection[key]["ns_list"],
+                    connection[key]["location"],
+                    vim_dict,
+                    total_ns_list,
+                    shared_check,
+                    ref_slice,
                 )
                 if pop_list:
                     connection[key]["ns_list"] = [
