@@ -106,41 +106,41 @@ def ns_details(
             )(new_ns["placement"])
 
         # C) ****** Get the VIM info ******
-        if shared_function != 2:
-            new_ns["vims"] = []
-            loc = new_ns["placement_loc"]["location"]
-            get_vim = list(mongoUtils.find_all("vim", {"location": loc}))
-            if not get_vim:
-                if not new_ns.get("optional", False):
-                    # Error handling: There is no VIM at that location
-                    error_message = f"VIM not found in location {loc}"
-                    logger.error(error_message)
-                    return error_message, []
-                else:
-                    # The NS is optional - continue to next
-                    pop_list.append(ns)
-                    continue
-            # TODO: Check the available resources and select vim
-            # Temporary use the first element
-            selected_vim = get_vim[0]["id"]
-            new_ns["vims"].append(selected_vim)
-            try:
-                vim_dict[selected_vim]["ns_list"].append(new_ns["ns-name"])
-                if new_ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
-                    vim_dict[selected_vim]["nfvo_list"].append(new_ns["nfvo-id"])
-            except KeyError:
-                vim_dict[selected_vim] = {
-                    "ns_list": [new_ns["ns-name"]],
-                    "nfvo_list": [new_ns["nfvo-id"]],
-                    "shared": shared_slice_list_key,
-                }
-            resources = vim_dict[selected_vim].get(
-                "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
-            )
-            for key in resources:
-                resources[key] += nsd["flavor"][key]
-            vim_dict[selected_vim]["resources"] = resources
-            new_ns["placement_loc"]["vim"] = selected_vim
+        new_ns["vims"] = []
+        loc = new_ns["placement_loc"]["location"]
+        get_vim = list(mongoUtils.find_all("vim", {"location": loc}))
+        if not get_vim:
+            if not new_ns.get("optional", False):
+                # Error handling: There is no VIM at that location
+                error_message = f"VIM not found in location {loc}"
+                logger.error(error_message)
+                return error_message, []
+            else:
+                # The NS is optional - continue to next
+                pop_list.append(ns)
+                continue
+        # TODO: Check the available resources and select vim
+        # Temporary use the first element
+        selected_vim = get_vim[0]["id"]
+        new_ns["vims"].append(selected_vim)
+        try:
+            vim_dict[selected_vim]["ns_list"].append(new_ns["ns-name"])
+            if new_ns["nfvo-id"] not in vim_dict[selected_vim]["nfvo_list"]:
+                vim_dict[selected_vim]["nfvo_list"].append(new_ns["nfvo-id"])
+        except KeyError:
+            vim_dict[selected_vim] = {
+                "ns_list": [new_ns["ns-name"]],
+                "nfvo_list": [new_ns["nfvo-id"]],
+                "shared": shared_function,
+                "shared_slice_list_key": shared_slice_list_key,
+            }
+        resources = vim_dict[selected_vim].get(
+            "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
+        )
+        for key in resources:
+            resources[key] += nsd["flavor"][key]
+        vim_dict[selected_vim]["resources"] = resources
+        new_ns["placement_loc"]["vim"] = selected_vim
         # 0) Create an uuid for the ns
         new_ns["ns-id"] = str(uuid.uuid4())
         total_ns_list.append(new_ns)
@@ -285,10 +285,12 @@ def add_slice(nest_req):
         target_vim = mongoUtils.find("vim", {"id": vim})
         target_vim_obj = pickle.loads(mongoUtils.find("vim_obj", {"id": vim})["obj"])
         # Define project parameters
-        if vim_info["shared"]:
-            name = "vim_{0}_katana_{1}_shared".format(num, vim_info["shared"])
-        else:
+        if vim_info["shared"] == 1:
+            name = "vim_{0}_katana_{1}_shared".format(num, vim_info["shared_slice_list_key"])
+        elif vim_info["shared"] == 0:
             name = "vim_{0}_katana_{1}".format(num, nest["_id"])
+        else:
+            continue
         tenant_project_name = name
         tenant_project_description = name
         tenant_project_user = name
@@ -308,7 +310,7 @@ def add_slice(nest_req):
             quotas=quotas,
         )
         # Register the tenant to the mongo db
-        target_vim["tenants"][nest["_id"]] = tenant_project_name
+        target_vim["tenants"]["shared_slice_list_key"] = name
         mongoUtils.update("vim", target_vim["_id"], target_vim)
 
         # STEP-2a-ii: Αdd the new VIM tenant to NFVO
@@ -337,6 +339,11 @@ def add_slice(nest_req):
             target_nfvo["tenants"][nest["_id"]] = target_nfvo["tenants"].get(nest["_id"], [])
             target_nfvo["tenants"][nest["_id"]].append(vim_id)
             mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+
+        if vim_info["shared"] == 1:
+            sharing_lists = mongoUtils.get("sharing_lists", vim_info["shared_slice_list_key"])
+            sharing_lists["vims"] = target_vim["id"]
+            mongoUtils.update("sharing_lists", vim_info["shared_slice_list_key"], sharing_lists)
 
     mongoUtils.update("slice", nest["_id"], nest)
     # *** STEP-2b: WAN ***

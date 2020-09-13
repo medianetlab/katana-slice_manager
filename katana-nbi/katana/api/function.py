@@ -118,6 +118,7 @@ class FunctionView(FlaskView):
             data["_id"] = new_uuid
             data["created_at"] = time.time()  # unix epoch
             data["tenants"] = []
+            data["shared"]["sharing_list"] = {}
 
             for field in self.req_fields:
                 try:
