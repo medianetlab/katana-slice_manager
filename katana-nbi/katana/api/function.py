@@ -108,7 +108,8 @@ class FunctionView(FlaskView):
         if old_data:
             data["created_at"] = old_data["created_at"]
             data["tenants"] = []
-            if len(data["tenants"]) > 0:
+            data["shared"]["sharing_list"] = {}
+            if len(old_data["tenants"]) > 0:
                 return f"Error: Func is used by slices {data['tenants']}"
             mongoUtils.update("func", uuid, data)
             return f"Modified {uuid}", 200

@@ -712,6 +712,33 @@ def delete_slice(slice_id, force=False):
             },
         )
 
+    # *** Step-0: Check if the NSI has shared NSSIs ***
+    try:
+        for func_key, shared_list_key in slice_json["shared"]["core"].items():
+            # Remove the slice from the shared list
+            shared_list = mongoUtils.get("sharing_lists", shared_list_key)
+            shared_list["nest_list"].remove(slice_id)
+            mongoUtils.update("sharing_lists", shared_list_key, shared_list)
+            # Remove the slice from the shared list of the function
+            func = mongoUtils.get("func", func_key)
+            func["shared"]["sharing_list"][shared_list_key].remove(slice_id)
+            mongoUtils.update("func", func_key, func)
+    except KeyError:
+        pass
+
+    try:
+        for func_key, shared_list_key in slice_json["shared"]["radio"].items():
+            # Remove the slice from the shared list
+            shared_list = mongoUtils.get("sharing_lists", shared_list_key)
+            shared_list["nest_list"].remove(slice_id)
+            mongoUtils.update("sharing_lists", shared_list_key, shared_list)
+            # Remove the slice from the shared list of the function
+            func = mongoUtils.get("func", func_key)
+            func["shared"]["sharing_list"][shared_list_key].remove(slice_id)
+            mongoUtils.update("func", func_key, func)
+    except KeyError:
+        pass
+
     # *** Step-1: Radio Slice Configuration ***
     if slice_json["conf_comp"]["ems"]:
         ems_messages = slice_json.get("ems_data", None)
@@ -767,9 +794,19 @@ def delete_slice(slice_id, force=False):
         total_ns_list = slice_json["total_ns_list"]
         ns_inst_info = slice_json["ns_inst_info"]
         for ns in total_ns_list:
+            # Check if the NS is shared. If it is, check if there is another running slice on this
+            # sharing list
+            if ns["shared_function"]:
+                # Find the shared list
+                shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
+                # If there is another running slice, don't terminate the NS
+                if len(shared_list["nest_list"]) > 0:
+                    continue
+
             if ns["nsd-id"] not in slice_json["conf_comp"]["nf"]:
                 logger.error(f"{ns['nsd-id']} was not instantiated successfully")
                 continue
+
             # Get the NFVO
             nfvo_id = ns["nfvo-id"]
             target_nfvo = mongoUtils.find("nfvo", {"id": ns["nfvo-id"]})
@@ -779,6 +816,7 @@ def delete_slice(slice_id, force=False):
                 )
                 vim_error_list += ns["vims"]
                 continue
+
             target_nfvo_obj = pickle.loads(
                 mongoUtils.find("nfvo_obj", {"id": ns["nfvo-id"]})["obj"]
             )
