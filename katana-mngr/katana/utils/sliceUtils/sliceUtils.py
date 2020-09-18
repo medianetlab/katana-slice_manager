@@ -719,39 +719,6 @@ def delete_slice(slice_id, force=False):
             },
         )
 
-    # *** Step-0: Check if the NSI has shared NSSIs ***
-    try:
-        for func_key, shared_list_key in slice_json["shared"]["core"].items():
-            # Remove the slice from the shared list
-            try:
-                shared_list = mongoUtils.get("sharing_lists", shared_list_key)
-                shared_list["nest_list"].remove(slice_id)
-                mongoUtils.update("sharing_lists", shared_list_key, shared_list)
-                # Remove the slice from the shared list of the function
-                func = mongoUtils.get("func", func_key)
-                func["shared"]["sharing_list"][shared_list_key].remove(slice_id)
-                mongoUtils.update("func", func_key, func)
-            except ValueError:
-                pass
-    except KeyError:
-        pass
-
-    try:
-        for func_key, shared_list_key in slice_json["shared"]["radio"].items():
-            # Remove the slice from the shared list
-            try:
-                shared_list = mongoUtils.get("sharing_lists", shared_list_key)
-                shared_list["nest_list"].remove(slice_id)
-                mongoUtils.update("sharing_lists", shared_list_key, shared_list)
-                # Remove the slice from the shared list of the function
-                func = mongoUtils.get("func", func_key)
-                func["shared"]["sharing_list"][shared_list_key].remove(slice_id)
-                mongoUtils.update("func", func_key, func)
-            except ValueError:
-                pass
-    except KeyError:
-        pass
-
     # *** Step-1: Radio Slice Configuration ***
     if slice_json["conf_comp"]["ems"]:
         ems_messages = slice_json.get("ems_data", None)
@@ -813,7 +780,7 @@ def delete_slice(slice_id, force=False):
                 # Find the shared list
                 shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
                 # If there is another running slice, don't terminate the NS
-                if len(shared_list["nest_list"]) > 0:
+                if len(shared_list["nest_list"]) > 1:
                     continue
 
             if ns["nsd-id"] not in slice_json["conf_comp"]["nf"]:
@@ -865,7 +832,7 @@ def delete_slice(slice_id, force=False):
             shared_list = mongoUtils.get("sharing_lists", vim_info["shared_slice_list_key"])
             tenant_name = vim_info["shared_slice_list_key"]
             # If there is another running slice, don't delete the VIM account
-            if len(shared_list["nest_list"]) > 0:
+            if len(shared_list["nest_list"]) > 1:
                 continue
         try:
             # Delete the new tenants from the NFVO
@@ -963,3 +930,58 @@ def delete_slice(slice_id, force=False):
         # Stop the threads monitoring NS status of the slice
         ns_inst_info = slice_json["ns_inst_info"]
         mon_producer.send(topic="nfv_mon", value={"action": "delete", "ns_list": ns_inst_info})
+
+    # Check if the NSI has shared NSSIs and remove them
+    try:
+        for func_key, shared_list_key in slice_json["shared"]["core"].items():
+            logger.debug(f"Function {func_key}")
+            # Remove the slice from the shared list
+            try:
+                shared_list = mongoUtils.get("sharing_lists", shared_list_key)
+                func = mongoUtils.get("func", func_key)
+                if len(shared_list["nest_list"]) > 1:
+                    # Remove the Slice from the list
+                    shared_list["nest_list"].remove(slice_id)
+                    mongoUtils.update("sharing_lists", shared_list_key, shared_list)
+                    func["shared"]["sharing_list"][shared_list_key].remove(slice_id)
+                    logger.debug("There is another slice")
+                else:
+                    # Remove the the shared list
+                    mongoUtils.delete("sharing_lists", shared_list_key)
+                    del func["shared"]["sharing_list"][shared_list_key]
+                    logger.debug(func["shared"])
+                mongoUtils.update("func", func_key, func)
+            except ValueError as e:
+                logger.debug("VALUE ERROR")
+                logger.debug(e)
+    except KeyError as e:
+        logger.debug("KEY ERROR")
+        logger.debug(e)
+        pass
+
+    try:
+        for func_key, shared_list_key in slice_json["shared"]["radio"].items():
+            logger.debug(f"Function {func_key}")
+            # Remove the slice from the shared list
+            try:
+                shared_list = mongoUtils.get("sharing_lists", shared_list_key)
+                func = mongoUtils.get("func", func_key)
+                if len(shared_list["nest_list"]) > 1:
+                    # Remove the Slice from the list
+                    shared_list["nest_list"].remove(slice_id)
+                    mongoUtils.update("sharing_lists", shared_list_key, shared_list)
+                    func["shared"]["sharing_list"][shared_list_key].remove(slice_id)
+                    logger.debug("There is another slice")
+                else:
+                    # Remove the the shared list
+                    mongoUtils.delete("sharing_lists", shared_list_key)
+                    del func["shared"]["sharing_list"][shared_list_key]
+                    logger.debug(func["shared"])
+                mongoUtils.update("func", func_key, func)
+            except ValueError as e:
+                logger.debug("VALUE ERROR")
+                logger.debug(e)
+    except KeyError as e:
+        logger.debug("KEY ERROR")
+        logger.debug(e)
+        pass
