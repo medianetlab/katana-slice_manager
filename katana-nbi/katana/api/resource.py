@@ -54,7 +54,7 @@ def get_func(filter_data={}):
                 DB_ID=iserv["_id"],
                 gen=(lambda x: "4G" if x == 4 else "5G")(iserv["gen"]),
                 functionality=(lambda x: "Core" if x == 0 else "Radio")(iserv["func"]),
-                pnf_list=iserv["pnf_list"],
+                pnf_list=iserv.get("pnf_list", []),
                 function_id=iserv["id"],
                 location=iserv["location"],
                 tenants=iserv["tenants"],
