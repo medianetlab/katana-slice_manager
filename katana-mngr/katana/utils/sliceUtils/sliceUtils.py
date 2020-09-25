@@ -466,6 +466,7 @@ def add_slice(nest_req):
         if ns["shared_function"] == 1:
             shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
             ns_inst_info[ns["ns-id"]]["shared"] = True
+            ns_inst_info[ns["ns-id"]]["sharing_list"] = ns["shared_slice_key"]
             shared_list["ns_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
             mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
@@ -526,10 +527,26 @@ def add_slice(nest_req):
             "terminal_density": nest["terminal_density"],
         }
         radio_start_time = time.time()
+        iii = 0
         for connection in nest["connections"]:
+            iii += 1
             data = {}
             ems_id_list = []
             for key in connection:
+                # Check if the connection is shared
+                try:
+                    shared_slice_list_key = nest["shared"][key][connection[key]["_id"]]
+                    shared_slice_list = connection[key]["shared"]["sharing_list"][
+                        shared_slice_list_key
+                    ]
+                    shared = True
+                    if len(shared_slice_list) > 1:
+                        shared_check = 2
+                    else:
+                        shared_check = 1
+                except KeyError:
+                    shared_slice_list_key = None
+                    shared = False
                 key_data = {}
                 try:
                     ems_id = connection[key]["ems-id"]
@@ -554,11 +571,22 @@ def add_slice(nest_req):
                                 "location": ns["placement_loc"]["location"],
                                 "vnf_list": ns_info["vnfr"],
                             }
+                            # Add the shared information for the ns, if any
+                            if shared:
+                                ns_data["shared"] = ns_inst_info[ns["ns-id"]]["shared"]
+                                ns_data["sharing_list"] = ns_inst_info[ns["ns-id"]]["sharing_list"]
+                            else:
+                                ns_data["shared"] = False
                             key_data["ns"].append(ns_data)
                 try:
                     key_data["pnf"] = connection[key]["pnf_list"]
                 except KeyError:
                     pass
+                else:
+                    if shared:
+                        for ipnf in connection[key]["pnf_list"]:
+                            ipnf["shared"] = True
+                            ipnf["sharing_list"] = shared_slice_list_key
                 if key_data:
                     data[key] = key_data
             if data:
