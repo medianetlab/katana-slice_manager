@@ -28,7 +28,7 @@ SLICE_DES_OBJ = (
     "ue_UL_throughput",
     "deterministic_communication",
     "group_communication_support",
-    "isolation_level",
+    "isolation",
     "mtu",
     "mission_critical_support",
     "mmtel_support",
@@ -104,6 +104,12 @@ def nest_mapping(req):
             )
             return "Error: referenced slice_descriptor not found", 400
 
+    # Create the shared value
+    nest["shared"] = {
+        "isolation": req_slice_des["isolation"],
+        "simultaneous_nsi": req_slice_des["simultaneous_nsi"],
+    }
+
     # *************************** Start the mapping ***************************
     # Currently supports:
     # 1) If delay_tolerance --> EMBB else --> URLLC
@@ -121,9 +127,36 @@ def nest_mapping(req):
     if req_slice_des["delay_tolerance"]:
         # EMBB
         nest["sst"] = 1
+        # Find the registered function for Core Function
         epc = mongoUtils.find("func", calc_find_data(gen, "Core", 0))
         if not epc:
             return "Error: Not available Core Network Functions", 400
+        # Check if the nest allows shareable functions, if the function is shareable
+        if (
+            req_slice_des["isolation"] != 1
+            and req_slice_des["isolation"] != 3
+            and epc["shared"]["availability"]
+        ):
+            found_list_key = None
+            max_len = epc["shared"].get("max_shared", 0)
+            for grouped_nest_key, grouped_nest_list in epc["shared"]["sharing_list"].items():
+                if len(grouped_nest_list) < max_len or not max_len:
+                    found_list_key = grouped_nest_key
+                    grouped_nest_list.append(nest["_id"])
+                    sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                    sharing_list["nest_list"].append(nest["_id"])
+                    mongoUtils.update("sharing_lists", found_list_key, sharing_list)
+                    break
+            if not found_list_key:
+                found_list_key = str(uuid.uuid4())
+                epc["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                data = {
+                    "_id": found_list_key,
+                    "nest_list": [nest["_id"]],
+                    "ns_list": {},
+                }
+                mongoUtils.add("sharing_lists", data)
+            nest["shared"]["core"] = {epc["_id"]: found_list_key}
         connections = []
         not_supp_loc = []
         for location in req_slice_des["coverage"]:
@@ -131,6 +164,31 @@ def nest_mapping(req):
             if not enb:
                 not_supp_loc.append(location)
             else:
+                # Check if the nest allows shareable functions, if the function is shareable
+                if req_slice_des["isolation"] < 2 and enb["shared"]["availability"]:
+                    found_list_key = None
+                    max_len = enb["shared"].get("max_shared", 0)
+                    for grouped_nest_key, grouped_nest_list in enb["shared"][
+                        "sharing_list"
+                    ].items():
+                        if len(grouped_nest_list) < max_len or not max_len:
+                            found_list_key = grouped_nest_key
+                            grouped_nest_list.append(nest["_id"])
+                            sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                            sharing_list["nest_list"].append(nest["_id"])
+                            mongoUtils.update("sharing_lists", found_list_key, sharing_list)
+                            break
+                    if not found_list_key:
+                        found_list_key = str(uuid.uuid4())
+                        enb["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                        data = {
+                            "_id": found_list_key,
+                            "nest_list": [nest["_id"]],
+                            "ns_list": {},
+                        }
+                        mongoUtils.add("sharing_lists", data)
+                    nest["shared"]["radio"] = nest["shared"].get("radio", {})
+                    nest["shared"]["radio"][enb["_id"]] = found_list_key
                 connections.append({"core": epc, "radio": enb})
                 enb["tenants"].append(nest["_id"])
                 mongoUtils.update("func", enb["_id"], enb)
@@ -154,6 +212,61 @@ def nest_mapping(req):
             if not epc or not enb:
                 not_supp_loc.append(location)
             else:
+                # Check if the nest allows shareable functions, if the function is shareable
+                # For the Core function
+                if (
+                    req_slice_des["isolation"] != 1
+                    and req_slice_des["isolation"] != 3
+                    and epc["shared"]["availability"]
+                ):
+                    found_list_key = None
+                    max_len = epc["shared"].get("max_shared", 0)
+                    for grouped_nest_key, grouped_nest_list in epc["shared"][
+                        "sharing_list"
+                    ].items():
+                        if len(grouped_nest_list) < max_len or not max_len:
+                            found_list_key = grouped_nest_key
+                            grouped_nest_list.append(nest["_id"])
+                            sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                            sharing_list["nest_list"].append(nest["_id"])
+                            mongoUtils.update("sharing_lists", found_list_key, sharing_list)
+                            break
+                    if not found_list_key:
+                        found_list_key = str(uuid.uuid4())
+                        epc["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                        data = {
+                            "_id": found_list_key,
+                            "nest_list": [nest["_id"]],
+                            "ns_list": {},
+                        }
+                        mongoUtils.add("sharing_lists", data)
+                    nest["shared"]["core"] = nest["shared"].get("core", {})
+                    nest["shared"]["core"][epc["_id"]] = found_list_key
+                # For the RAN function
+                if req_slice_des["isolation"] < 2 and enb["shared"]["availability"]:
+                    found_list_key = None
+                    max_len = enb["shared"].get("max_shared", 0)
+                    for grouped_nest_key, grouped_nest_list in enb["shared"][
+                        "sharing_list"
+                    ].items():
+                        if len(grouped_nest_list) < max_len or not max_len:
+                            found_list_key = grouped_nest_key
+                            grouped_nest_list.append(nest["_id"])
+                            sharing_list = mongoUtils.get("sharing_lists", found_list_key)
+                            sharing_list["nest_list"].append(nest["_id"])
+                            mongoUtils.update("sharing_lists", found_list_key, sharing_list)
+                            break
+                    if not found_list_key:
+                        found_list_key = str(uuid.uuid4())
+                        enb["shared"]["sharing_list"][found_list_key] = [nest["_id"]]
+                        data = {
+                            "_id": found_list_key,
+                            "nest_list": [nest["_id"]],
+                            "ns_list": {},
+                        }
+                        mongoUtils.add("sharing_lists", data)
+                    nest["shared"]["radio"] = nest["shared"].get("radio", {})
+                    nest["shared"]["radio"][enb["_id"]] = found_list_key
                 connections.append({"core": epc, "radio": enb})
                 epc["tenants"].append(nest["_id"])
                 enb["tenants"].append(nest["_id"])
@@ -186,12 +299,6 @@ def nest_mapping(req):
     )
     for key in KEYS_TO_BE_COPIED:
         nest[key] = req_slice_des[key]
-
-    # Create the shared value
-    nest["shared"] = {
-        "isolation": req_slice_des["isolation_level"],
-        "simultaneous_nsi": req_slice_des["simultaneous_nsi"],
-    }
 
     # ****** STEP 2: Service Descriptor ******
     if req["service_descriptor"]:
