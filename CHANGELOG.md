@@ -4,21 +4,27 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.8] - 15/10/2020
+
+### 2.2.8 Added
+
+- Support for multiple shared NSSIs among slices
+
 ## [2.2.7] - 04/09/2020
 
-### Added
+### 2.2.7 Added
 
 - Support for OpenStack Stein release
 - Support for Open Source MANO release 8
 - Bootstrap API (/api/bootstrap) which allows Katana configuration with a single config file
 
-### Changed
+### 2.2.7 Changed
 
 - Handle failed to start Network Services from Open Source MANO
 
 ## [2.2.6] - 30/07/2020
 
-### Added
+### 2.2.6 Added
 
 - Monitoring module: Prometheus and Grafana containers
 - Integrate ODL prometheus exporter to collect traffic metrics per flow
@@ -27,13 +33,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Katana Home Dashboard on Grafana
 - Create a Grafana Dashboard for every new slice
 
-### Changed
+### 2.2.6 Changed
 
 - base_slice_des bug fixed
 
 ## [2.2.5] - 02/06/2020
 
-### Changed
+### 2.2.5 Changed
 
 Integration with ELCM:
 
@@ -43,13 +49,13 @@ Integration with ELCM:
 
 ## [2.2.4] - 20/05/2020
 
-### Added
+### 2.2.4 Added
 
 - katana CLI: Delete multiple slices with a single command
 - katana CLI: --force option for Errored slices
 - Expose Kafka and swagger to external components
 
-### Changed
+### 2.2.4 Changed
 
 - Improved Slice Termination process
 - Improved Binary files for start, stop
@@ -59,38 +65,38 @@ Integration with ELCM:
 
 ## [2.2.3] - 04/05/2020
 
-### Added
+### 2.2.3 Added
 
 - Support for OSM Release 7
 - katana logs --limit feature
 
-### Changed
+### 2.2.3 Changed
 
 - Minor bug fixes
 
 ## [2.2.2] - 08/04/2020
 
-### Added
+### 2.2.2 Added
 
 - Set the Tenant Quotas based on the slice requirements for OpenStack VIMs
 
-### Changed
+### 2.2.2 Changed
 
 - Minor bug fixes in katana-cli
 
 ## [2.2.1] - 11/03/2020
 
-### Added
+### 2.2.1 Added
 
 - API for retrieving OpenStack max and available resources
 
 ## [2.2.0] - 20/02/2020
 
-### Added
+### 2.2.0 Added
 
 - Support for NEAT UE Policy System
 
-### Changed
+### 2.2.0 Changed
 
 - Network Functions DB instead of SST
 - Slice Mapping chooses the most suitable Functions from the database
@@ -99,11 +105,11 @@ Integration with ELCM:
 
 ## [2.1.1] - 03/02/2020
 
-### Added
+### 2.1.1 Added
 
 - Support (API and DB) for external Policy System Engine
 
-### Changed
+### 2.1.1 Changed
 
 - Required fields on json schema
 - Readmec file
@@ -112,7 +118,7 @@ Integration with ELCM:
 
 ## [2.1.0] - 16/01/2020
 
-### Added
+### 2.1.0 Added
 
 - Kafka and Zookeeper Containers | Split katana-mngr to 2 processes-containers: katana-nbi and katana-mngr | Created Kafka producers & consumer to exchange messages between containers
 - Required field for VIM, NFVO, WIM, EMS, PDU components
@@ -121,7 +127,7 @@ Integration with ELCM:
 - Support for "test" types of EMS and WIM
 - This changelog
 
-### Changed
+### 2.1.0 Changed
 
 - Appearance of "katana sst ls" command
 - Customized katana-cli to print http body on httperror case
@@ -129,7 +135,7 @@ Integration with ELCM:
 
 ## [2.0.0] - 08/01/2020
 
-### Added
+### 2.0.0 Added
 
 - New Information model for slice creation (GST)
 - Slice mapping process | Create NEST based on GST and supported SST
@@ -137,7 +143,7 @@ Integration with ELCM:
 - Hunab-readable Unique ID for each component
 - New Resource API per location
 
-### Changed
+### 2.0.0 Changed
 
 - Upgrade swagger to Open APIs 3.0.1
 - New example config files
