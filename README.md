@@ -5,7 +5,7 @@
 ----------
 
 [![Build Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FBuild)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Build/)
-[![Test Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FTest!)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Test/)
+[![Test Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FTest)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Test/)
 [![Package Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FPackage)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Package/)
 
 Network slicing is a 5G cutting edge technology, that enables the creation of multiple virtual networks on top of a physical architecture, allowing operators to provide portions of their networks that fit with the requirementsby different vertical industries. A network slice can be described as the sum of various sub-slices of different network domains, such as the WAN, the Core Cloud and the Edge Cloud.
