@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Check if the BUILD_PATH var is set
+if [ -z ${BUILD_PATH+x} ]; then
+export BUILD_PATH=$PWD
+fi
+
 # *** Install development environment ***
 # Check if the --dev option is given
 if [[ "$1" == "--dev" ]];
