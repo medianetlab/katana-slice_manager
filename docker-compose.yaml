@@ -53,9 +53,9 @@ services:
     container_name: katana-nbi
     command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload "katana.app:create_app()"
     volumes:
-      - "./katana-nbi:/katana-nbi"
-      - "./katana-prometheus/wim_targets.json:/wim_targets.json"
-      - "./katana-prometheus/vim_targets.json:/vim_targets.json"
+      - "${BUILD_PATH}/katana-nbi:/katana-nbi"
+      - "${BUILD_PATH}/katana-prometheus/wim_targets.json:/wim_targets.json"
+      - "${BUILD_PATH}/katana-prometheus/vim_targets.json:/vim_targets.json"
     ports:
       - "8000:8000"
     environment:
@@ -77,11 +77,11 @@ services:
     container_name: katana-mngr
     command: python3 katana/katana-mngr.py
     volumes:
-      - "./katana-mngr:/katana-mngr"
-      - "./katana-grafana/templates:/katana-grafana/templates" 
+      - "${BUILD_PATH}/katana-mngr:/katana-mngr"
+      - "${BUILD_PATH}/katana-grafana/templates:/katana-grafana/templates" 
     env_file:
-      - "katana-mngr/.env"
-      - "katana-grafana/.env" 
+      - "${BUILD_PATH}/katana-mngr/.env"
+      - "${BUILD_PATH}/katana-grafana/.env" 
     restart: always
     depends_on:
       - katana-nbi
@@ -104,7 +104,7 @@ services:
     network_mode: "host"
     restart: always
     volumes:
-      - "./katana-cli:/cli"
+      - "${BUILD_PATH}/katana-cli:/cli"
     depends_on:
       - katana-nbi
 
@@ -117,13 +117,13 @@ services:
     ports:
       - "8001:8080"
     volumes:
-      - "./swagger:/my_swagger"
+      - "${BUILD_PATH}/swagger:/my_swagger"
     depends_on:
       - katana-mngr
 
   postgres:
     env_file:
-      - "./katana-ui/.env"
+      - "${BUILD_PATH}/katana-ui/.env"
     image: "postgres:10.3-alpine"
     container_name: katana-postgres
     ports:
@@ -140,12 +140,12 @@ services:
     depends_on:
       - "postgres"
     env_file:
-      - "./katana-ui/.env"
+      - "${BUILD_PATH}/katana-ui/.env"
     ports:
       - "8080:8080"
     restart: always
     volumes:
-      - "./katana-ui:/app"
+      - "${BUILD_PATH}/katana-ui:/app"
     depends_on:
       - katana-mngr
       - postgres
@@ -155,9 +155,9 @@ services:
     container_name: katana-prometheus
     volumes:
       - "prometheus:/prometheus"
-      - "./katana-prometheus/wim_targets.json:/etc/prometheus/wim_targets.json"
-      - "./katana-prometheus/vim_targets.json:/etc/prometheus/vim_targets.json"
-      - "./katana-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "${BUILD_PATH}/katana-prometheus/wim_targets.json:/etc/prometheus/wim_targets.json"
+      - "${BUILD_PATH}/katana-prometheus/vim_targets.json:/etc/prometheus/vim_targets.json"
+      - "${BUILD_PATH}/katana-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
     restart: unless-stopped
     ports: 
       - "9090:9090"
@@ -169,8 +169,8 @@ services:
     ports: 
       - "3000:3000"
     volumes: 
-      - "./katana-grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
-    env_file: katana-grafana/.env
+      - "${BUILD_PATH}/katana-grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
+    env_file: ${BUILD_PATH}/katana-grafana/.env
     depends_on: 
       - katana-prometheus
 
@@ -180,8 +180,8 @@ services:
     container_name: katana-nfv_mon
     restart: unless-stopped
     env_file: 
-      - "katana-grafana/.env"
-      - "katana-nfv_mon/.env"
+      - "${BUILD_PATH}/katana-grafana/.env"
+      - "${BUILD_PATH}/katana-nfv_mon/.env"
     command: >
       python katana/exporter.py
     ports:

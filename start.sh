@@ -14,6 +14,12 @@ then
         exit 0
 fi
 
+
+# Check if the BUILD_PATH var is set
+if [ -z ${BUILD_PATH+x} ]; then
+export BUILD_PATH=$PWD
+fi
+
 # Get the options
 while [[ $# -gt 0 ]]
 do
