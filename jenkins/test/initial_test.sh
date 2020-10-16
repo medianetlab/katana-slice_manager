@@ -9,7 +9,7 @@ echo """
 """
 
 # Get the katana logs to check if the 
-response=$(docker container run -it --network container:katana-nbi nicolaka/netshoot curl --write-out '%{http_code}' --silent --output /dev/null http://katana-nbi:8000/api/slice)
+response=$(docker container run --rm --network container:katana-nbi nicolaka/netshoot curl --write-out '%{http_code}' --silent --output /dev/null http://katana-nbi:8000/api/slice)
 
 if [[ $response != 200 ]]; then
 echo "**** TEST FAILED ****"
