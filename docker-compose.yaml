@@ -80,8 +80,8 @@ services:
       - "${BUILD_PATH}/katana-mngr:/katana-mngr"
       - "${BUILD_PATH}/katana-grafana/templates:/katana-grafana/templates" 
     env_file:
-      - "${BUILD_PATH}/katana-mngr/.env"
-      - "${BUILD_PATH}/katana-grafana/.env" 
+      - "katana-mngr/.env"
+      - "katana-grafana/.env" 
     restart: always
     depends_on:
       - katana-nbi
@@ -123,7 +123,7 @@ services:
 
   postgres:
     env_file:
-      - "${BUILD_PATH}/katana-ui/.env"
+      - "katana-ui/.env"
     image: "postgres:10.3-alpine"
     container_name: katana-postgres
     ports:
@@ -140,7 +140,7 @@ services:
     depends_on:
       - "postgres"
     env_file:
-      - "${BUILD_PATH}/katana-ui/.env"
+      - "katana-ui/.env"
     ports:
       - "8080:8080"
     restart: always
@@ -170,7 +170,7 @@ services:
       - "3000:3000"
     volumes: 
       - "${BUILD_PATH}/katana-grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
-    env_file: ${BUILD_PATH}/katana-grafana/.env
+    env_file: katana-grafana/.env
     depends_on: 
       - katana-prometheus
 
@@ -180,8 +180,8 @@ services:
     container_name: katana-nfv_mon
     restart: unless-stopped
     env_file: 
-      - "${BUILD_PATH}/katana-grafana/.env"
-      - "${BUILD_PATH}/katana-nfv_mon/.env"
+      - "katana-grafana/.env"
+      - "katana-nfv_mon/.env"
     command: >
       python katana/exporter.py
     ports:
