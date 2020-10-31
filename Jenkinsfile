@@ -4,17 +4,18 @@ pipeline {
     stages {
         // **** Build - Test - Package katana-mngr container ****
         stage("katana-mngr-Build") {
-            when {
-                changeset "**/katana-mngr/**"
-            }
+            // when {
+            //     changeset "**/katana-mngr/**"
+            // }
             steps{
                 echo "**** Building katana-mngr container ****"
+                docker-compose -f docker-compose.yaml build katana-mngr
             }
         }
         stage("katana-mngr-Test") {
-            when {
-                changeset "**/katana-mngr/**"
-            }
+            // when {
+            //     changeset "**/katana-mngr/**"
+            // }
             steps{
                 echo "**** Testing katana-mngr container ****"
             }
@@ -22,17 +23,18 @@ pipeline {
 
         // **** Build - Test - Package katana-nbi container ****
         stage("katana-nbi-Build") {
-            when {
-                changeset "**/katana-nbi/**"
-            }
+            // when {
+            //     changeset "**/katana-nbi/**"
+            // }
             steps{
                 echo "**** Building katana-nbi container ****"
+                docker-compose -f docker-compose.yaml build katana-nbi
             }
         }
         stage("katana-nbi-Test") {
-            when {
-                changeset "**/katana-nbi/**"
-            }
+            // when {
+            //     changeset "**/katana-nbi/**"
+            // }
             steps{
                 echo "**** Testing katana-nbi container ****"
             }
@@ -40,17 +42,18 @@ pipeline {
 
         // **** Build - Test - Package katana-cli container ****
         stage("katana-cli-Build") {
-            when {
-                changeset "**/katana-cli/**"
-            }
+            // when {
+            //     changeset "**/katana-cli/**"
+            // }
             steps{
                 echo "**** Building katana-cli container ****"
+                docker-compose -f docker-compose.yaml build katana-cli
             }
         }
         stage("katana-cli-Test") {
-            when {
-                changeset "**/katana-cli/**"
-            }
+            // when {
+            //     changeset "**/katana-cli/**"
+            // }
             steps{
                 echo "**** Testing katana-cli container ****"
             }
