@@ -9,7 +9,7 @@ pipeline {
             // }
             steps{
                 echo "**** Building katana-mngr container ****"
-                docker-compose -f docker-compose.yaml build katana-mngr
+                sh docker-compose -f docker-compose.yaml build katana-mngr
             }
         }
         stage("katana-mngr-Test") {
@@ -28,7 +28,7 @@ pipeline {
             // }
             steps{
                 echo "**** Building katana-nbi container ****"
-                docker-compose -f docker-compose.yaml build katana-nbi
+                sh docker-compose -f docker-compose.yaml build katana-nbi
             }
         }
         stage("katana-nbi-Test") {
@@ -47,7 +47,7 @@ pipeline {
             // }
             steps{
                 echo "**** Building katana-cli container ****"
-                docker-compose -f docker-compose.yaml build katana-cli
+                sh docker-compose -f docker-compose.yaml build katana-cli
             }
         }
         stage("katana-cli-Test") {
