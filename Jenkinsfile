@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        // **** Build - Test - Package katana-mngr container ****
+        // **** Build & Test katana-mngr container ****
         stage("katana-mngr-Build") {
             // when {
             //     changeset "**/katana-mngr/**"
@@ -21,7 +21,7 @@ pipeline {
             }
         }
 
-        // **** Build - Test - Package katana-nbi container ****
+        // **** Build & Test katana-nbi container ****
         stage("katana-nbi-Build") {
             // when {
             //     changeset "**/katana-nbi/**"
@@ -40,7 +40,7 @@ pipeline {
             }
         }
 
-        // **** Build - Test - Package katana-cli container ****
+        // **** Build & Test katana-cli container ****
         stage("katana-cli-Build") {
             // when {
             //     changeset "**/katana-cli/**"
@@ -59,7 +59,15 @@ pipeline {
             }
         }
 
-        // TODO: Integration test
+        // **** Integration test ****
+        stage("Integration_Test"){
+            steps{
+                echo "**** Running integration test ****"
+                sh 'start.sh'
+                sh 'jenkins/test/initial_test.sh'
+                sh 'stop.sh -c'
+            }
+        }
         // TODO: CD
         // TODO: Notification
         // TODO: Create new tag
