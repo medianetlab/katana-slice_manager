@@ -49,7 +49,7 @@ pipeline {
                 echo "**** Running integration test ****"
                 sh 'start.sh'
                 sh 'jenkins/test/initial_test.sh'
-                sh 'stop.sh -c'
+                // sh 'stop.sh -c'
             }
         }
         // TODO: CD
