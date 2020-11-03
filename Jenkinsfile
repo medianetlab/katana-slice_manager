@@ -4,6 +4,8 @@ pipeline {
     environment {
         MAJOR_RELEASE="2.3"
         TAG_NUMBER="${MAJOR_RELEASE}.${BUILD_NUMBER}"
+        DOCKER_USER='mnlab'
+        DOCKER_PASSWORD=credentials("mnlab_dockerhub")
     }
 
     stages {
@@ -112,6 +114,90 @@ pipeline {
         // *******************************
         // *** DOCKER IMAGE PUSH STAGE ***
         // *******************************
+
+        // **** Push katana-mngr image ****
+        stage("katana-mngr-Push") {
+            when {
+                changeset "**/katana-mngr/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-mngr image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-mngr -r TAG_NUMBER'
+            }
+        }
+
+        // **** Push katana-nbi image ****
+        stage("katana-nbi-Push") {
+            when {
+                changeset "**/katana-nbi/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-nbi image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nbi -r TAG_NUMBER'
+            }
+        }
+
+        // **** Push katana-cli image ****
+        stage("katana-cli-Push") {
+            when {
+                changeset "**/katana-cli/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-cli image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-cli -r TAG_NUMBER'
+            }
+        }
+
+        // **** Push katana-swagger image ****
+        stage("katana-swagger-Push") {
+            when {
+                changeset "**/katana-swagger/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-swagger image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-swagger -r TAG_NUMBER'
+            }
+        }
+
+        // **** Push katana-prometheus image ****
+        stage("katana-prometheus-Push") {
+            when {
+                changeset "**/katana-prometheus/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-prometheus image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-prometheus -r TAG_NUMBER'
+            }
+        }
+
+        // **** Push katana-grafana image ****
+        stage("katana-grafana-Push") {
+            when {
+                changeset "**/katana-grafana/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-grafana image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-grafana -r TAG_NUMBER'
+            }
+        }
+
+        // **** Push katana-nfv_mon image ****
+        stage("katana-nfv_mon-Push") {
+            when {
+                changeset "**/katana-nfv_mon/**"
+                branch "master"
+            }
+            steps{
+                echo "**** Pushing katana-nfv_mon image to docker hub ****"
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nfv_mon -r TAG_NUMBER'
+            }
+        }
 
         // TODO: CD
         // TODO: Notification
