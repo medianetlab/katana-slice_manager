@@ -47,6 +47,7 @@ pipeline {
         stage("Integration_Test"){
             steps{
                 echo "**** Running integration test ****"
+                sh './build.sh'
                 sh './start.sh'
                 sh './jenkins/test/initial_test.sh'
                 // sh 'stop.sh -c'
