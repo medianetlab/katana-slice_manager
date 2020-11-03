@@ -76,6 +76,9 @@ do
     esac
 done
 
+# Install the command for the cli tool to /usr/local/bin/
+command -v katana &> /dev/null || cp katana /usr/local/bin/
+
 # Start the docker containers on the background
 docker-compose up -d ${containers}
 

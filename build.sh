@@ -51,9 +51,6 @@ if [ -z "${DOCKER_USER+x}" ]; then
 export DOCKER_USER="mnlab"
 fi
 
-# Install the command for the cli tool to /usr/local/bin/
-command -v katana &> /dev/null || cp katana /usr/local/bin/
-
 # Build the images
 echo "**** Building the images ****"
 docker image build -f katana-nbi/Dockerfile -t "${DOCKER_USER}"/katana-nbi:${TAG_NUMBER} .
