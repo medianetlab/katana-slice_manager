@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        MAJOR_RELEASE="2.3"
+        TAG_NUMBER="${MAJOR_RELEASE}.${BUILD_NUMBER}"
+    }
+
     stages {
         // **** Build & Test katana-mngr container ****
         stage("katana-mngr-Build") {
@@ -9,17 +14,10 @@ pipeline {
             // }
             steps{
                 echo "**** Building katana-mngr container ****"
-                sh 'docker-compose -f docker-compose.yaml build katana-mngr'
+                sh 'jenkins/build/service_build.sh katana-mngr'
             }
         }
-        stage("katana-mngr-Test") {
-            // when {
-            //     changeset "**/katana-mngr/**"
-            // }
-            steps{
-                echo "**** Testing katana-mngr container ****"
-            }
-        }
+        // Any katana-mngr unit tests should go here
 
         // **** Build & Test katana-nbi container ****
         stage("katana-nbi-Build") {
@@ -28,17 +26,10 @@ pipeline {
             // }
             steps{
                 echo "**** Building katana-nbi container ****"
-                sh 'docker-compose -f docker-compose.yaml build katana-nbi'
+                sh 'jenkins/build/service_build.sh katana-nbi'
             }
         }
-        stage("katana-nbi-Test") {
-            // when {
-            //     changeset "**/katana-nbi/**"
-            // }
-            steps{
-                echo "**** Testing katana-nbi container ****"
-            }
-        }
+        // Any katana-nbi unit tests should go here
 
         // **** Build & Test katana-cli container ****
         stage("katana-cli-Build") {
@@ -47,17 +38,10 @@ pipeline {
             // }
             steps{
                 echo "**** Building katana-cli container ****"
-                sh 'docker-compose -f docker-compose.yaml build katana-cli'
+                sh 'jenkins/build/service_build.sh katana-cli'
             }
         }
-        stage("katana-cli-Test") {
-            // when {
-            //     changeset "**/katana-cli/**"
-            // }
-            steps{
-                echo "**** Testing katana-cli container ****"
-            }
-        }
+        // Any katana-cli unit tests should go here
 
         // **** Integration test ****
         stage("Integration_Test"){
