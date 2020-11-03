@@ -37,7 +37,7 @@ docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 # Push to the remote Docker Hub
 
-if [ -z "${TAG_RELEASE}" ]; then
+if [ -z "${TAG_RELEASE+x}" ]; then
 docker image push "${DOCKER_USER}"/katana-nbi:"${TAG_NUMBER}"
 docker image push "${DOCKER_USER}"/katana-mngr:"${TAG_NUMBER}"
 docker image push "${DOCKER_USER}"/katana-cli:"${TAG_NUMBER}"

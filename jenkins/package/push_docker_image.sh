@@ -35,8 +35,6 @@ docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 # Push to the remote Docker Hub
 
-if [ -z "${TAG_RELEASE}" ]; then
 docker image push "${DOCKER_USER}"/"${SERVICE}":"${TAG_NUMBER}"
-fi
 
 docker image push "${DOCKER_USER}"/"${SERVICE}":latest

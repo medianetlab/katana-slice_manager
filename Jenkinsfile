@@ -123,7 +123,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-mngr image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-mngr -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-mngr -r ${TAG_NUMBER}'
             }
         }
 
@@ -135,7 +135,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-nbi image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nbi -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nbi -r ${TAG_NUMBER}'
             }
         }
 
@@ -147,7 +147,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-cli image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-cli -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-cli -r ${TAG_NUMBER}'
             }
         }
 
@@ -159,7 +159,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-swagger image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-swagger -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-swagger -r ${TAG_NUMBER}'
             }
         }
 
@@ -171,7 +171,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-prometheus image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-prometheus -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-prometheus -r ${TAG_NUMBER}'
             }
         }
 
@@ -183,7 +183,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-grafana image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-grafana -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-grafana -r ${TAG_NUMBER}'
             }
         }
 
@@ -195,7 +195,7 @@ pipeline {
             // }
             steps{
                 echo "**** Pushing katana-nfv_mon image to docker hub ****"
-                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nfv_mon -r TAG_NUMBER'
+                sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nfv_mon -r ${TAG_NUMBER}'
             }
         }
 
