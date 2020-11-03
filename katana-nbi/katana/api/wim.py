@@ -100,10 +100,10 @@ class WimView(FlaskView):
         except KeyError:
             pass
         else:
-            with open("/wim_targets.json", mode="r") as prom_file:
+            with open("/targets/wim_targets.json", mode="r") as prom_file:
                 prom = json.load(prom_file)
                 prom.append({"targets": [monitoring_url], "labels": {"wim_id": wim_id}})
-            with open("/wim_targets.json", mode="w") as prom_file:
+            with open("/targets/wim_targets.json", mode="w") as prom_file:
                 json.dump(prom, prom_file)
         mongoUtils.add("wim_obj", obj_json)
         return f"Created {new_uuid}", 201
@@ -125,10 +125,10 @@ class WimView(FlaskView):
                 pass
             else:
                 try:
-                    with open("/wim_targets.json", mode="r") as prom_file:
+                    with open("/targets/wim_targets.json", mode="r") as prom_file:
                         prom = json.load(prom_file)
                         prom.remove({"targets": [monitoring_url], "labels": {"wim_id": wim["id"]}})
-                    with open("/wim_targets.json", mode="w") as prom_file:
+                    with open("/targets/wim_targets.json", mode="w") as prom_file:
                         json.dump(prom, prom_file)
                 except ValueError:
                     pass
@@ -185,10 +185,10 @@ class WimView(FlaskView):
             except KeyError:
                 pass
             else:
-                with open("/wim_targets.json", mode="r") as prom_file:
+                with open("/targets/wim_targets.json", mode="r") as prom_file:
                     prom = json.load(prom_file)
                     prom.append({"targets": [monitoring_url], "labels": {"wim_id": wim_id}})
-                with open("/wim_targets.json", mode="w") as prom_file:
+                with open("/targets/wim_targets.json", mode="w") as prom_file:
                     json.dump(prom, prom_file)
             mongoUtils.add("wim_obj", obj_json)
             return f"Created {new_uuid}", 201
