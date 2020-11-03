@@ -130,7 +130,8 @@ zk-kafka/
 .vscode
 pyright*
 dev/
-dev_shared_utils/
+development/dev_shared_files
+development/dev_config_files
 katana-prometheus/wim_targets.json
 
 # log files
