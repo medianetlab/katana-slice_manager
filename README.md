@@ -4,9 +4,16 @@
 
 ----------
 
-[![Build Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FBuild)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Build/)
-[![Test Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FTest)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Test/)
-[![Package Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=Katana%2FPackage)](http://jenkins.medianetlab.eu:8080/job/Katana/job/Package/)
+[![Build Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=katana+slice+manager%2Fmaster)](http://jenkins.medianetlab.eu:8080/job/katana%20slice%20manager/job/master/)
+[![Stargazers](https://img.shields.io/github/stars/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/stargazers)
+[![Forks](https://img.shields.io/github/forks/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/network/members)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/graphs/commit-activity)
+
+[![Watchers](https://img.shields.io/github/watchers/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/watchers)
+[![Contributors](https://img.shields.io/github/contributors/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/issues)
+
+----------
 
 Network slicing is a 5G cutting edge technology, that enables the creation of multiple virtual networks on top of a physical architecture, allowing operators to provide portions of their networks that fit with the requirementsby different vertical industries. A network slice can be described as the sum of various sub-slices of different network domains, such as the WAN, the Core Cloud and the Edge Cloud.
 
