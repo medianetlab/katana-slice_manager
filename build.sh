@@ -6,20 +6,24 @@ if [[ "$1" == "--dev" ]];
 then
     echo "Installing development environment"
     # Copy hard links of the shared utils in katana-mngr and katana-nbi
-    read -r -p "Any development/dev_shared_utils will be lost. Continue? (Y/n) > " ans
+    read -r -p "Any dev/dev_shared_utils will be lost. Continue? (Y/n) > " ans
     if [[ $ans =~ ^n.* ]];
     then
     exit 9999
     fi
+    echo "Creating dev/dev_config_files. They can be used for actual testing. They won't be pushed to remote repository"
     rm -rf katana-nbi/katana/shared_utils
-    rm -rf development/dev_shared_utils
-    cp -al katana-mngr/katana/shared_utils development/dev_shared_utils
+    rm -rf dev_shared_utils
+    cp -al katana-mngr/katana/shared_utils dev_shared_utils
     cp -al katana-mngr/katana/shared_utils katana-nbi/katana/
 
     # Create the dev folder if it is not there
-    echo "Creating development/dev_config_files. They can be used for actual testing. They won't be pushed to remote repository"
-    cp -r example_config_files/* development/dev_config_files/
-
+    if [ ! -d "dev" ];
+    then
+        mkdir -p dev/config_files
+        cp -r example_config_files/* dev/dev_config_files/
+        echo "Created dev folder"
+    fi
 fi
 
 # Check if the user and release fare defined
