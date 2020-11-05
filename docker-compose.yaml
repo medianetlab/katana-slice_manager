@@ -140,15 +140,15 @@ services:
   #     - katana-mngr
   #     - postgres
 
-  # katana-prometheus:
-  #   image: "mnlab/katana-prometheus:${KATANA_VERSION}"
-  #   container_name: katana-prometheus
-  #   volumes:
-  #     - "prometheus:/prometheus"
-  #     - "katana-prom-targets:/etc/prometheus/targets"
-  #   restart: unless-stopped
-  #   ports: 
-  #     - "9090:9090"
+  katana-prometheus:
+    image: "mnlab/katana-prometheus:${KATANA_VERSION}"
+    container_name: katana-prometheus
+    volumes:
+      - "prometheus:/prometheus"
+      - "katana-prom-targets:/etc/prometheus/targets"
+    restart: unless-stopped
+    ports: 
+      - "9090:9090"
 
   katana-grafana:
     image: "mnlab/katana-grafana:${KATANA_VERSION}"
