@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         MAJOR_RELEASE="2.3"
-        TAG_NUMBER="${MAJOR_RELEASE}.${BUILD_NUMBER}"
+        TAG_NUMBER="${MAJOR_RELEASE}.${TAG_UNIXTIME}"
         DOCKER_USER='mnlab'
         DOCKER_PASSWORD=credentials("mnlab_dockerhub")
     }
@@ -105,7 +105,7 @@ pipeline {
         stage("Integration_Test"){
             steps{
                 echo "**** Running integration test ****"
-                sh './start.sh'
+                sh './start.sh -m'
                 sh './jenkins/test/initial_test.sh'
                 sh './stop.sh -c'
             }
@@ -200,7 +200,16 @@ pipeline {
         }
 
         // TODO: CD
-        // TODO: Notification
+        post{
+            failure{
+                slackSend (channel: "katana-slice-manager" message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            }
+
+            success{
+                slackSend (channel: "katana-slice-manager" message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            }
+        }
+        // TODO: Post commit status to github commits
         // TODO: Create new tag
     }
 }
