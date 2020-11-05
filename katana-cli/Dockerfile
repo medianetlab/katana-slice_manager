@@ -5,11 +5,10 @@ RUN mkdir -p $INSTALL_PATH
 
 WORKDIR $INSTALL_PATH
 
-COPY requirements.txt requirements.txt
+COPY katana-cli/. .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-COPY . .
 RUN pip install --editable .
 
 CMD /bin/bash

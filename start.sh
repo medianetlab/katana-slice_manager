@@ -1,24 +1,21 @@
 #!/bin/bash
 
 
-containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli swagger"
+containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli katana-swagger"
 
 # Check for help option
 if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
-     printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
+     printf "Usage:\n\tstart.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
         \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
+        \t[-r | --release <RELEASE_NUMBER>] : Specify the release version to be deployed (default is latest)
         \t[-g | --graphical-ui] : Start Web User Interface
         \t[-m | --monitoring] : Start the monitoring module
         \t[-h | --help] : Print this message and quit\n"
         exit 0
 fi
 
-
-# Check if the BUILD_PATH var is set
-if [ -z ${BUILD_PATH+x} ]; then
-export BUILD_PATH=$PWD
-fi
+export KATANA_VERSION="latest"
 
 # Get the options
 while [[ $# -gt 0 ]]
@@ -61,10 +58,16 @@ do
         sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' katana-mngr/.env
         shift
     ;;
+    -r | --release)
+        export KATANA_VERSION=$2
+        shift
+        shift
+    ;;
     *)
     printf "Wrong option %s\n--------\n" "${key}"
-    printf "Usage:\n\tstart.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
+    printf "Usage:\n\tstart.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
     \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
+    \t[-r | --release <RELEASE_NUMBER>] : Specify the release version to be deployed (default is latest)
     \t[-g | --graphical-ui] : Start Web User Interface
     \t[-m | --monitoring] : Start the monitoring module
     \t[-h | --help] : Print this message and quit\n"
@@ -72,6 +75,9 @@ do
     ;;
     esac
 done
+
+# Install the command for the cli tool to /usr/local/bin/
+command -v katana &> /dev/null || cp katana /usr/local/bin/
 
 # Start the docker containers on the background
 docker-compose up -d ${containers}

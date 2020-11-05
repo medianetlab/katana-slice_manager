@@ -110,10 +110,10 @@ class VimView(FlaskView):
                 except KeyError:
                     pass
                 else:
-                    with open("/vim_targets.json", mode="r") as prom_file:
+                    with open("/targets/vim_targets.json", mode="r") as prom_file:
                         prom = json.load(prom_file)
                         prom.append({"targets": [vim_monitoring], "labels": {}})
-                    with open("/vim_targets.json", mode="w") as prom_file:
+                    with open("/targets/vim_targets.json", mode="w") as prom_file:
                         json.dump(prom, prom_file)
         elif request.json["type"] == "opennebula":
             try:
@@ -238,10 +238,10 @@ class VimView(FlaskView):
             except KeyError:
                 pass
             else:
-                with open("/vim_targets.json", mode="r") as prom_file:
+                with open("/targets/vim_targets.json", mode="r") as prom_file:
                     prom = json.load(prom_file)
                     prom.append({"targets": [vim_monitoring], "labels": {}})
-                with open("/vim_targets.json", mode="w") as prom_file:
+                with open("/targets/vim_targets.json", mode="w") as prom_file:
                     json.dump(prom, prom_file)
             mongoUtils.add("vim_obj", obj_json)
             return f"Created {new_uuid}", 201

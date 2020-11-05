@@ -48,14 +48,11 @@ services:
       - zookeeper
 
   katana-nbi:
-    build: ./katana-nbi
-    image: katana-nbi
+    image: "mnlab/katana-nbi:${KATANA_VERSION}"
     container_name: katana-nbi
     command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload "katana.app:create_app()"
     volumes:
-      - "${BUILD_PATH}/katana-nbi:/katana-nbi"
-      - "${BUILD_PATH}/katana-prometheus/wim_targets.json:/wim_targets.json"
-      - "${BUILD_PATH}/katana-prometheus/vim_targets.json:/vim_targets.json"
+      - "katana-prom-targets:/targets"
     ports:
       - "8000:8000"
     environment:
@@ -72,13 +69,11 @@ services:
     #     syslog-format: "rfc5424"
 
   katana-mngr:
-    build: ./katana-mngr
-    image: katana-mngr
+    image: "mnlab/katana-mngr:${KATANA_VERSION}"
     container_name: katana-mngr
     command: python3 katana/katana-mngr.py
     volumes:
-      - "${BUILD_PATH}/katana-mngr:/katana-mngr"
-      - "${BUILD_PATH}/katana-grafana/templates:/katana-grafana/templates" 
+      - "katana-grafana-templates:/katana-grafana/templates" 
     env_file:
       - "katana-mngr/.env"
       - "katana-grafana/.env" 
@@ -94,8 +89,7 @@ services:
     #     syslog-format: "rfc5424"
 
   katana-cli:
-    build: ./katana-cli
-    image: katana-cli
+    image: "mnlab/katana-cli:${KATANA_VERSION}"
     container_name: katana-cli
     command: >
       /bin/bash
@@ -103,21 +97,17 @@ services:
     tty: true
     network_mode: "host"
     restart: always
-    volumes:
-      - "${BUILD_PATH}/katana-cli:/cli"
     depends_on:
       - katana-nbi
 
-  swagger:
-    image: "swaggerapi/swagger-ui"
+  katana-swagger:
+    image: "mnlab/katana-swagger:${KATANA_VERSION}"
     container_name: katana-swagger
     restart: always
     environment:
       - SWAGGER_JSON=/my_swagger/swagger.json
     ports:
       - "8001:8080"
-    volumes:
-      - "${BUILD_PATH}/swagger:/my_swagger"
     depends_on:
       - katana-mngr
 
@@ -145,37 +135,33 @@ services:
       - "8080:8080"
     restart: always
     volumes:
-      - "${BUILD_PATH}/katana-ui:/app"
+      - "./katana-ui:/app"
     depends_on:
       - katana-mngr
       - postgres
 
   katana-prometheus:
-    image: prom/prometheus:v2.19.1
+    image: "mnlab/katana-prometheus:${KATANA_VERSION}"
     container_name: katana-prometheus
     volumes:
       - "prometheus:/prometheus"
-      - "${BUILD_PATH}/katana-prometheus/wim_targets.json:/etc/prometheus/wim_targets.json"
-      - "${BUILD_PATH}/katana-prometheus/vim_targets.json:/etc/prometheus/vim_targets.json"
-      - "${BUILD_PATH}/katana-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "katana-prom-targets:/etc/prometheus/targets"
     restart: unless-stopped
     ports: 
       - "9090:9090"
 
   katana-grafana:
-    image: grafana/grafana:7.1.1
+    image: "mnlab/katana-grafana:${KATANA_VERSION}"
     container_name: katana-grafana
     restart: unless-stopped
     ports: 
       - "3000:3000"
-    volumes: 
-      - "${BUILD_PATH}/katana-grafana/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
     env_file: katana-grafana/.env
     depends_on: 
       - katana-prometheus
 
   katana-nfv_mon:
-    image: katana-nfv_mon
+    image: "mnlab/katana-nfv_mon:${KATANA_VERSION}"
     build: ./katana-nfv_mon
     container_name: katana-nfv_mon
     restart: unless-stopped
@@ -200,3 +186,5 @@ volumes:
   kafka-data: {}
   kafka-secrets: {}
   prometheus: {}
+  katana-prom-targets: {}
+  katana-grafana-templates: {}

@@ -8,10 +8,11 @@ RUN mkdir -p $INSTALL_PATH
 
 WORKDIR $INSTALL_PATH
 
-COPY requirements.txt requirements.txt
+COPY katana-prometheus/wim_targets.json /targets/wim_targets.json
+COPY katana-prometheus/vim_targets.json /targets/vim_targets.json
+
+COPY katana-nbi/. .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
-COPY . .
 
 CMD gunicorn -b 0.0.0.0:8000 --access-logfile - --reload "katana.app:create_app()"

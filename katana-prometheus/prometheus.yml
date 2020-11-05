@@ -8,8 +8,8 @@ scrape_configs:
   - targets: []
   file_sd_configs:
     - files: 
-      - /etc/prometheus/wim_targets.json
-      - /etc/prometheus/vim_targets.json
+      - /etc/prometheus/targets/wim_targets.json
+      - /etc/prometheus/targets/vim_targets.json
       refresh_interval: 30s
 - job_name: katana
   scheme: http
