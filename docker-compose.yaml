@@ -111,44 +111,44 @@ services:
     depends_on:
       - katana-mngr
 
-  postgres:
-    env_file:
-      - "katana-ui/.env"
-    image: "postgres:10.3-alpine"
-    container_name: katana-postgres
-    ports:
-      - "5432:5432"
-    restart: always
-    volumes:
-      - "postgres:/var/lib/postgresql/data"
+  # postgres:
+  #   env_file:
+  #     - "katana-ui/.env"
+  #   image: "postgres:10.3-alpine"
+  #   container_name: katana-postgres
+  #   ports:
+  #     - "5432:5432"
+  #   restart: always
+  #   volumes:
+  #     - "postgres:/var/lib/postgresql/data"
 
-  katana-ui:
-    build: ./katana-ui
-    image: katana-ui
-    container_name: katana-ui
-    command: gunicorn -b 0.0.0.0:8080 --workers 3 --access-logfile - --reload "ui.app:create_app()"
-    depends_on:
-      - "postgres"
-    env_file:
-      - "katana-ui/.env"
-    ports:
-      - "8080:8080"
-    restart: always
-    volumes:
-      - "./katana-ui:/app"
-    depends_on:
-      - katana-mngr
-      - postgres
+  # katana-ui:
+  #   build: ./katana-ui
+  #   image: katana-ui
+  #   container_name: katana-ui
+  #   command: gunicorn -b 0.0.0.0:8080 --workers 3 --access-logfile - --reload "ui.app:create_app()"
+  #   depends_on:
+  #     - "postgres"
+  #   env_file:
+  #     - "katana-ui/.env"
+  #   ports:
+  #     - "8080:8080"
+  #   restart: always
+  #   volumes:
+  #     - "./katana-ui:/app"
+  #   depends_on:
+  #     - katana-mngr
+  #     - postgres
 
-  katana-prometheus:
-    image: "mnlab/katana-prometheus:${KATANA_VERSION}"
-    container_name: katana-prometheus
-    volumes:
-      - "prometheus:/prometheus"
-      - "katana-prom-targets:/etc/prometheus/targets"
-    restart: unless-stopped
-    ports: 
-      - "9090:9090"
+  # katana-prometheus:
+  #   image: "mnlab/katana-prometheus:${KATANA_VERSION}"
+  #   container_name: katana-prometheus
+  #   volumes:
+  #     - "prometheus:/prometheus"
+  #     - "katana-prom-targets:/etc/prometheus/targets"
+  #   restart: unless-stopped
+  #   ports: 
+  #     - "9090:9090"
 
   katana-grafana:
     image: "mnlab/katana-grafana:${KATANA_VERSION}"
@@ -162,7 +162,6 @@ services:
 
   katana-nfv_mon:
     image: "mnlab/katana-nfv_mon:${KATANA_VERSION}"
-    build: ./katana-nfv_mon
     container_name: katana-nfv_mon
     restart: unless-stopped
     env_file: 
