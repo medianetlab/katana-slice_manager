@@ -202,11 +202,11 @@ pipeline {
         // TODO: CD
         post{
             failure{
-                slackSend (channel: "katana-slice-manager" message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+                slackSend (channel: "katana-slice-manager", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
 
             success{
-                slackSend (channel: "katana-slice-manager" message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+                slackSend (channel: "katana-slice-manager", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
         }
         // TODO: Post commit status to github commits
