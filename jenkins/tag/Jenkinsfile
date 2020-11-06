@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        TAG_VERSION=${sh(script:'git fetch --tags && git tag --sort version:refname | tail -1', returnStdout: true).trim()}
+        DOCKER_USER='mnlab'
+        DOCKER_PASSWORD=credentials("mnlab_dockerhub")
+    }
+
+    stages {
+        // **************************
+        // *** BUILD ALL SERVICES ***
+        // **************************
+
+       steps{
+           echo ${TAG_VERSION}
+       }
+
+        // *******************************
+        // *** INTEGRATION TESTS STAGE ***
+        // *******************************
+
+        // **** Integration test ****
+        // stage("Integration_Test"){
+        //     steps{
+        //         echo "**** Running integration test ****"
+        //         sh './start.sh -m'
+        //         sh './jenkins/test/initial_test.sh'
+        //         sh './stop.sh -c'
+        //     }
+        // }
+
+        // *******************************
+        // *** DOCKER IMAGE PUSH STAGE ***
+        // *******************************
+
+       
+    }
+    post{
+        failure{
+            slackSend (color: "FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+
+        success{
+            slackSend (color: "00FF00", message: "Job SUCCESSFUL - New tag ${TAG_VERSION} created : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+    }
+    // TODO: Create new tag
+}

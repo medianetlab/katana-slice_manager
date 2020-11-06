@@ -102,14 +102,14 @@ pipeline {
         // *******************************
 
         // **** Integration test ****
-        stage("Integration_Test"){
-            steps{
-                echo "**** Running integration test ****"
-                sh './start.sh -m'
-                sh './jenkins/test/initial_test.sh'
-                sh './stop.sh -c'
-            }
-        }
+        // stage("Integration_Test"){
+        //     steps{
+        //         echo "**** Running integration test ****"
+        //         sh './start.sh -m'
+        //         sh './jenkins/test/initial_test.sh'
+        //         sh './stop.sh -c'
+        //     }
+        // }
 
         // *******************************
         // *** DOCKER IMAGE PUSH STAGE ***
@@ -196,26 +196,6 @@ pipeline {
             steps{
                 echo "**** Pushing katana-nfv_mon image to docker hub ****"
                 sh 'jenkins/package/push_docker_image.sh -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -s katana-nfv_mon -r ${TAG_NUMBER}'
-            }
-        }
-
-        // ***********************
-        // *** GIT TAG RELEASE ***
-        // ***********************
-        stage("git tag"){
-            steps{
-                sh 'git fetch --tags'
-                sh 'export TAG_VERSION=$(git tag --sort version:refname | tail -1)'
-                echo "Tag version is ${TAG_VERSION}"
-                echo "************************************************"
-                sh 'git tag --sort version:refname | tail -1'
-                echo "$(git tag --sort version:refname | tail -1)"
-                sh 
-                """
-                git fetch --tags
-                export TAG_VERSION=$(git tag --sort version:refname | tail -1
-                echo "Tag version is ${TAG_VERSION}"
-                """
             }
         }
 
