@@ -204,10 +204,12 @@ pipeline {
     post{
         failure{
             slackSend (color: "FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            setBuildStatus("Build failed", "FAILURE");
         }
 
         success{
             slackSend (color: "00FF00", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            setBuildStatus("Build succeeded", "SUCCESS")
         }
     }
     // TODO: Post commit status to github commits
