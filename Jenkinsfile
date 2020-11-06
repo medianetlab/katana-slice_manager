@@ -199,19 +199,36 @@ pipeline {
             }
         }
 
+        // ***********************
+        // *** GIT TAG RELEASE ***
+        // ***********************
+        stage("git tag"){
+            steps{
+                sh 'git fetch --tags'
+                sh 'export TAG_VERSION=$(git tag --sort version:refname | tail -1)'
+                echo "Tag version is ${TAG_VERSION}"
+                echo "************************************************"
+                sh 'git tag --sort version:refname | tail -1'
+                echo "$(git tag --sort version:refname | tail -1)"
+                sh 
+                """
+                git fetch --tags
+                export TAG_VERSION=$(git tag --sort version:refname | tail -1
+                echo "Tag version is ${TAG_VERSION}"
+                """
+            }
+        }
+
         // TODO: CD
     }
     post{
         failure{
             slackSend (color: "FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-            setBuildStatus("Build failed", "FAILURE");
         }
 
         success{
             slackSend (color: "00FF00", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-            setBuildStatus("Build succeeded", "SUCCESS")
         }
     }
-    // TODO: Post commit status to github commits
     // TODO: Create new tag
 }
