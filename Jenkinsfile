@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         MAJOR_RELEASE="2.3"
-        TAG_NUMBER="${MAJOR_RELEASE}.${TAG_UNIXTIME}"
+        TAG_NUMBER="${MAJOR_RELEASE}.jenkins_${env.BRANCH_NAME}_${env.BUILD_NUMBER}"
         DOCKER_USER='mnlab'
         DOCKER_PASSWORD=credentials("mnlab_dockerhub")
     }
@@ -203,11 +203,11 @@ pipeline {
     }
     post{
         failure{
-            slackSend (channel: "katana-slice-manager", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            slackSend (color: "FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
 
         success{
-            slackSend (channel: "katana-slice-manager", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            slackSend (color: "00FF00", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
     }
     // TODO: Post commit status to github commits

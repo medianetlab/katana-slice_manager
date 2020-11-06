@@ -1,3 +1,5 @@
+""" Katana North-Bound Interface - Implemented with Flask"""
+
 # -*- coding: utf-8 -*-
 from flask import Flask
 from flask_cors import CORS

@@ -1,3 +1,5 @@
+""" Katana Manager Base Application """
+
 import logging
 import logging.handlers
 

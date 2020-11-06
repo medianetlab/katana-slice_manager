@@ -1,3 +1,5 @@
+""" Katana Command Line Tool """
+
 import os
 import click
 
