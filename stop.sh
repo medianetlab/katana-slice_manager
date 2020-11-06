@@ -8,6 +8,7 @@ then
     \t[-h | --help] : Print this message and quit\n"
     exit 0
 fi
+ 
 
 # Get the options
 while [[ $# -gt 0 ]]
@@ -27,6 +28,8 @@ do
     ;;
     esac
 done
+
+export KATANA_VERSION=""
 
 # Stop the containers
 docker-compose down ${options}

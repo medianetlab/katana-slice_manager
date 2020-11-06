@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        MAJOR_RELEASE="2.3"
+        MAJOR_RELEASE="${sh(script:'git fetch --tags && git tag --sort version:refname | tail -1', returnStdout: true).trim()}"
         TAG_NUMBER="${MAJOR_RELEASE}.jenkins_${env.BRANCH_NAME}_${env.BUILD_NUMBER}"
         DOCKER_USER='mnlab'
         DOCKER_PASSWORD=credentials("mnlab_dockerhub")
@@ -102,14 +102,14 @@ pipeline {
         // *******************************
 
         // **** Integration test ****
-        // stage("Integration_Test"){
-        //     steps{
-        //         echo "**** Running integration test ****"
-        //         sh './start.sh -m'
-        //         sh './jenkins/test/initial_test.sh'
-        //         sh './stop.sh -c'
-        //     }
-        // }
+        stage("Integration_Test"){
+            steps{
+                echo "**** Running integration test ****"
+                sh './start.sh -m'
+                sh './jenkins/test/initial_test.sh'
+                sh './stop.sh -c'
+            }
+        }
 
         // *******************************
         // *** DOCKER IMAGE PUSH STAGE ***
@@ -210,5 +210,4 @@ pipeline {
             slackSend (color: "00FF00", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
     }
-    // TODO: Create new tag
 }
