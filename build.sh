@@ -37,6 +37,10 @@ do
         cp -al katana-mngr/katana/shared_utils katana-nbi/katana/ &> /dev/null
         shift
     ;;
+    *)
+    printf "Wrong option %s\n--------\n" "${key}"
+    exit 9999
+    ;;
     esac
 done
 
