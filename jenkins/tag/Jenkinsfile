@@ -40,6 +40,13 @@ pipeline {
                 sh './push_docker_image.sh -r ${TAG_VERSION} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}'
             }
         }
+
+        // Uninstall to remove previous images
+        stage("Remove_Images") {
+            steps{
+                sh './uninstall.sh'
+            }
+        }
        
     }
     post{

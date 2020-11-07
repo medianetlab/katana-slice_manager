@@ -199,6 +199,13 @@ pipeline {
             }
         }
 
+        // Uninstall to remove previous images
+        stage("Remove_Images") {
+            steps{
+                sh './uninstall.sh'
+            }
+        }
+
         // TODO: CD
     }
     post{
