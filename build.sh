@@ -44,8 +44,6 @@ do
     esac
 done
 
-exit 0
-
 # Check if the tag number is set
 if [ -z "${TAG_NUMBER+x}" ]; then
 export TAG_NUMBER="test"
