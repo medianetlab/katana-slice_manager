@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 12/11/2020
+
+### 2.3.0 Added
+
+- CI/CD pipeline:
+  - Multibranch Pipeline Job
+  - Releases Pipeline Job
+
+### 2.3.0 Changed
+
+- Scripts for building, starting, testing and packaging Katana
+- Minor errors on Monitoring module
+- New containers based on public one:
+  - katana-grafana
+  - katana-prometheus
+  - katana-swagger
+
 ## [2.2.8] - 15/10/2020
 
 ### 2.2.8 Added

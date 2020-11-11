@@ -4,7 +4,6 @@
 
 ----------
 
-[![Build Status](http://jenkins.medianetlab.eu:8080/buildStatus/icon?job=katana+slice+manager%2Fmaster)](http://jenkins.medianetlab.eu:8080/job/katana%20slice%20manager/job/master/)
 [![Stargazers](https://img.shields.io/github/stars/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/stargazers)
 [![Forks](https://img.shields.io/github/forks/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/network/members)
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/graphs/commit-activity)
@@ -12,6 +11,8 @@
 [![Watchers](https://img.shields.io/github/watchers/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/watchers)
 [![Contributors](https://img.shields.io/github/contributors/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/graphs/contributors)
 [![Issues](https://img.shields.io/github/issues/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/issues)
+
+[![Build Status](http://143.233.127.12:8080/buildStatus/icon?job=Katana-Workspace%2FKatanaPipeline%2Fmaster)](http://143.233.127.12:8080/job/Katana-Workspace/job/KatanaPipeline/job/master/)
 
 ----------
 
@@ -30,6 +31,7 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 - Integrated CLI tool
 - Prometheus and Grafana Monitoring modules
 - Slice Deployment and Configuration measurements
+- CI/CD procedures
 
 ## Quick Start
 
@@ -114,6 +116,25 @@ for dest in katana-{mngr,nbi}/katana/shared_utils/; do cp -al dev_shared_utils/{
 It will also create a **dev** folder, where the example_config_files will be copied for a more direct access to testing configuration files
 
 You can also check the [Wiki "For Developers"](https://github.com/medianetlab/katana-slice_manager/wiki/developers) page for more details.
+
+## CI/CD
+
+Current implementation supports two pipelines, using the respective Jenkinsfile:
+
+- Multibranch Pipeline using the file `Jenkinsfile`:
+
+  - Builds the docker images if there was a change on the code
+  - Runns the Integration test
+  - If the changes are occuring on the master branch, the built images will be packaged and uploaded to docker hub
+  - Sends notification on Slack
+
+- Pipeline for tagging using the file `jenkins/tag/Jenkinsfile`. For every new tag:
+  - Builds the docker images using as tag the git push tag
+  - Runns the Integration test
+  - The built images will be packaged and uploaded to docker hub
+  - Sends notification on Slack
+
+The two Jenkins jobs can be created using a seed DSL job and the script `jenkins/Jenkins_Seed_DSL_Jobs/jobs`
 
 ## Documentation
 
