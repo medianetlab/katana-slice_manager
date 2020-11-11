@@ -465,8 +465,10 @@ def add_slice(nest_req):
         # Check if this the first slice of a sharing list
         if ns["shared_function"] == 1:
             shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
-            ns_inst_info[ns["ns-id"]]["shared"] = True
-            ns_inst_info[ns["ns-id"]]["sharing_list"] = ns["shared_slice_key"]
+            ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]]["shared"] = True
+            ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]]["sharing_list"] = ns[
+                "shared_slice_key"
+            ]
             shared_list["ns_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
             mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
@@ -573,8 +575,12 @@ def add_slice(nest_req):
                             }
                             # Add the shared information for the ns, if any
                             if shared:
-                                ns_data["shared"] = ns_inst_info[ns["ns-id"]]["shared"]
-                                ns_data["sharing_list"] = ns_inst_info[ns["ns-id"]]["sharing_list"]
+                                ns_data["shared"] = ns_inst_info[ns["ns-id"]][
+                                    connection[key]["location"]
+                                ]["shared"]
+                                ns_data["sharing_list"] = ns_inst_info[ns["ns-id"]][
+                                    connection[key]["location"]
+                                ]["sharing_list"]
                             else:
                                 ns_data["shared"] = False
                             key_data["ns"].append(ns_data)
@@ -634,7 +640,10 @@ def add_slice(nest_req):
         for ns in ns_inst_info.values():
             for key, value in ns.items():
                 # Check if the VIM supports infrastructure monitoring
-                selected_vim = mongoUtils.find("vim", {"id": value["vim"]})
+                search_vim_id = value["vim"]
+                if value.get("shared", False):
+                    search_vim_id = search_vim_id[:-2]
+                selected_vim = mongoUtils.find("vim", {"id": search_vim_id})
                 try:
                     vim_monitoring = selected_vim["type"]
                     vim_monitoring_list = infra_targets.get(vim_monitoring, [])
