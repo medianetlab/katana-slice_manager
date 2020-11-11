@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 """
+Katana NFV Prometheus exporter
 Read the collected NFV metrics and expose them to Prometheus
 """
 

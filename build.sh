@@ -1,31 +1,5 @@
 #!/bin/bash
 
-# *** Install development environment ***
-# Check if the --dev option is given
-if [[ "$1" == "--dev" ]];
-then
-    echo "Installing development environment"
-    # Copy hard links of the shared utils in katana-mngr and katana-nbi
-    read -r -p "Any dev/dev_shared_utils will be lost. Continue? (Y/n) > " ans
-    if [[ $ans =~ ^n.* ]];
-    then
-    exit 9999
-    fi
-    echo "Creating dev/dev_config_files. They can be used for actual testing. They won't be pushed to remote repository"
-    rm -rf katana-nbi/katana/shared_utils
-    rm -rf dev_shared_utils
-    cp -al katana-mngr/katana/shared_utils dev_shared_utils
-    cp -al katana-mngr/katana/shared_utils katana-nbi/katana/
-
-    # Create the dev folder if it is not there
-    if [ ! -d "dev" ];
-    then
-        mkdir -p dev/config_files
-        cp -r example_config_files/* dev/dev_config_files/
-        echo "Created dev folder"
-    fi
-fi
-
 # Check if the user and release fare defined
 while [[ $# -gt 0 ]]
 do
@@ -41,6 +15,31 @@ do
         DOCKER_USER=$2
         shift
         shift
+    ;;
+    --dev)
+        # *** Install development environment ***
+        echo "Installing development environment"
+        # Copy hard links of the shared utils in katana-mngr and katana-nbi
+        read -r -p "Any dev/dev_shared_utils will be lost. Continue? (Y/n) > " ans
+        if [[ $ans =~ ^n.* ]];
+        then
+        exit 9999
+        fi
+
+        echo "Creating dev/dev_shared_utils. They are hard-linked to both common files in katana-mngr and katana-nbi directories"
+        mkdir -p dev/dev_config_files &> /dev/null && echo "Created dev folder"
+        cp -r example_config_files/* dev/dev_config_files/
+
+        echo "Creating dev/dev_config_files. They can be used for actual testing. They won't be pushed to remote repository"
+        rm -rf katana-nbi/katana/shared_utils &> /dev/null
+        rm -rf dev/dev_shared_utils &> /dev/null
+        cp -al katana-mngr/katana/shared_utils dev/dev_shared_utils &> /dev/null
+        cp -al katana-mngr/katana/shared_utils katana-nbi/katana/ &> /dev/null
+        shift
+    ;;
+    *)
+    printf "Wrong option %s\n--------\n" "${key}"
+    exit 9999
     ;;
     esac
 done

@@ -9,4 +9,4 @@
 docker rmi -f $(docker images | grep katana | awk '{print $3}') &> /dev/null
 
 # Remove katana commands
-rm /usr/local/bin/katana
+rm /usr/local/bin/katana || true

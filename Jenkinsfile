@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        MAJOR_RELEASE="2.3"
-        TAG_NUMBER="${MAJOR_RELEASE}.${BUILD_NUMBER}"
+        MAJOR_RELEASE="${sh(script:'git fetch --tags && git tag --sort version:refname | tail -1', returnStdout: true).trim()}"
+        TAG_NUMBER="${MAJOR_RELEASE}.jenkins_${env.BRANCH_NAME}_${env.BUILD_NUMBER}"
         DOCKER_USER='mnlab'
         DOCKER_PASSWORD=credentials("mnlab_dockerhub")
     }
@@ -105,7 +105,7 @@ pipeline {
         stage("Integration_Test"){
             steps{
                 echo "**** Running integration test ****"
-                sh './start.sh'
+                sh './start.sh -m'
                 sh './jenkins/test/initial_test.sh'
                 sh './stop.sh -c'
             }
@@ -199,8 +199,22 @@ pipeline {
             }
         }
 
+        // Uninstall to remove previous images
+        stage("Remove_Images") {
+            steps{
+                sh './uninstall.sh'
+            }
+        }
+
         // TODO: CD
-        // TODO: Notification
-        // TODO: Create new tag
+    }
+    post{
+        failure{
+            slackSend (color: "red", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+
+        success{
+            slackSend (color: "green", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
     }
 }

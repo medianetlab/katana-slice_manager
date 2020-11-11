@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+
+    environment {
+        TAG_VERSION="${sh(script:'git fetch --tags && git tag --sort version:refname | tail -1', returnStdout: true).trim()}"
+        DOCKER_USER='mnlab'
+        DOCKER_PASSWORD=credentials("mnlab_dockerhub")
+    }
+
+    stages {
+        // **************************
+        // *** BUILD ALL SERVICES ***
+        // **************************
+        stage("Build_Tag") {
+            steps{
+                sh './build.sh -r ${TAG_VERSION} -u ${DOCKER_USER}'
+            }
+        }
+
+        // *******************************
+        // *** INTEGRATION TESTS STAGE ***
+        // *******************************
+
+        // **** Integration test ****
+        stage("Integration_Test"){
+            steps{
+                echo "**** Running integration test ****"
+                sh './start.sh -m -r ${TAG_VERSION}'
+                sh './jenkins/test/initial_test.sh'
+                sh './stop.sh -c'
+            }
+        }
+
+        // *******************************
+        // *** DOCKER IMAGE PUSH STAGE ***
+        // *******************************
+
+        stage("Push_Tag") {
+            steps{
+                sh './push_docker_image.sh -r ${TAG_VERSION} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}'
+            }
+        }
+
+        // Uninstall to remove previous images
+        stage("Remove_Images") {
+            steps{
+                sh './uninstall.sh'
+            }
+        }
+       
+    }
+    post{
+        failure{
+            slackSend (color: "red", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+
+        success{
+            slackSend (color: "green", message: "Job SUCCESSFUL - New tag ${TAG_VERSION} created : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+    }
+}

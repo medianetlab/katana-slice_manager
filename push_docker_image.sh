@@ -24,6 +24,10 @@ do
         shift
         shift
     ;;
+    *)
+    printf "Wrong option %s\n--------\n" "${key}"
+    exit 9999
+    ;;
     esac
 done
 
