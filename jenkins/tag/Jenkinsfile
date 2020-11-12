@@ -51,11 +51,11 @@ pipeline {
     }
     post{
         failure{
-            slackSend (color: "	#FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            slackSend (color: "#FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
 
         success{
-            slackSend (color: "	#008000", message: "Job SUCCESSFUL - New tag ${TAG_VERSION} created : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            slackSend (color: "#008000", message: "Job SUCCESSFUL - New tag ${TAG_VERSION} created : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
     }
 }
