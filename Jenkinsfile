@@ -105,7 +105,7 @@ pipeline {
         stage("Integration_Test"){
             steps{
                 echo "**** Running integration test ****"
-                sh './start.sh -m'
+                sh './start.sh -m -u ${DOCKER_USER}'
                 sh './jenkins/test/initial_test.sh'
                 sh './stop.sh -c'
             }

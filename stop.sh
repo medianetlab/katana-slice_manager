@@ -29,7 +29,9 @@ do
     esac
 done
 
+# Avoid warning messages
 export KATANA_VERSION=""
+export DOCKER_USER=""
 
 # Stop the containers
 docker-compose down ${options}

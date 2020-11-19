@@ -24,7 +24,7 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 
 ## Features
 
-- Start, Stop, Inspect End-to-End Network SLices
+- Start, Stop, Inspect End-to-End Network Slices
 - OpenAPIs supported by Swagger-io tool
 - Modular architecture for supporting different infrastructure technologies
 - Lightweight web UI
@@ -40,22 +40,18 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 - docker version >= 18.09.6
 - docker-compose version >= 1.17.1
 
-### Installation
+### Deploy
+
+Deploy katana Slice Manager service. By default the deployment will pull the latest tag from the Docker hub registry. You can define a specific image tag by passing the `-r` option:
 
 ```bash
-sudo ./install.sh
-```
-
-### Start
-
-Start katana Slice Manager service:
-
-```bash
-./start.sh [-p | --publish] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]
+./start.sh [-p | --publish] [-g | --graphical-ui] [-r | --release <RELEASE_NUMBER>] [-u | --user <DOCKER_USER_ID>] [-m | --monitoring] [-h | --help]
 ```
 
 - __-p | --publish__: Expose Kafka end Swagger-ui using katana public IP
 - __-g | --graphical-ui__: Start katana Slice Manager service and the web UI module
+- __-r | --release <RELEASE_NUMBER>__: Specify the release version to be deployed (default is latest)
+- __-u | --user <DOCKER_USER_ID>__: Specify docker user
 - __-m | --monitoring__: Start Katana Slice Manager Slice Monitoring module
 - __-h | --help__: Print help message and quit
 
@@ -82,7 +78,7 @@ Stop Katana Slice Manager:
 
 ### Uninstall
 
-Uninstall katana docker images and commands
+Remove katana docker images and commands
 
 ```bash
 sudo ./uninstall.sh
@@ -99,12 +95,24 @@ GF_SECURITY_ADMIN_USER=USER
 GF_SECURITY_ADMIN_PASSWORD=PASSWORD
 ```
 
+### Build local docker images
+
+Buid local docker images (instead of pulling them from the public registry):
+
+```bash
+sudo ./build.sh [-r | --release <RELEASE_NUMBER>] [-u | --user] [--dev]
+```
+
+- __-r | --release <RELEASE_NUMBER>__: Specify the release version to be deployed (default is test)
+- __-u | --user__: Define the docker registry that will be used for image tagging purposes
+- __--dev__: Install the development environment
+
 ## Development Environment
 
 To create a development environment for katana on a Linux host, run:
 
 ```bash
-./install.sh --dev
+./build.sh --dev
 ```
 
 This will create hard links of the __shared_utils__ directory of both katana-mngr and katana-nbi on the root directory `./dev_shared_utils`. So any changes done on the existing files ./shared_utils directory will be reflected to __katana-mngr/katana/shared_utils__ and __katana-nbi/katana/shared_utils__ directories. To add new files that are created in the dev_shared_utils directory, run the command:

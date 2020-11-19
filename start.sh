@@ -9,6 +9,7 @@ then
      printf "Usage:\n\tstart.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
         \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
         \t[-r | --release <RELEASE_NUMBER>] : Specify the release version to be deployed (default is latest)
+        \t[-u | --user <DOCKER_USER_ID>] : Specify docker user for images
         \t[-g | --graphical-ui] : Start Web User Interface
         \t[-m | --monitoring] : Start the monitoring module
         \t[-h | --help] : Print this message and quit\n"
@@ -63,11 +64,17 @@ do
         shift
         shift
     ;;
+    -u | --user)
+        export DOCKER_USER=$2
+        shift
+        shift
+    ;;
     *)
     printf "Wrong option %s\n--------\n" "${key}"
-    printf "Usage:\n\tstart.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
+    printf "Usage:\n\tstart.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [-u | --user <DOCKER_USER_ID>] [-g | --graphical-ui] [-m | --monitoring] [-h | --help]\nOptions:
     \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
     \t[-r | --release <RELEASE_NUMBER>] : Specify the release version to be deployed (default is latest)
+    \t[-u | --user <DOCKER_USER_ID>] : Specify docker user for images
     \t[-g | --graphical-ui] : Start Web User Interface
     \t[-m | --monitoring] : Start the monitoring module
     \t[-h | --help] : Print this message and quit\n"
@@ -75,6 +82,12 @@ do
     ;;
     esac
 done
+
+# Check if docker user is set
+if [ -z "${DOCKER_USER+x}" ]; then
+read -r -p "Enter the Docker user > " DOCKER_USER
+export DOCKER_USER
+fi
 
 # Install the command for the cli tool to /usr/local/bin/
 command -v katana &> /dev/null || cp katana /usr/local/bin/
