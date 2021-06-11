@@ -17,6 +17,7 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 NEST_FIELDS = ("base_slice_descriptor", "service_descriptor", "test_descriptor")
+REQ_FIELDS = {"network_DL_throughput", "delay_tolerance"}
 
 SLICE_DES_OBJ = (
     "base_slice_des_id",
@@ -66,12 +67,26 @@ def nest_mapping(req):
     """
     Function that maps nest to the underlying network functions
     """
+
     # Store the gst in DB
     mongoUtils.add("gst", req)
 
     nest = {"_id": req["_id"]}
 
     # Recreate the nest req
+
+    # Check if the base_slice_des_ref or the required fields are set
+    base_slice_des_ref = req["base_slice_descriptor"].get("base_slice_des_ref", None)
+    if not base_slice_des_ref:
+        for req_key in REQ_FIELDS:
+            logger.debug(req_key)
+            if req_key not in req["base_slice_descriptor"]:
+                logger.error("Required field base_slice_descriptor.{} is missing".format(req_key))
+                return (
+                    "Error: Required field base_slice_descriptor.{} is missing".format(req_key),
+                    400,
+                )
+
     for field in NEST_FIELDS:
         req[field] = req.get(field, None)
 
@@ -94,7 +109,7 @@ def nest_mapping(req):
         if ref_slice:
             for key, value in req_slice_des.items():
                 try:
-                    if value is None:
+                    if value is None or value == []:
                         req_slice_des[key] = ref_slice[key]
                 except KeyError:
                     continue
@@ -210,7 +225,7 @@ def nest_mapping(req):
         #         lambda x: {"location": ["Core"]} if not x else
         #         {"location": req_slice_des["coverage"]})(ns["placement"])
 
-    # ****** STEP 3: Service Descriptor ******
+    # ****** STEP 3: Test Descriptor ******
     if req["test_descriptor"]:
         req_test_des = req["test_descriptor"]
         # *** Recreate the NEST ***
@@ -221,9 +236,12 @@ def nest_mapping(req):
         # Create the Probe field on Nest
         nest["probe_list"] = req_test_des["probe_list"]
 
-    if not mongoUtils.find(
-        "base_slice_des_ref",
-        {"base_slice_des_id": req["base_slice_descriptor"]["base_slice_des_id"]},
+    if (
+        not mongoUtils.find(
+            "base_slice_des_ref",
+            {"base_slice_des_id": req["base_slice_descriptor"]["base_slice_des_id"]},
+        )
+        and req["base_slice_descriptor"]["base_slice_des_id"]
     ):
         new_uuid = str(uuid.uuid4())
         req["base_slice_descriptor"]["_id"] = new_uuid
