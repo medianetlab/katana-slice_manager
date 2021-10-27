@@ -1,0 +1,16 @@
+{
+  "id": "mnl_cloud",
+  "name": "core_vim",
+  "auth_url": "http://10.200.64.2:5000/v3/",
+  "username": "******",
+  "password": "******",
+  "admin_project_name": "******",
+  "location": "Core",
+  "type": "openstack",
+  "version": "Queens",
+  "description": "Core VIM - MNL Cloud",
+  "infrastructure_monitoring": "10.30.0.224:9090",
+  "config": {
+    "security_groups": "TBD"
+  }
+}

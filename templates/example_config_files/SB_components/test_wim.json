@@ -1,0 +1,7 @@
+{
+  "id": "test-wim",
+  "name": "test-wim",
+  "description": "Test Katana WIM",
+  "url": "https://jsonplaceholder.typicode.com/posts",
+  "type": "test-wim"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "Amarisoft_EMS",
+  "name": "athens_ems",
+  "description": "Athens Platform EMS",
+  "url": "http://10.30.0.170:8000",
+  "type": "amarisoft-ems"
+}

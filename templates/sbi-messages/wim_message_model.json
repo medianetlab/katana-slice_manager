@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+
+  "type": "object",
+  "description": "Schema of the message from Katana to WIM",
+  "properties": {
+    "slice_sla":{
+      "type": "object",
+      "description": "Slice parameteres as defiend in NEST",
+      "properties": {
+        "network_DL_throughput": {
+          "type": "object",
+          "description": "The achievable data rate in downlink for the whole network slice (and not per user).",
+          "properties": {
+            "guaranteed": {
+              "type": "number",
+              "description": "kbps"
+            },
+            "maximum": {
+              "type": "number",
+              "description": "kbps"
+            }
+          }
+        },
+        "network_UL_throughput": {
+          "type": "object",
+          "description": "The achievable data rate in uplink for the whole network slice (and not per user).",
+          "properties": {
+            "guaranteed": {
+              "type": "number",
+              "description": "kbps"
+            },
+            "maximum": {
+              "type": "number",
+              "description": "kbps"
+            }
+          }
+        },
+        "mtu": {
+          "type": "number",
+          "description": "Bytes"
+        }
+      }
+    },
+    "core_connections": {
+      "type": "array",
+      "description": "List of connections that are part of the slice and must be implemented by the WIM",
+      "items":{
+        "type": "object",
+        "description": "The endpoints of the connections",
+        "properties": {
+          "core": {
+            "type": "object",
+            "description": "The core part of the radio connection",
+            "properties":{
+              "ns": {
+                "type": "array",
+                "description": "A list of VIMs where the NSs have been instantiated",
+                "items": {
+                  "type": "object",
+                  "description": "A VIM hosting NSs",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "description": "The location of the VIM"
+                    },
+                    "vim": {
+                      "type": "string",
+                      "description": "The ID of the VIM"
+                    }
+                  }
+                }
+              },
+              "pnf": {
+                "type": "array",
+                "description": "A list of the PNFs that are part of the slice",
+                "items": {
+                  "type": "object",
+                  "description": "A Physical Network Service",
+                  "properties": {
+                    "pnf-id": {
+                      "type": "string",
+                      "description": "A Unique ID of the pnf"
+                    },
+                    "pnf-name": {
+                      "type": "string",
+                      "description": "The name of the PNF"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "ip": {
+                      "type": "string",
+                      "description": "The management IP of the PNF"
+                    },
+                    "location": {
+                      "type": "string",
+                      "description": "The location of the PNF"
+                    },
+                    "optional":{
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "radio": {
+            "type": "object",
+            "description": "The core part of the radio connection",
+            "properties":{
+              "ns": {
+                "type": "array",
+                "description": "A list of VIMs where the NSs have been instantiated",
+                "items": {
+                  "type": "object",
+                  "description": "A VIM hosting NSs",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "description": "The location of the VIM"
+                    },
+                    "vim": {
+                      "type": "string",
+                      "description": "The ID of the VIM"
+                    }
+                  }
+                }
+              },
+              "pnf": {
+                "type": "array",
+                "description": "A list of the PNFs that are part of the slice",
+                "items": {
+                  "type": "object",
+                  "description": "A Physical Network Service",
+                  "properties": {
+                    "pnf-id": {
+                      "type": "string",
+                      "description": "A Unique ID of the pnf"
+                    },
+                    "pnf-name": {
+                      "type": "string",
+                      "description": "The name of the PNF"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "ip": {
+                      "type": "string",
+                      "description": "The management IP of the PNF"
+                    },
+                    "location": {
+                      "type": "string",
+                      "description": "The location of the PNF"
+                    },
+                    "optional":{
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "extra_ns" : {
+      "type": "array",
+      "description": "A list of VIMs where the NSs that are not part of the core slice have been instantiated",
+      "items": {
+        "type": "object",
+        "description": "A VIM hosting NSs",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "The location of the VIM"
+          },
+          "vim": {
+            "type": "string",
+            "description": "The ID of the VIM"
+          }
+        }
+      }
+    }
+  }
+}

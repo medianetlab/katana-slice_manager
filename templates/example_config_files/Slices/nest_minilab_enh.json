@@ -1,0 +1,23 @@
+{
+    "base_slice_descriptor": {
+        "base_slice_des_ref": "O5GCore_minilab",
+        "coverage": ["minilab"],
+        "delay_tolerance": false,
+        "network_DL_throughput": 113,
+        "ue_DL_throughput": 113,
+        "network_UL_throughput": 113,
+        "ue_UL_throughput": 113,
+        "mtu": 2113
+    },
+    "service_descriptor":{
+        "ns_list": [
+            {
+                "nfvo-id": "OSM6",
+                "nsd-id": "8aa747b5-26e5-4ed9-9f85-da153c92b2bf",
+                "ns-name": "dummy_ns_core",
+                "placement": 0,
+                "optional": false
+            }
+        ]
+    }
+}

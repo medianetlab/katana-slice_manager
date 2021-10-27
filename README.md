@@ -1,6 +1,6 @@
 # Katana Slice Manager
 
-![Katana Logo](./katana-ui/ui/static/images/katana-logo.svg)
+![Katana Logo](./templates/images/katana-logo.svg)
 
 ----------
 
@@ -12,7 +12,7 @@
 [![Contributors](https://img.shields.io/github/contributors/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/graphs/contributors)
 [![Issues](https://img.shields.io/github/issues/medianetlab/katana-slice_manager?style=for-the-badge)](https://github.com/medianetlab/katana-slice_manager/issues)
 
-[![Build Status](http://143.233.127.12:8080/buildStatus/icon?job=Katana-Workspace%2FKatanaPipeline%2Fmaster)](http://143.233.127.12:8080/job/Katana-Workspace/job/KatanaPipeline/job/master/)
+[![Build Status](https://jenkins.medianetlab.gr/buildStatus/icon?job=katana%2Fmnl.testing)](https://jenkins.medianetlab.gr/job/katana/job/mnl.testing/)
 
 ----------
 

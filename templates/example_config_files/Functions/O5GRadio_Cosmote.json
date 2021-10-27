@@ -1,0 +1,21 @@
+{
+  "id": "O5GRadio_Cosmote",
+  "name": "O5GRadio_Cosmote",
+  "gen": 5,
+  "func": 1,
+  "shared": {
+    "availability": false
+  },
+  "type": 1,
+  "location": "Cosmote",
+  "pnf_list":[
+    {
+      "pnf-id": "O5G_gNodeB",
+      "description": "The O5G PNF gNodeB in Cosmote location",
+      "location": "Cosmote",
+      "ip": "10.30.30.30",
+      "optional": false      
+    },
+  ],
+  "ems-id": "test-ems"
+}

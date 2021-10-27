@@ -1,0 +1,7 @@
+{
+  "id": "odl-wim",
+  "name": "odl-wim",
+  "description": "Athens Platform WIM",
+  "url": "http://10.30.0.190:8000",
+  "type": "odl-wim"
+}

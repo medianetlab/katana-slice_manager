@@ -1,0 +1,21 @@
+{
+  "id": "O5GCore_Core",
+  "name": "O5GCore_Core",
+  "gen": 5,
+  "func": 0,
+  "shared": {
+    "availability": true
+  },
+  "type": 0,
+  "location": "Core",
+  "ns_list":[
+    {
+      "nfvo-id": "OSM5",
+      "nsd-id": "65373e5a-679d-46b7-898a-e304652e5102",
+      "ns-name": "dummy_ns",
+      "placement": 0,
+      "optional": true
+    }
+  ],
+  "ems-id": "test-ems"
+}
