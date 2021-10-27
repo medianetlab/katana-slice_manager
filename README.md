@@ -34,12 +34,12 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 
 ## Quick Start
 
-### Requirements
+### :chains: Requirements
 
 - docker version >= 18.09.6
 - docker-compose version >= 1.17.1
 
-### Build
+### :hammer_and_pick: Build
 
 Build the Katana Docker images and install the katana CLI command on the local system.
 
@@ -60,7 +60,7 @@ Options:
 
 > Sudo privileges will be needed for installing the CLI command tool
 
-### Deploy
+### :gear: Deploy
 
 Deploy katana Slice Manager service. The script will attempt to pull the defined Docker tag from the defined Docker registry/repository. Otherwise, it will build the images using the ":test" tag.
 
@@ -79,7 +79,7 @@ Options:
 - __[-m | --monitoring] :__ Start Katana Slice Manager Slice Monitoring module
 - __[-h | --help] :__ Print help message and quit
 
-### Logs
+### :clipboard: Logs
 
 Get the logs of katana-mngr and katana-nbi modules:
 
@@ -89,7 +89,7 @@ katana logs [-l | --limit N]
 
 - __-l | --limit__: Show limited number of lines from the end of the logs (default "all")
 
-### Stop
+### :stop_button: Stop
 
 Stop Katana Slice Manager:
 
@@ -100,7 +100,7 @@ bash bin/stop.sh [-c | --clear] [-h | --help]
 - __[-c | --clear] :__ Remove the container volumes
 - __[-h | --help] :__ Print help message and quit
 
-### Uninstall
+### :wastebasket: Uninstall
 
 Remove katana Docker resources and the CLI command tool
 
@@ -110,7 +110,7 @@ bash bin/uninstall.sh
 
 > Sudo privileges will be needed for removing the CLI command tool
 
-### Monitoring
+### :chart_with_upwards_trend: Monitoring
 
 To start Prometheus and Grafana Monitoring modules add the `-m | --monitoring` flag to `./start.sh` binary. Prometheus is running at port __9090__ and Grafana at port __3000__. A new dashboard will be created on Grafana for every new slice that is created.
 

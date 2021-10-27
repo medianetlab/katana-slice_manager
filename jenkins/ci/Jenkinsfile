@@ -1,0 +1,97 @@
+pipeline {
+    agent {
+        node {
+            label "${test_server}"
+        }
+    }
+
+    environment {
+        MAJOR_RELEASE="${sh(script:'git fetch --tags && git tag --sort version:refname | tail -1', returnStdout: true).trim()}"
+        TAG_NUMBER="${MAJOR_RELEASE}.${env.BUILD_NUMBER}"
+        }
+
+    stages {
+        // *************************
+        // *** Build Test Images ***
+        // *************************
+        stage("build_test_images") {
+            steps{
+                echo "**** Building Test Katana Images ****"
+                sh 'bash bin/build.sh'
+            }
+        }
+        
+        // ******************************
+        // *** Test Katana Deployment ***
+        // ******************************
+        stage("test_deployment") {
+            steps{
+                echo "**** Test Katana Deployment ****"
+                sh 'bash bin/deploy.sh'
+            }
+        }
+
+        // ************************
+        // *** Functional Tests ***
+        // ************************
+        stage("functional_tests"){
+            steps{
+                echo "**** Running Functional Test ****"
+                sh """
+                for i in jenkins/ci/tests/functional/* ; do
+                bash ${i}
+                done
+                """
+
+            }
+        }
+
+        // ******************************
+        // *** Remove Test Deployment ***
+        // ******************************
+        stage("remove_test_deployment") {
+            steps{
+                echo "**** Remove Test Katana Deployment ****"
+                sh 'bash bin/stop.sh'
+            }
+        }
+
+        // *****************************
+        // *** Push Images If Master ***
+        // *****************************
+        stage("push_test_deployment") {
+            when {
+                changeset "**/katana-**/**"
+                branch "master"
+            }
+            steps{
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
+                    echo "**** Build & Push Images ****"
+                    sh 'bash bin/build.sh' --release ${TAG_NUMBER} --docker_reg ${katana-reg} --docker_repo ${katana-repo} --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push
+                    sh 'bash bin/build.sh' --release latest --docker_reg ${katana-reg} --docker_repo ${katana-repo} --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push
+                }
+            }
+        }
+
+        // ************************
+        // *** Clean Everything ***
+        // ************************
+        stage("clean_everything") {
+            steps{
+                echo "**** Clean Everything ****"
+                sh 'bash bin/uninstall.sh'
+            }
+        }
+
+    }
+
+    // post{
+    //     failure{
+    //         slackSend (color: "#FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    //     }
+
+    //     success{
+    //         slackSend (color: "#008000", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    //     }
+    // }
+}
