@@ -48,8 +48,8 @@ pipeline {
             steps{
                 echo "**** Remove Test Katana Deployment ****"
                 sh 'bash bin/stop.sh'
-                echo "${katana-reg}"
-                echo "${katana-repo}"
+                echo "${katana_reg}"
+                echo "${katana_repo}"
             }
         }
 
@@ -64,8 +64,8 @@ pipeline {
             steps{
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
                     echo "**** Build & Push Images ****"
-                    sh 'bash bin/build.sh --release ${TAG_NUMBER} --docker_reg "${katana-reg}" --docker_repo "${katana-repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
-                    sh 'bash bin/build.sh --release latest --docker_reg "${katana-reg}" --docker_repo "${katana-repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
+                    sh 'bash bin/build.sh --release ${TAG_NUMBER} --docker_reg "${katana_reg}" --docker_repo "${katana_repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
+                    sh 'bash bin/build.sh --release latest --docker_reg "${katana_reg}" --docker_repo "${katana_repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
                 }
             }
         }
