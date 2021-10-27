@@ -4,7 +4,7 @@
 if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
     printf "Usage:\n\tbuild.sh [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>]\n\t\t [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [--push] [--dev] [-h | --help]\nOptions:
-\t[-r | --release <RELEASE_NUMBER>] : Define the release that will match the Docker Tag of Katana Docker images
+\t[-r | --release <RELEASE_NUMBER>] : Define the release that will match the Docker Tag of Katana Docker images (Default: :test).
 \t[--docker_reg <REMOTE_DOCKER_REGISTRY>] : Define the remote Docker registry. If no docker registry is specified, Katana will try to use the public Docker hub
 \t[--docker_repo <DOCKER_REPOSITORY>] : Define the Docker repository
 \t[--docker_reg_user <REGISTRY_USER>] : Define the user of the remote Docker registry

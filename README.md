@@ -27,7 +27,6 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 - Start, Stop, Inspect End-to-End Network Slices
 - OpenAPIs supported by Swagger-io tool
 - Modular architecture for supporting different infrastructure technologies
-- Lightweight web UI
 - Integrated CLI tool
 - Prometheus and Grafana Monitoring modules
 - Slice Deployment and Configuration measurements
@@ -40,20 +39,45 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 - docker version >= 18.09.6
 - docker-compose version >= 1.17.1
 
-### Deploy
+### Build
 
-Deploy katana Slice Manager service. By default the deployment will pull the latest tag from the Docker hub registry. You can define a specific image tag by passing the `-r` option:
+Build the Katana Docker images and install the katana CLI command on the local system.
 
-```bash
-./start.sh [-p | --publish] [-g | --graphical-ui] [-r | --release <RELEASE_NUMBER>] [-u | --user <DOCKER_USER_ID>] [-m | --monitoring] [-h | --help]
+``` bash
+bash bin/build.sh [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>] [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [--push] [--dev] [-h | --help]
 ```
 
-- __-p | --publish__: Expose Kafka end Swagger-ui using katana public IP
-- __-g | --graphical-ui__: Start katana Slice Manager service and the web UI module
-- __-r | --release <RELEASE_NUMBER>__: Specify the release version to be deployed (default is latest)
-- __-u | --user <DOCKER_USER_ID>__: Specify docker user
-- __-m | --monitoring__: Start Katana Slice Manager Slice Monitoring module
-- __-h | --help__: Print help message and quit
+Options:
+
+- __[-r | --release <RELEASE_NUMBER>] :__ Define the release that will match the Docker Tag of Katana Docker images (Default: :test).
+- __[--docker_reg <REMOTE_DOCKER_REGISTRY>] :__ Define the remote Docker registry. If no docker registry is specified, Katana will try to use the public Docker hub
+- __[--docker_repo <DOCKER_REPOSITORY>] :__ Define the Docker repository
+- __[--docker_reg_user <REGISTRY_USER>] :__ Define the user of the remote Docker registry
+- __[--docker_reg_passwd <REGISTRY_PASSWORD>] :__ Define the password for the user of the remote Docker registry
+- __[--push] :__ Push the images to the remote Docker registry
+- __[--dev] :__ Create a dev workspace for development purposes
+- __[-h | --help] :__ Print this message and quit
+
+> Sudo privileges will be needed for installing the CLI command tool
+
+### Deploy
+
+Deploy katana Slice Manager service. The script will attempt to pull the defined Docker tag from the defined Docker registry/repository. Otherwise, it will build the images using the ":test" tag.
+
+``` bash
+bash bin/deploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>] [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [-h | --help]
+```
+
+Options:
+
+- __[-p | --publish] :__ Expose Kafka end Swagger-ui using katana public IP
+- __[-r | --release <RELEASE_NUMBER>] :__ Define the release that will match the Docker Tag of Katana Docker images (Default: :test).
+- __[--docker_reg <REMOTE_DOCKER_REGISTRY>] :__ Define the remote Docker registry. If no docker registry is specified, Katana will try to use the public Docker hub
+- __[--docker_repo <DOCKER_REPOSITORY>] :__ Define the Docker repository
+- __[--docker_reg_user <REGISTRY_USER>] :__ Define the user of the remote Docker registry
+- __[--docker_reg_passwd <REGISTRY_PASSWORD>] :__ Define the password for the user of the remote Docker registry
+- __[-m | --monitoring] :__ Start Katana Slice Manager Slice Monitoring module
+- __[-h | --help] :__ Print help message and quit
 
 ### Logs
 
@@ -70,19 +94,21 @@ katana logs [-l | --limit N]
 Stop Katana Slice Manager:
 
 ```bash
-./stop.sh [-c | --clear] [-h | --help]
+bash bin/stop.sh [-c | --clear] [-h | --help]
 ```
 
-- __-c | --clear__: Remove the container volumes
-- __-h | --help__: Print help message and quit
+- __[-c | --clear] :__ Remove the container volumes
+- __[-h | --help] :__ Print help message and quit
 
 ### Uninstall
 
-Remove katana docker images and commands
+Remove katana Docker resources and the CLI command tool
 
 ```bash
-sudo ./uninstall.sh
+bash bin/uninstall.sh
 ```
+
+> Sudo privileges will be needed for removing the CLI command tool
 
 ### Monitoring
 
@@ -94,18 +120,6 @@ By default Grafana credentials are admin:admin. To change it, create the `katana
 GF_SECURITY_ADMIN_USER=USER
 GF_SECURITY_ADMIN_PASSWORD=PASSWORD
 ```
-
-### Build local docker images
-
-Buid local docker images (instead of pulling them from the public registry):
-
-```bash
-sudo ./build.sh [-r | --release <RELEASE_NUMBER>] [-u | --user] [--dev]
-```
-
-- __-r | --release <RELEASE_NUMBER>__: Specify the release version to be deployed (default is test)
-- __-u | --user__: Define the docker registry that will be used for image tagging purposes
-- __--dev__: Install the development environment
 
 ## Development Environment
 
