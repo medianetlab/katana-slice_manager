@@ -48,8 +48,6 @@ pipeline {
             steps{
                 echo "**** Remove Test Katana Deployment ****"
                 sh 'bash bin/stop.sh'
-                echo "${katana_reg}"
-                echo "${katana_repo}"
             }
         }
 
@@ -58,7 +56,7 @@ pipeline {
         // *****************************
         stage("push_test_deployment") {
             when {
-                // changeset "**/katana-**/**"
+                changeset "**/katana-**/**"
                 environment name: "GIT_BRANCH", value: "origin/master"
             }
             steps{
@@ -70,15 +68,15 @@ pipeline {
             }
         }
 
-        // ************************
-        // *** Clean Everything ***
-        // ************************
-        // stage("clean_everything") {
-        //     steps{
-        //         echo "**** Clean Everything ****"
-        //         sh 'bash bin/uninstall.sh'
-        //     }
-        // }
+        ************************
+        *** Clean Everything ***
+        ************************
+        stage("clean_everything") {
+            steps{
+                echo "**** Clean Everything ****"
+                sh 'bash bin/uninstall.sh'
+            }
+        }
 
     }
 
