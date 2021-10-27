@@ -49,6 +49,8 @@ pipeline {
                 echo "**** Remove Test Katana Deployment ****"
                 sh 'bash bin/stop.sh'
                 sh 'printenv'
+                echo ${katana-reg}
+                echo ${katana-repo}
             }
         }
 
