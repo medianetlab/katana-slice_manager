@@ -107,4 +107,4 @@ fi
 printf "***********************************\n"
 printf "**** Installing Katana Command ****\n"
 printf "***********************************\n"
-sudo cp ${DIR}/bin/katana /usr/local/bin/
+command -v katana &> /dev/null || sudo cp ${DIR}/bin/katana /usr/local/bin/

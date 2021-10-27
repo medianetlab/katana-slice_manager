@@ -2,6 +2,9 @@
 
 containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli katana-swagger"
 
+# Get the project directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
+
 # Check for help option
 if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
@@ -24,22 +27,17 @@ do
 
     case $key in
     -p | --publish)
-        read -r -p "Expose Kafka Message Bus and Swagger-ui? (Y/n) " ans
-
-        if [[ $ans != "n" ]];
+        message="katana host public IP"
+        ip_list=$(hostname -I 2> /dev/null)
+        if (( $? == 0 ));
         then
-            message="katana host public IP"
-            ip_list=$(hostname -I 2> /dev/null)
-            if (( $? == 0 ));
-            then
-                message="${message} (Available: $ip_list)"
-            fi
-            read -r -p "${message} >> " HOST_IP
-            export "DOCKER_HOST_IP=${HOST_IP}"
-
-            # Insert Katana's IP in swagger conf file
-            sed -i "s?katanaSM?${HOST_IP}?" ./swagger/swagger.json
+            message="${message} (Available: $ip_list)"
         fi
+        read -r -p "${message} >> " HOST_IP
+        export "DOCKER_HOST_IP=${HOST_IP}"
+
+        # Insert Katana's IP in swagger conf file
+        sed -i "s?katanaSM?${HOST_IP}?" "${DIR}/katana-swagger/swagger.json"
         shift
     ;;
     -m | --monitoring)
@@ -94,9 +92,6 @@ do
     esac
 done
 
-# Get the project directory
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
-
 # If Release Tag is set, try to download it. Otherwise set it to test and build the images
 if [[ -z ${DOCKER_TAG+x} ]];
 then
@@ -111,7 +106,7 @@ else
 fi
 
 # Install the command for the cli tool to /usr/local/bin/
-command -v katana &> /dev/null || cp katana /usr/local/bin/
+command -v katana &> /dev/null || sudo cp ${DIR}/bin/katana /usr/local/bin/
 
 # Start the docker containers on the background
 docker-compose up -d ${containers}
