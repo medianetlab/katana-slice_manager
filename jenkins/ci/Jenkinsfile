@@ -37,21 +37,7 @@ pipeline {
         stage("functional_tests"){
             steps{
                 echo "**** Running Functional Test ****"
-                func_tests="${sh(script: ls jenkins/ci/tests/functional)}"
-                func_tests_num="${sh(script: ls jenkins/ci/tests/functional | wc)}"
-                echo ${func_tests}
-                echo ${func_tests_num}
-                script {
-                    for (int i=0; i<${func_tests_num}; ++i ){
-                        sh 'bash ${func_tests[i]}'
-                    }
-                }
-                sh """
-                for i in jenkins/ci/tests/functional/* ; do
-                bash ${i}
-                done
-                """
-
+                sh 'bash jenkins/ci/tests/functional/list_of_slices.sh'
             }
         }
 
