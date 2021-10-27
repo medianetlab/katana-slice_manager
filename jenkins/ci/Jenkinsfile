@@ -84,4 +84,5 @@ pipeline {
         failure{
             slackSend (color: "#FF0000", message: "Katana CI Failed: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
+    }
 }
