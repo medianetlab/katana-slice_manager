@@ -48,9 +48,8 @@ pipeline {
             steps{
                 echo "**** Remove Test Katana Deployment ****"
                 sh 'bash bin/stop.sh'
-                sh 'printenv'
-                echo ${katana-reg}
-                echo ${katana-repo}
+                echo "${katana-reg}"
+                echo "${katana-repo}"
             }
         }
 
@@ -58,15 +57,15 @@ pipeline {
         // *** Push Images If Master ***
         // *****************************
         stage("push_test_deployment") {
-            // when {
-            //     // changeset "**/katana-**/**"
-            //     branch "master"
-            // }
+            when {
+                // changeset "**/katana-**/**"
+                environment name: "GIT_BRANCH", value: "origin/master"
+            }
             steps{
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
                     echo "**** Build & Push Images ****"
-                    sh 'bash bin/build.sh --release ${TAG_NUMBER} --docker_reg ${katana-reg} --docker_repo ${katana-repo} --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
-                    sh 'bash bin/build.sh --release latest --docker_reg ${katana-reg} --docker_repo ${katana-repo} --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
+                    sh 'bash bin/build.sh --release ${TAG_NUMBER} --docker_reg "${katana-reg}" --docker_repo "${katana-repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
+                    sh 'bash bin/build.sh --release latest --docker_reg "${katana-reg}" --docker_repo "${katana-repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
                 }
             }
         }
