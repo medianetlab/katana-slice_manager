@@ -56,7 +56,7 @@ pipeline {
         // *****************************
         stage("push_test_deployment") {
             when {
-                changeset "**/katana-**/**"
+                // changeset "**/katana-**/**"
                 branch "master"
             }
             steps{
@@ -80,13 +80,8 @@ pipeline {
 
     }
 
-    // post{
-    //     failure{
-    //         slackSend (color: "#FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-    //     }
-
-    //     success{
-    //         slackSend (color: "#008000", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-    //     }
-    // }
+    post{
+        failure{
+            slackSend (color: "#FF0000", message: "Katana CI Failed: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
 }
