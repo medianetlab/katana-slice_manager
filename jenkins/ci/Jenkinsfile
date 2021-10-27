@@ -48,6 +48,7 @@ pipeline {
             steps{
                 echo "**** Remove Test Katana Deployment ****"
                 sh 'bash bin/stop.sh'
+                sh 'printenv'
             }
         }
 
@@ -55,10 +56,10 @@ pipeline {
         // *** Push Images If Master ***
         // *****************************
         stage("push_test_deployment") {
-            when {
-                // changeset "**/katana-**/**"
-                branch "master"
-            }
+            // when {
+            //     // changeset "**/katana-**/**"
+            //     branch "master"
+            // }
             steps{
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
                     echo "**** Build & Push Images ****"
@@ -71,12 +72,12 @@ pipeline {
         // ************************
         // *** Clean Everything ***
         // ************************
-        stage("clean_everything") {
-            steps{
-                echo "**** Clean Everything ****"
-                sh 'bash bin/uninstall.sh'
-            }
-        }
+        // stage("clean_everything") {
+        //     steps{
+        //         echo "**** Clean Everything ****"
+        //         sh 'bash bin/uninstall.sh'
+        //     }
+        // }
 
     }
 
