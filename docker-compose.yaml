@@ -48,7 +48,10 @@ services:
       - zookeeper
 
   katana-nbi:
-    image: "${DOCKER_USER}/katana-nbi:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-nbi:${DOCKER_TAG}"
+    build:
+      context: .
+      dockerfile: katana-nbi/Dockerfile
     container_name: katana-nbi
     command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload "katana.app:create_app()"
     volumes:
@@ -69,8 +72,11 @@ services:
     #     syslog-format: "rfc5424"
 
   katana-mngr:
-    image: "${DOCKER_USER}/katana-mngr:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-mngr:${DOCKER_TAG}"
     container_name: katana-mngr
+    build:
+      context: .
+      dockerfile: katana-mngr/Dockerfile
     command: python3 katana/katana-mngr.py
     volumes:
       - "katana-grafana-templates:/katana-grafana/templates" 
@@ -89,8 +95,11 @@ services:
     #     syslog-format: "rfc5424"
 
   katana-cli:
-    image: "${DOCKER_USER}/katana-cli:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-cli:${DOCKER_TAG}"
     container_name: katana-cli
+    build:
+      context: .
+      dockerfile: katana-cli/Dockerfile
     command: >
       /bin/bash
     stdin_open: true
@@ -101,8 +110,11 @@ services:
       - katana-nbi
 
   katana-swagger:
-    image: "${DOCKER_USER}/katana-swagger:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-swagger:${DOCKER_TAG}"
     container_name: katana-swagger
+    build:
+      context: .
+      dockerfile: katana-swagger/Dockerfile
     restart: always
     environment:
       - SWAGGER_JSON=/my_swagger/swagger.json
@@ -111,38 +123,12 @@ services:
     depends_on:
       - katana-mngr
 
-  # postgres:
-  #   env_file:
-  #     - "katana-ui/.env"
-  #   image: "postgres:10.3-alpine"
-  #   container_name: katana-postgres
-  #   ports:
-  #     - "5432:5432"
-  #   restart: always
-  #   volumes:
-  #     - "postgres:/var/lib/postgresql/data"
-
-  # katana-ui:
-  #   build: ./katana-ui
-  #   image: katana-ui
-  #   container_name: katana-ui
-  #   command: gunicorn -b 0.0.0.0:8080 --workers 3 --access-logfile - --reload "ui.app:create_app()"
-  #   depends_on:
-  #     - "postgres"
-  #   env_file:
-  #     - "katana-ui/.env"
-  #   ports:
-  #     - "8080:8080"
-  #   restart: always
-  #   volumes:
-  #     - "./katana-ui:/app"
-  #   depends_on:
-  #     - katana-mngr
-  #     - postgres
-
   katana-prometheus:
-    image: "${DOCKER_USER}/katana-prometheus:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-prometheus:${DOCKER_TAG}"
     container_name: katana-prometheus
+    build:
+      context: .
+      dockerfile: katana-prometheus/Dockerfile
     volumes:
       - "prometheus:/prometheus"
       - "katana-prom-targets:/etc/prometheus/targets"
@@ -151,8 +137,11 @@ services:
       - "9090:9090"
 
   katana-grafana:
-    image: "${DOCKER_USER}/katana-grafana:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-grafana:${DOCKER_TAG}"
     container_name: katana-grafana
+    build:
+      context: .
+      dockerfile: katana-grafana/Dockerfile
     restart: unless-stopped
     ports: 
       - "3000:3000"
@@ -161,8 +150,11 @@ services:
       - katana-prometheus
 
   katana-nfv_mon:
-    image: "${DOCKER_USER}/katana-nfv_mon:${KATANA_VERSION}"
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-nfv_mon:${DOCKER_TAG}"
     container_name: katana-nfv_mon
+    build:
+      context: .
+      dockerfile: katana-nfv_mon/Dockerfile
     restart: unless-stopped
     env_file: 
       - "katana-grafana/.env"
