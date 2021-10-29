@@ -17,14 +17,14 @@ do
     -c | --clear)
         options="$options -v"
         shift
-    ;;
+        ;;
     *)
-    printf "Wrong option %s\n--------\n" "${key}"
-    printf "Usage:\n\tstop.sh [-c | --clear] [-h | --help]\nOptions:
+        printf "Wrong option %s\n--------\n" "${key}"
+        printf "Usage:\n\tstop.sh [-c | --clear] [-h | --help]\nOptions:
 \t[-c | --clear] : Remove the container volumes
 \t[-h | --help] : Print this message and quit\n"
-    exit 0
-    ;;
+        exit 0
+        ;;
     esac
 done
 

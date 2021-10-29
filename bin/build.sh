@@ -57,24 +57,22 @@ do
         read -r -p "Any dev/dev_shared_utils will be lost. Continue? (Y/n) > " ans
         if [[ $ans =~ ^n.* ]];
         then
-        exit 9999
+            exit 9999
         fi
-
         echo "Creating dev/dev_shared_utils. They are hard-linked to both common files in katana-mngr and katana-nbi directories"
         mkdir -p dev/dev_config_files &> /dev/null && echo "Created dev folder"
         cp -r example_config_files/* dev/dev_config_files/
-
         echo "Creating dev/dev_config_files. They can be used for actual testing. They won't be pushed to remote repository"
         rm -rf katana-nbi/katana/shared_utils &> /dev/null
         rm -rf dev/dev_shared_utils &> /dev/null
         cp -al katana-mngr/katana/shared_utils dev/dev_shared_utils &> /dev/null
         cp -al katana-mngr/katana/shared_utils katana-nbi/katana/ &> /dev/null
         shift
-    ;;
+        ;;
     *)
-    printf "Wrong option %s\nUse the --help option\n--------\n" "${key}"
-    exit 9999
-    ;;
+        printf "Wrong option %s\nUse the --help option\n--------\n" "${key}"
+        exit 1
+        ;;
     esac
 done
 

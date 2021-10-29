@@ -77,6 +77,7 @@ Options:
 - __[--docker_reg_user <REGISTRY_USER>] :__ Define the user of the remote Docker registry
 - __[--docker_reg_passwd <REGISTRY_PASSWORD>] :__ Define the password for the user of the remote Docker registry
 - __[-m | --monitoring] :__ Start Katana Slice Manager Slice Monitoring module
+- __[--no_build] :__ Try to download Docker images, but do not build them
 - __[-h | --help] :__ Print help message and quit
 
 ### :clipboard: Logs
