@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 29/10/2021
+
+### 2.3.1 Changed
+
+- Updated binaries for building, deplpoying, stopping, and uninstalling Katana
+- Updated CI/CD pipelines
+- Removed deprecated UI container
+
 ## [2.3.0] - 12/11/2020
 
 ### 2.3.0 Added
