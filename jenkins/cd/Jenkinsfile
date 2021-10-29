@@ -23,13 +23,13 @@ pipeline {
         }
     }
 
-    // post{
-    //     failure{
-    //         slackSend (color: "#FF0000", message: "Failed to deploy Katana version ${MAJOR_RELEASE} on production: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-    //     }
+    post{
+        failure{
+            slackSend (color: "#FF0000", message: "Failed to deploy Katana version ${MAJOR_RELEASE} on production: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
 
-    //     success{
-    //         slackSend (color: "#008000", message: "Successfully deployed Katana version ${MAJOR_RELEASE} on production : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-    //     }
-    // }
+        success{
+            slackSend (color: "#008000", message: "Successfully deployed Katana version ${MAJOR_RELEASE} on production : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+    }
 }
