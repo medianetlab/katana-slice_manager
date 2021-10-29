@@ -5,4 +5,4 @@ Click==6.7
 requests
 
 # yaml
-PyYAML==5.1
+PyYAML==5.4
