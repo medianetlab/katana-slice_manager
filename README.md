@@ -176,7 +176,7 @@ The current implementation supports two pipelines, using the respective Jenkinsf
   - Required credentials on Jenkins:
     - katana-reg-creds: Username/Password for the remote Docker registry
 
-> This Pipeline is executed on a testing environment
+> This Pipeline is executed on a stable production/staging environment
 
 ## :book: Documentation
 
