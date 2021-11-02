@@ -70,7 +70,7 @@ class EmsView(FlaskView):
     def post(self):
         """
         Add a new EMS. The request must provide the ems details.
-        used by: `katana ems add -f [yaml file]`
+        used by: `katana ems add -f [file]`
         """
         # TODO: Test connectivity with the EMS
         new_uuid = str(uuid.uuid4())
@@ -112,7 +112,7 @@ class EmsView(FlaskView):
     def put(self, uuid):
         """
         Update the details of a specific EMS.
-        used by: `katana ems update -f [yaml file] [uuid]`
+        used by: `katana ems update -f [file] [uuid]`
         """
         data = request.json
         data["_id"] = uuid

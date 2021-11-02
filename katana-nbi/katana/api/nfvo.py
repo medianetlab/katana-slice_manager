@@ -71,7 +71,7 @@ class NFVOView(FlaskView):
     def post(self):
         """
         Add a new nfvo. The request must provide the nfvo details.
-        used by: `katana nfvo add -f [yaml file]`
+        used by: `katana nfvo add -f [file]`
         """
         new_uuid = str(uuid.uuid4())
         request.json["_id"] = new_uuid
@@ -137,7 +137,7 @@ class NFVOView(FlaskView):
     def put(self, uuid):
         """
         Update the details of a specific nfvo.
-        used by: `katana nfvo update -f [yaml file] [uuid]`
+        used by: `katana nfvo update -f [file] [uuid]`
         """
         data = request.json
         data["_id"] = uuid

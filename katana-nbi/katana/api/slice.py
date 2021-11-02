@@ -76,7 +76,7 @@ class SliceView(FlaskView):
     def post(self):
         """
         Add a new slice. The request must provide the slice details.
-        used by: `katana slice add -f [yaml file]`
+        used by: `katana slice add -f [file]`
         """
         new_uuid = str(uuid.uuid4())
         request.json["_id"] = new_uuid
@@ -120,7 +120,7 @@ class SliceView(FlaskView):
     # def put(self, uuid):
     #     """
     #     Update the details of a specific slice.
-    #     used by: `katana slice update -f [yaml file] [uuid]`
+    #     used by: `katana slice update -f [file] [uuid]`
     #     """
     #     request.json['_id'] = uuid
     #     result = mongoUtils.update("slice", uuid, request.json)

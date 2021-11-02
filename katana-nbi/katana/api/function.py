@@ -60,7 +60,7 @@ class FunctionView(FlaskView):
         """
         Add a new supported function.
         The request must provide the network function details.
-        used by: `katana func add -f [yaml file]`
+        used by: `katana func add -f [file]`
         """
         new_uuid = str(uuid.uuid4())
         data = request.json
@@ -99,7 +99,7 @@ class FunctionView(FlaskView):
         """
         Add or update a new supported network function.
         The request must provide the service details.
-        used by: `katana function update -f [yaml file]`
+        used by: `katana function update -f [file]`
         """
         data = request.json
         data["_id"] = uuid

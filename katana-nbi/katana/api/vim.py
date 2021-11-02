@@ -72,7 +72,7 @@ class VimView(FlaskView):
     def post(self):
         """
         Add a new vim. The request must provide the vim details.
-        used by: `katana vim add -f [yaml file]`
+        used by: `katana vim add -f [file]`
         """
         new_uuid = str(uuid.uuid4())
         request.json["_id"] = new_uuid
@@ -160,7 +160,7 @@ class VimView(FlaskView):
     def put(self, uuid):
         """
         Update the details of a specific vim.
-        used by: `katana vim update -f [yaml file] [uuid]`
+        used by: `katana vim update -f [file] [uuid]`
         """
         data = request.json
         new_uuid = uuid

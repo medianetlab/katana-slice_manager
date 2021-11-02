@@ -71,7 +71,7 @@ class WimView(FlaskView):
     def post(self):
         """
         Add a new wim. The request must provide the wim details.
-        used by: `katana wim add -f [yaml file]`
+        used by: `katana wim add -f [file]`
         """
         # TODO: Test connectivity with the WIM
         new_uuid = str(uuid.uuid4())
@@ -140,7 +140,7 @@ class WimView(FlaskView):
     def put(self, uuid):
         """
         Update the details of a specific wim.
-        used by: `katana wim update -f [yaml file] [uuid]`
+        used by: `katana wim update -f [file] [uuid]`
         """
         data = request.json
         data["_id"] = uuid
