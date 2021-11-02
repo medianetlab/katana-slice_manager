@@ -42,7 +42,12 @@ class SliceView(FlaskView):
         return_data = []
         for islice in slice_data:
             return_data.append(
-                dict(_id=islice["_id"], created_at=islice["created_at"], status=islice["status"])
+                dict(
+                    _id=islice["_id"],
+                    name=islice["slice_name"],
+                    created_at=islice["created_at"],
+                    status=islice["status"],
+                )
             )
         return dumps(return_data), 200
 
@@ -75,7 +80,6 @@ class SliceView(FlaskView):
         """
         new_uuid = str(uuid.uuid4())
         request.json["_id"] = new_uuid
-
         # Get the NEST from the Slice Mapping process
         nest, error_code = slice_mapping.nest_mapping(request.json)
 

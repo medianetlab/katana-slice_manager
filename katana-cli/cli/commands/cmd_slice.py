@@ -24,11 +24,12 @@ def ls():
         r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        print(console_formatter("SLICE_ID", "CREATED AT", "STATUS"))
+        print(console_formatter("SLICE_ID", "SLICE_NAME", "CREATED AT", "STATUS"))
         for i in range(len(json_data)):
             print(
                 console_formatter(
                     json_data[i]["_id"],
+                    json_data[i]["name"],
                     datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
                         "%Y-%m-%d %H:%M:%S"
                     ),
@@ -200,5 +201,5 @@ cli.add_command(update)
 cli.add_command(deployment_time)
 
 
-def console_formatter(uuid, created_at, status):
-    return "{0: <40}{1: <25}{2: <20}".format(uuid, created_at, status)
+def console_formatter(uuid, slice_name, created_at, status):
+    return "{0: <40}{1: <25}{2: <25}{3: <20}".format(uuid, slice_name, created_at, status)

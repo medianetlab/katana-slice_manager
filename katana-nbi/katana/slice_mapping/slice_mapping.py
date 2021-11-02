@@ -79,7 +79,6 @@ def nest_mapping(req):
     base_slice_des_ref = req["base_slice_descriptor"].get("base_slice_des_ref", None)
     if not base_slice_des_ref:
         for req_key in REQ_FIELDS:
-            logger.debug(req_key)
             if req_key not in req["base_slice_descriptor"]:
                 logger.error("Required field base_slice_descriptor.{} is missing".format(req_key))
                 return (
@@ -314,6 +313,9 @@ def nest_mapping(req):
     )
     for key in KEYS_TO_BE_COPIED:
         nest[key] = req_slice_des[key]
+
+    # Add slice_name to NEST based on the base_slice_des id
+    nest["slice_name"] = req_slice_des["base_slice_des_id"]
 
     # ****** STEP 2: Service Descriptor ******
     if req["service_descriptor"]:

@@ -37,6 +37,7 @@ NEST_KEYS_OBJ = (
     "positional_support",
     "device_velocity",
     "terminal_density",
+    "slice_name",
 )
 
 NEST_KEYS_LIST = (

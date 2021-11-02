@@ -2517,6 +2517,9 @@
           "_id": {
             "type": "string"
           },
+          "name": {
+            "type": "string"
+          },
           "created at": {
             "type": "string",
             "format": "date-time"
