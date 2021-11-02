@@ -96,7 +96,10 @@ class LocationView(FlaskView):
         old_data = mongoUtils.get("location", uuid)
         if old_data:
             if old_data["vims"] or old_data["functions"]:
-                return f"Location {id} is in use by another component, cannot update it", 400
+                return (
+                    f"Location {data['_id']} is in use by another component, cannot update it",
+                    400,
+                )
             data["created_at"] = old_data["created_at"]
             data["vims"] = []
             data["functions"] = []

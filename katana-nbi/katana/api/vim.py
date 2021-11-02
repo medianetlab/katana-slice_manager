@@ -31,7 +31,7 @@ logger.addHandler(stream_handler)
 
 class VimView(FlaskView):
     route_prefix = "/api/"
-    req_fields = ["id", "auth_url", "username", "password", "admin_project_name"]
+    req_fields = ["id", "auth_url", "username", "password", "admin_project_name", "location"]
 
     def index(self):
         """
@@ -79,14 +79,24 @@ class VimView(FlaskView):
         request.json["created_at"] = time.time()  # unix epoch
         request.json["tenants"] = {}
 
+        # Check the required fields
         try:
             username = request.json["username"]
             password = request.json["password"]
             auth_url = request.json["auth_url"]
             project_name = request.json["admin_project_name"]
+            location_id = request.json["location"].lower()
             vim_id = request.json["id"]
         except KeyError:
             return f"Error: Required fields: {self.req_fields}", 400
+
+        # Check that the VIM location is registered
+        location = mongoUtils.find("location", {"id": location_id})
+        if not location and location_id != "core":
+            return f"Location {location_id} is not registered. Please add the location first", 400
+        elif location_id != "core":
+            location["vims"].append(vim_id)
+        # Type of OpenStack
         if request.json["type"] == "openstack":
             try:
                 new_vim = openstackUtils.Openstack(
@@ -98,9 +108,8 @@ class VimView(FlaskView):
                 )
                 if new_vim.auth_error:
                     raise (AttributeError)
-            except AttributeError as e:
-                response = dumps({"error": e})
-                return response, 400
+            except AttributeError:
+                return "Error: VIM Error", 400
             else:
                 request.json["resources"] = new_vim.get_resources()
                 thebytes = pickle.dumps(new_vim)
@@ -115,6 +124,7 @@ class VimView(FlaskView):
                         prom.append({"targets": [vim_monitoring], "labels": {}})
                     with open("/targets/vim_targets.json", mode="w") as prom_file:
                         json.dump(prom, prom_file)
+        # Type of OpenNebula
         elif request.json["type"] == "opennebula":
             try:
                 new_vim = opennebulaUtils.Opennebula(
@@ -124,9 +134,8 @@ class VimView(FlaskView):
                     username=username,
                     password=password,
                 )
-            except AttributeError as e:
-                response = dumps({"Error": e})
-                return response, 400
+            except AttributeError:
+                return "Error: VIM Error", 400
             else:
                 request.json["resources"] = {"N/A": "N/A"}
                 thebytes = pickle.dumps(new_vim)
@@ -139,6 +148,8 @@ class VimView(FlaskView):
         except pymongo.errors.DuplicateKeyError:
             return f"VIM with id {vim_id} already exists", 400
         mongoUtils.add("vim_obj", obj_json)
+        if location:
+            mongoUtils.update("location", location["_id"], location)
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -152,6 +163,11 @@ class VimView(FlaskView):
                 return "Cannot delete vim {} - In use".format(uuid), 400
             mongoUtils.delete("vim_obj", uuid)
             mongoUtils.delete("vim", uuid)
+            # Update the location removing the VIM
+            location = mongoUtils.find("location", {"id": vim["location"].lower()})
+            if location:
+                location["vims"].remove(vim["id"])
+                mongoUtils.update("location", location["_id"], location)
             return "Deleted VIM {}".format(uuid), 200
         else:
             # if uuid is not found, return error
@@ -189,9 +205,21 @@ class VimView(FlaskView):
                 password = request.json["password"]
                 auth_url = request.json["auth_url"]
                 project_name = request.json["admin_project_name"]
+                location_id = request.json["location"].lower()
                 vim_id = request.json["id"]
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
+
+            # Check that the VIM location is registered
+            location = mongoUtils.find("location", {"id": location_id})
+            if not location and location_id != "core":
+                return (
+                    f"Location {location_id} is not registered. Please add the location first",
+                    400,
+                )
+            elif location_id != "core":
+                location["vims"].append(vim_id)
+            # Type of OpenStack
             if request.json["type"] == "openstack":
                 try:
                     new_vim = openstackUtils.Openstack(
@@ -203,13 +231,23 @@ class VimView(FlaskView):
                     )
                     if new_vim.auth_error:
                         raise (AttributeError)
-                except AttributeError as e:
-                    response = dumps({"error": e})
-                    return response, 400
+                except AttributeError:
+                    return "Error: VIM Error", 400
                 else:
                     request.json["resources"] = new_vim.get_resources()
                     thebytes = pickle.dumps(new_vim)
                     obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
+                    try:
+                        vim_monitoring = request.json["infrastructure_monitoring"]
+                    except KeyError:
+                        pass
+                    else:
+                        with open("/targets/vim_targets.json", mode="r") as prom_file:
+                            prom = json.load(prom_file)
+                            prom.append({"targets": [vim_monitoring], "labels": {}})
+                        with open("/targets/vim_targets.json", mode="w") as prom_file:
+                            json.dump(prom, prom_file)
+            # Type of OpenNebula
             elif request.json["type"] == "opennebula":
                 try:
                     new_vim = opennebulaUtils.Opennebula(
@@ -219,9 +257,8 @@ class VimView(FlaskView):
                         username=username,
                         password=password,
                     )
-                except AttributeError as e:
-                    response = dumps({"Error": e})
-                    return response, 400
+                except AttributeError:
+                    return "Error: VIM Error", 400
                 else:
                     request.json["resources"] = {"N/A": "N/A"}
                     thebytes = pickle.dumps(new_vim)
@@ -233,15 +270,7 @@ class VimView(FlaskView):
                 new_uuid = mongoUtils.add("vim", request.json)
             except pymongo.errors.DuplicateKeyError:
                 return f"VIM with id {vim_id} already exists", 400
-            try:
-                vim_monitoring = request.json["infrastructure_monitoring"]
-            except KeyError:
-                pass
-            else:
-                with open("/targets/vim_targets.json", mode="r") as prom_file:
-                    prom = json.load(prom_file)
-                    prom.append({"targets": [vim_monitoring], "labels": {}})
-                with open("/targets/vim_targets.json", mode="w") as prom_file:
-                    json.dump(prom, prom_file)
             mongoUtils.add("vim_obj", obj_json)
+            if location:
+                mongoUtils.update("location", location["_id"], location)
             return f"Created {new_uuid}", 201
