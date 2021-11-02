@@ -18,9 +18,11 @@
 
 ## :page_with_curl: Introduction to Network Slicing
 
-Network slicing is a 5G cutting edge technology that enables the creation of multiple virtual networks on top of shared physical infrastructure, allowing operators to provide portions of their networks that fit the requirements defined by various vertical industries. A network slice can be described as the collection of multiple sub-slices of different domains, such as the Core Datacenter, the Transport network, and one or numerous Edge Locations.
+Network slicing is a 5G cutting edge technology that enables the creation of multiple virtual networks on top of shared physical infrastructure, allowing operators to provide portions of their networks that fit the requirements defined by various vertical industries. A network slice can be described as the collection of multiple sub-slices of different domains, such as the Core Datacenter, the Transport network, and one or numerous Edge Locations. The figure below depicts some examples of 5G Network Slices:
 
-Slice Manager is a centralized software component that provides an interface for creating, modifying, monitoring, and deleting slices. Through the North Bound Interface (NBI), the Slice Manager receives the Network Slice Template (NEST) for creating network slices and provides the API for managing and monitoring them. Through the South Bound Interface (SBI), it communicates with the Network Sub-Slice Manager components of the Management Layer, namely the Virtual Infrastructure Manager (VIM), the NFV Orchestrator (NFVO), the Element Management System (EMS), and the WAN Infrastructure Management (WIM).
+![Network Slices Examples](templates/images/SlicingOptions.png)
+
+Katana Slice Manager is a centralized software component that provides an interface for creating, modifying, monitoring, and deleting slices. Through the North Bound Interface (NBI), the Slice Manager receives the Network Slice Template (NEST) for creating network slices and provides the API for managing and monitoring them. Through the South Bound Interface (SBI), it communicates with the Network Sub-Slice Manager components of the Management Layer, namely the Virtual Infrastructure Manager (VIM), the NFV Orchestrator (NFVO), the Element Management System (EMS), and the WAN Infrastructure Management (WIM).
 
 Katana Slice Manager is based on a highly modular architecture, built as a mesh of microservices, each of which is running on a docker container. The key advantages of this architectural approach are that it offers simplicity in building and maintaining applications, flexibility and scalability, while the containerized approach makes the applications independent of the underlying system.
 
