@@ -55,7 +55,8 @@ class LocationView(FlaskView):
         new_uuid = str(uuid.uuid4())
         request.json["_id"] = new_uuid
         request.json["created_at"] = time.time()  # unix epoch
-        request.json["tenants"] = []
+        request.json["vims"] = []
+        request.json["functions"] = []
         for ifield in self.req_fields:
             if not request.json.get(ifield, None):
                 return f"Field {ifield} is missing"
@@ -94,14 +95,16 @@ class LocationView(FlaskView):
         data["_id"] = uuid
         old_data = mongoUtils.get("location", uuid)
         if old_data:
-            if old_data["tenants"]:
-                return f"Location {id} is in use by a slice, cannot update it", 400
+            if old_data["vims"] or old_data["functions"]:
+                return f"Location {id} is in use by another component, cannot update it", 400
             data["created_at"] = old_data["created_at"]
-            data["tenants"] = []
+            data["vims"] = []
+            data["functions"] = []
             mongoUtils.update("location", uuid, data)
             return f"Modified location {data['id']}", 200
         else:
             data["created_at"] = time.time()  # unix epoch
-            data["tenants"] = []
+            data["vims"] = []
+            data["functions"] = []
             new_uuid = mongoUtils.add("location", request.json)
             return f"Created {new_uuid}", 201
