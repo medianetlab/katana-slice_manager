@@ -59,6 +59,9 @@ class LocationView(FlaskView):
         for ifield in self.req_fields:
             if not request.json.get(ifield, None):
                 return f"Field {ifield} is missing"
+            else:
+                # Lowercase the location
+                request.json["id"] = request.json["id"].lower()
         try:
             new_uuid = mongoUtils.add("location", request.json)
         except pymongo.errors.DuplicateKeyError:
@@ -84,6 +87,9 @@ class LocationView(FlaskView):
         for ifield in self.req_fields:
             if not request.json.get(ifield, None):
                 return f"Field {ifield} is missing"
+            else:
+                # Lowercase the location
+                request.json["id"] = request.json["id"].lower()
         data = request.json
         data["_id"] = uuid
         old_data = mongoUtils.get("location", uuid)

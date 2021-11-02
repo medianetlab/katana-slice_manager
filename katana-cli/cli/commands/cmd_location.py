@@ -7,29 +7,28 @@ import datetime
 
 @click.group()
 def cli():
-    """Manage Policy Engine"""
+    """Manage Platform Location"""
     pass
 
 
 @click.command()
 def ls():
     """
-    List Policy Management Systems
+    List Registered Locations
     """
 
-    url = "http://localhost:8000/api/policy"
+    url = "http://localhost:8000/api/location"
     r = None
     try:
         r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        print(console_formatter("DB_ID", "COMPONENT_ID", "TYPE", "CREATED AT"))
+        print(console_formatter("DB_ID", "LOCATION_ID", "CREATED AT"))
         for i in range(len(json_data)):
             print(
                 console_formatter(
                     json_data[i]["_id"],
-                    json_data[i]["component_id"],
-                    json_data[i]["type"],
+                    json_data[i]["id"],
                     datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
                         "%Y-%m-%d %H:%M:%S"
                     ),
@@ -50,9 +49,9 @@ def ls():
 @click.argument("id")
 def inspect(id):
     """
-    Display detailed information of Policy Management System
+    Display detailed information of a specific location
     """
-    url = "http://localhost:8000/api/policy/" + id
+    url = "http://localhost:8000/api/location/" + id
     r = None
     try:
         r = requests.get(url, timeout=30)
@@ -60,7 +59,7 @@ def inspect(id):
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
         if not json_data:
-            click.echo("Error: No such Policy Management Systems: {}".format(id))
+            click.echo("Error: No such location: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -73,12 +72,10 @@ def inspect(id):
 
 
 @click.command()
-@click.option(
-    "-f", "--file", required=True, type=str, help="yaml file with Policy Management Systems details"
-)
+@click.option("-f", "--file", required=True, type=str, help="file with location details")
 def add(file):
     """
-    Add new Policy Management System
+    Add new Location
     """
     try:
         stream = open(file, mode="r")
@@ -88,7 +85,7 @@ def add(file):
     with stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/policy"
+    url = "http://localhost:8000/api/location"
     r = None
     try:
         r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
@@ -110,9 +107,9 @@ def add(file):
 @click.argument("id")
 def rm(id):
     """
-    Remove Policy Management System
+    Remove a registered location
     """
-    url = "http://localhost:8000/api/policy/" + id
+    url = "http://localhost:8000/api/location/" + id
     r = None
     try:
         r = requests.delete(url, timeout=30)
@@ -130,13 +127,11 @@ def rm(id):
 
 
 @click.command()
-@click.option(
-    "-f", "--file", required=True, type=str, help="yaml file with Policy Management Systems details"
-)
+@click.option("-f", "--file", required=True, type=str, help="file with location details")
 @click.argument("id")
 def update(file, id):
     """
-    Update Policy Management Systems
+    Update a registered location
     """
     try:
         stream = open(file, mode="r")
@@ -146,7 +141,7 @@ def update(file, id):
     with stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/policy/" + id
+    url = "http://localhost:8000/api/location/" + id
     r = None
     try:
         r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)
@@ -171,5 +166,5 @@ cli.add_command(rm)
 cli.add_command(update)
 
 
-def console_formatter(uuid, _id, _type, created_at):
-    return "{0: <40}{1: <20}{2: <20}{3: <25}".format(uuid, _id, _type, created_at)
+def console_formatter(uuid, _id, created_at):
+    return "{0: <40}{1: <20}{2: <25}".format(uuid, _id, created_at)
