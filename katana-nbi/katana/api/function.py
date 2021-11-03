@@ -77,6 +77,7 @@ class FunctionView(FlaskView):
 
         # Check that the Function location is registered
         location_id = request.json["location"].lower()
+        request.json["location"] = location_id
         location = mongoUtils.find("location", {"id": location_id})
         if not location and location_id != "core":
             return f"Location {location_id} is not registered. Please add the location first", 400
@@ -145,6 +146,7 @@ class FunctionView(FlaskView):
 
             # Check that the VIM location is registered
             location_id = request.json["location"].lower()
+            request.json["location"] = location_id
             location = mongoUtils.find("location", {"id": location_id})
             if not location and location_id != "core":
                 return (

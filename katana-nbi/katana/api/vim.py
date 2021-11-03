@@ -86,6 +86,7 @@ class VimView(FlaskView):
             auth_url = request.json["auth_url"]
             project_name = request.json["admin_project_name"]
             location_id = request.json["location"].lower()
+            request.json["location"] = location_id
             vim_id = request.json["id"]
         except KeyError:
             return f"Error: Required fields: {self.req_fields}", 400
@@ -206,6 +207,7 @@ class VimView(FlaskView):
                 auth_url = request.json["auth_url"]
                 project_name = request.json["admin_project_name"]
                 location_id = request.json["location"].lower()
+                request.json["location"] = location_id
                 vim_id = request.json["id"]
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
