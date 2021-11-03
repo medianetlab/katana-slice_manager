@@ -124,7 +124,15 @@ def nest_mapping(req):
         "simultaneous_nsi": req_slice_des["simultaneous_nsi"],
     }
 
-    # Check the location
+    # Check that the location in coverage field is registered
+    not_supp_loc = []
+    for location_id in req_slice_des["coverage"]:
+        if not mongoUtils.find("location", {"id": location_id.lower()}):
+            not_supp_loc.append(location_id)
+            logger.warning(f"Location {location_id} is not registered")
+
+    for location_id in not_supp_loc:
+        req_slice_des["coverage"].remove(location_id)
 
     # *************************** Start the mapping ***************************
     # Currently supports:
@@ -144,7 +152,7 @@ def nest_mapping(req):
         # EMBB
         nest["sst"] = 1
         # Find the registered function for Core Function
-        epc = mongoUtils.find("func", calc_find_data(gen, "Core", 0))
+        epc = mongoUtils.find("func", calc_find_data(gen, "core", 0))
         if not epc:
             return "Error: Not available Core Network Functions", 400
         # Check if the nest allows shareable functions, if the function is shareable
@@ -176,7 +184,7 @@ def nest_mapping(req):
         connections = []
         not_supp_loc = []
         for location in req_slice_des["coverage"]:
-            enb = mongoUtils.find("func", calc_find_data(gen, location, 1))
+            enb = mongoUtils.find("func", calc_find_data(gen, location.lower(), 1))
             if not enb:
                 not_supp_loc.append(location)
             else:
@@ -223,8 +231,8 @@ def nest_mapping(req):
         connections = []
         not_supp_loc = []
         for location in req_slice_des["coverage"]:
-            epc = mongoUtils.find("func", calc_find_data(gen, location, 0))
-            enb = mongoUtils.find("func", calc_find_data(gen, location, 1))
+            epc = mongoUtils.find("func", calc_find_data(gen, location.lower(), 0))
+            enb = mongoUtils.find("func", calc_find_data(gen, location.lower(), 1))
             if not epc or not enb:
                 not_supp_loc.append(location)
             else:
