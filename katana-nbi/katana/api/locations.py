@@ -75,6 +75,8 @@ class LocationView(FlaskView):
         used by: `katana location rm [uuid]
         """
         del_location = mongoUtils.get("location", uuid)
+        if del_location["id"] == "core":
+            return "You cannot delete core location", 400
         if del_location:
             if del_location["vims"] or del_location["functions"]:
                 return (

@@ -79,17 +79,15 @@ class FunctionView(FlaskView):
         location_id = request.json["location"].lower()
         request.json["location"] = location_id
         location = mongoUtils.find("location", {"id": location_id})
-        if not location and location_id != "core":
+        if not location:
             return f"Location {location_id} is not registered. Please add the location first", 400
-        elif location_id != "core":
-            location["functions"].append(data["id"])
+        location["functions"].append(data["id"])
 
         try:
             new_uuid = mongoUtils.add("func", data)
         except pymongo.errors.DuplicateKeyError:
             return f"Network Function with id {data['id']} already exists", 400
-        if location:
-            mongoUtils.update("location", location["_id"], location)
+        mongoUtils.update("location", location["_id"], location)
         return f"Created {new_uuid}", 201
 
     def delete(self, uuid):
@@ -148,18 +146,16 @@ class FunctionView(FlaskView):
             location_id = request.json["location"].lower()
             request.json["location"] = location_id
             location = mongoUtils.find("location", {"id": location_id})
-            if not location and location_id != "core":
+            if not location:
                 return (
                     f"Location {location_id} is not registered. Please add the location first",
                     400,
                 )
-            elif location_id != "core":
-                location["functions"].append(data["id"])
+            location["functions"].append(data["id"])
 
             try:
                 new_uuid = mongoUtils.add("func", data)
             except pymongo.errors.DuplicateKeyError:
                 return f"Function with id {data['id']} already exists", 400
-            if location:
-                mongoUtils.update("location", location["_id"], location)
+            mongoUtils.update("location", location["_id"], location)
             return f"Created {new_uuid}", 201

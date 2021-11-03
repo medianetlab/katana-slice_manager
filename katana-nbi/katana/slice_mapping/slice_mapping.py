@@ -124,6 +124,8 @@ def nest_mapping(req):
         "simultaneous_nsi": req_slice_des["simultaneous_nsi"],
     }
 
+    # Check the location
+
     # *************************** Start the mapping ***************************
     # Currently supports:
     # 1) If delay_tolerance --> EMBB else --> URLLC

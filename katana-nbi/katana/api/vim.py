@@ -93,10 +93,9 @@ class VimView(FlaskView):
 
         # Check that the VIM location is registered
         location = mongoUtils.find("location", {"id": location_id})
-        if not location and location_id != "core":
+        if not location:
             return f"Location {location_id} is not registered. Please add the location first", 400
-        elif location_id != "core":
-            location["vims"].append(vim_id)
+        location["vims"].append(vim_id)
         # Type of OpenStack
         if request.json["type"] == "openstack":
             try:
@@ -214,13 +213,12 @@ class VimView(FlaskView):
 
             # Check that the VIM location is registered
             location = mongoUtils.find("location", {"id": location_id})
-            if not location and location_id != "core":
+            if not location:
                 return (
                     f"Location {location_id} is not registered. Please add the location first",
                     400,
                 )
-            elif location_id != "core":
-                location["vims"].append(vim_id)
+            location["vims"].append(vim_id)
             # Type of OpenStack
             if request.json["type"] == "openstack":
                 try:
