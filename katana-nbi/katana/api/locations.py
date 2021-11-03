@@ -74,8 +74,14 @@ class LocationView(FlaskView):
         Delete a registered platform location
         used by: `katana location rm [uuid]
         """
-        del_location = mongoUtils.delete("location", uuid)
+        del_location = mongoUtils.get("location", uuid)
         if del_location:
+            if del_location["vims"] or del_location["functions"]:
+                return (
+                    f"Location {uuid} is in use by another component, cannot update it",
+                    400,
+                )
+            del_location = mongoUtils.delete("location", uuid)
             return f"Deleted location {uuid}", 200
         else:
             return f"Error: No such location {uuid}", 404
