@@ -2,8 +2,12 @@
 
 import logging
 import logging.handlers
+import uuid
+import time
+import pymongo
 
 from katana.shared_utils.kafkaUtils import kafkaUtils
+from katana.shared_utils.mongoUtils import mongoUtils
 from katana.utils.sliceUtils import sliceUtils
 
 
@@ -24,6 +28,21 @@ kafkaUtils.create_topic("slice")
 
 # Create the Kafka Consumer
 consumer = kafkaUtils.create_consumer("slice")
+
+# Create the initial core location
+try:
+    new_uuid = str(uuid.uuid4())
+    core_location_data = {
+        "_id": new_uuid,
+        "id": "core",
+        "created_at": time.time(),
+        "description": "The default Core location",
+        "vims": [],
+        "functions": [],
+    }
+    mongoUtils.add("location", core_location_data)
+except pymongo.errors.DuplicateKeyError:
+    pass
 
 # Check for new messages
 for message in consumer:

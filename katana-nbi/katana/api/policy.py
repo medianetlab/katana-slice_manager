@@ -62,7 +62,7 @@ class PolicyView(FlaskView):
     def post(self):
         """
         Add a new policy management system. The request must provide the
-         system details. used by: `katana policy add -f [yaml file]`
+         system details. used by: `katana policy add -f [file]`
         """
         # Create the object and store it in the object collection
         try:
@@ -88,7 +88,7 @@ class PolicyView(FlaskView):
         thebytes = pickle.dumps(policy)
         obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
         mongoUtils.add("policy_obj", obj_json)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -105,7 +105,7 @@ class PolicyView(FlaskView):
     def put(self, uuid):
         """
         Update the details of a specific policy engine system.
-        used by: `katana policy update [uuid] -f [yaml file]`
+        used by: `katana policy update [uuid] -f [file]`
         """
         data = request.json
         data["_id"] = uuid
@@ -133,7 +133,7 @@ class PolicyView(FlaskView):
                     return "Error: Not supported Policy system type", 400
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
-            new_uuid = str(uuid.uuid4())
+            new_uuid = uuid
             request.json["_id"] = new_uuid
             request.json["created_at"] = time.time()  # unix epoch
             try:
@@ -149,7 +149,7 @@ class PolicyView(FlaskView):
             thebytes = pickle.dumps(policy)
             obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
             mongoUtils.add("policy_obj", obj_json)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201
 
     @route("/neat/<slice_id>", methods=["GET"])
     def neat(self, slice_id):

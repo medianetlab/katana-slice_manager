@@ -91,7 +91,9 @@ class ResourcesView(FlaskView):
         vims = get_vims()
         # Get Functions
         functions = get_func()
-        resources = {"VIMs": vims, "Functions": functions}
+        # Get locations
+        locations = mongoUtils.find_all("location")
+        resources = {"VIMs": vims, "Functions": functions, "Locations": locations}
         return dumps(resources), 200
 
     def get(self, uuid):
@@ -99,8 +101,12 @@ class ResourcesView(FlaskView):
         Returns the available resources on platform,
         used by: `katana resource location <location>`
         """
+        location_id = uuid.lower()
+        # Check if the location exists
+        if not mongoUtils.find("location", {"id": location_id}):
+            return f"Location {uuid} not found", 404
         # Get VIMs
-        filter_data = {"location": uuid}
+        filter_data = {"location": location_id}
         vims = get_vims(filter_data)
         # Get Functions
         functions = get_func(filter_data)

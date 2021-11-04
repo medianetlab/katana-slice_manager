@@ -10,11 +10,17 @@
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "2.3.1"
+    "version": "katana.version"
   },
   "servers": [
     {
-      "url": "http://katanaSM:8000/api"
+      "url": "http://{KATANA_HOST}:8000/api",
+      "variables": {
+        "KATANA_HOST": {
+          "default": "katana.host",
+          "description": "IP address or Domain Name of Katana Host"
+        }
+      }
     }
   ],
   "tags": [
@@ -101,6 +107,10 @@
     {
       "name": "Bootstrap Katana",
       "description": "Configure Katana Slice Manager using one JSON file"
+    },
+    {
+      "name": "Locations",
+      "description": "Edge locations supported by the underlying infrastructure"
     }
   ],
   "paths": {
@@ -471,7 +481,7 @@
         "requestBody": {
           "description": "VIM Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/vim"
               }
@@ -691,7 +701,7 @@
         "requestBody": {
           "description": "NFVO Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/nfvo"
               }
@@ -911,7 +921,7 @@
         "requestBody": {
           "description": "WIM Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/wim"
               }
@@ -1131,7 +1141,7 @@
         "requestBody": {
           "description": "EMS Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/ems"
               }
@@ -1351,7 +1361,7 @@
         "requestBody": {
           "description": "WIM Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/policy"
               }
@@ -1571,7 +1581,7 @@
         "requestBody": {
           "description": "Network Functions Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/net_func"
               }
@@ -1671,7 +1681,7 @@
         "requestBody": {
           "description": "Network Function Parameters",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/net_func"
               }
@@ -1930,7 +1940,7 @@
         "requestBody": {
           "description": "Base Slice Descriptor",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/base_slice_des"
               }
@@ -2028,9 +2038,9 @@
           }
         ],
         "requestBody": {
-          "description": "Network Function Parameters",
+          "description": "Base Slice Descriptor",
           "content": {
-            "*/*": {
+            "Application/Json": {
               "schema": {
                 "$ref": "#/components/schemas/base_slice_des"
               }
@@ -2120,7 +2130,7 @@
         "tags": [
           "Bootstrap Katana"
         ],
-        "summary": "Configure Katana using one JSON File",
+        "summary": "Configure Katana using one JSON File. Note that the locations must be already added.",
         "requestBody": {
           "description": "Configuration Data",
           "content": {
@@ -2144,6 +2154,231 @@
         }
       },
       "x-codegen-request-body-name": "body"
+    },
+    "/location": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Returns a list with the registered locations of the underlying infrastructure",
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "A list of the registered locations",
+                  "items": {
+                    "type": "object",
+                    "$ref": "#/components/schemas/stored_location"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Defines a Location for the platform",
+        "requestBody": {
+          "description": "Location descriptor",
+          "content": {
+            "Application/Json": {
+              "schema": {
+                "$ref": "#/components/schemas/location_descriptor"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "string": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The uuid of the new location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "405": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/location/{id}": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Return Info about a specific location",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of location",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stored_location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Add or update a location",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of location",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Location Descriptor",
+          "content": {
+            "Application/Json": {
+              "schema": {
+                "$ref": "#/components/schemas/location_descriptor"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Modified",
+            "content": {}
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "string": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The uuid of the new location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          },
+          "405": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "body"
+      },
+      "delete": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "Delete a base slice descriptor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of location",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          },
+          "405": {
+            "description": "Invalid Input",
+            "content": {}
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {}
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2515,6 +2750,9 @@
         "type": "object",
         "properties": {
           "_id": {
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           },
           "created at": {
@@ -3851,6 +4089,55 @@
             "description": "A list with the Network Functions to be added",
             "items": {
               "$ref": "#/components/schemas/net_func"
+            }
+          }
+        }
+      },
+      "location_descriptor": {
+        "type": "object",
+        "description": "Descriptor of a registered location",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique ID for this location"
+          },
+          "description": {
+            "type": "string",
+            "description": "A brief description of this location"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "stored_location": {
+        "type": "object",
+        "description": "Descriptor of a stored location",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique ID for this location"
+          },
+          "description": {
+            "type": "string",
+            "description": "A brief description of this location"
+          },
+          "created at": {
+            "type": "number",
+            "format": "date-time"
+          },
+          "vims": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "IDs of the VIMs in this location"
+            }
+          },
+          "functions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "IDs of the Functions in this location"
             }
           }
         }

@@ -1,42 +1,39 @@
 import requests
 import json
 import yaml
-
 import click
 import datetime
 
 
 @click.group()
 def cli():
-    """Manage slices"""
+    """Manage Platform Location"""
     pass
 
 
 @click.command()
 def ls():
     """
-    List slices
+    List Registered Locations
     """
 
-    url = "http://localhost:8000/api/slice"
+    url = "http://localhost:8000/api/location"
     r = None
     try:
         r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        print(console_formatter("SLICE_ID", "SLICE_NAME", "CREATED AT", "STATUS"))
+        print(console_formatter("DB_ID", "LOCATION_ID", "CREATED AT"))
         for i in range(len(json_data)):
             print(
                 console_formatter(
                     json_data[i]["_id"],
-                    json_data[i]["name"],
+                    json_data[i]["id"],
                     datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
                         "%Y-%m-%d %H:%M:%S"
                     ),
-                    json_data[i]["status"],
                 )
             )
-
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -49,12 +46,12 @@ def ls():
 
 
 @click.command()
-@click.argument("uuid")
-def inspect(uuid):
+@click.argument("id")
+def inspect(id):
     """
-    Display detailed information of slice
+    Display detailed information of a specific location
     """
-    url = "http://localhost:8000/api/slice/" + uuid
+    url = "http://localhost:8000/api/location/" + id
     r = None
     try:
         r = requests.get(url, timeout=30)
@@ -62,7 +59,7 @@ def inspect(uuid):
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
         if not json_data:
-            click.echo("Error: No such slice: {}".format(uuid))
+            click.echo("Error: No such location: {}".format(id))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -75,36 +72,10 @@ def inspect(uuid):
 
 
 @click.command()
-@click.argument("uuid")
-def deployment_time(uuid):
-    """
-    Display deployment slice of slice
-    """
-    url = "http://localhost:8000/api/slice/{0}/time".format(uuid)
-    r = None
-    try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        json_data = json.loads(r.content)
-        click.echo(json.dumps(json_data, indent=2))
-        if not json_data:
-            click.echo("Error: No such slice: {}".format(uuid))
-    except requests.exceptions.HTTPError as errh:
-        print("Http Error:", errh)
-        click.echo(r.content)
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-    except requests.exceptions.RequestException as err:
-        print("Error:", err)
-
-
-@click.command()
-@click.option("-f", "--file", required=True, type=str, help="yaml file with slice details")
+@click.option("-f", "--file", required=True, type=str, help="file with location details")
 def add(file):
     """
-    Add new slice
+    Add new Location
     """
     try:
         stream = open(file, mode="r")
@@ -114,7 +85,7 @@ def add(file):
     with stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/slice"
+    url = "http://localhost:8000/api/location"
     r = None
     try:
         r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
@@ -133,39 +104,34 @@ def add(file):
 
 
 @click.command()
-@click.argument("id_list", nargs=-1)
-@click.option("--force", required=False, default=False, is_flag=True, help="Force delete a slice")
-def rm(id_list, force):
+@click.argument("id")
+def rm(id):
     """
-    Remove slices
+    Remove a registered location
     """
-    for _id in id_list:
-
-        force_arg = "?force=true" if force else ""
-
-        url = "http://localhost:8000/api/slice/" + _id + force_arg
-        r = None
-        try:
-            r = requests.delete(url, timeout=30)
-            r.raise_for_status()
-            click.echo(r.content)
-        except requests.exceptions.HTTPError as errh:
-            print("Http Error:", errh)
-            click.echo(r.content)
-        except requests.exceptions.ConnectionError as errc:
-            print("Error Connecting:", errc)
-        except requests.exceptions.Timeout as errt:
-            print("Timeout Error:", errt)
-        except requests.exceptions.RequestException as err:
-            print("Error:", err)
+    url = "http://localhost:8000/api/location/" + id
+    r = None
+    try:
+        r = requests.delete(url, timeout=30)
+        r.raise_for_status()
+        click.echo(r.content)
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+        click.echo(r.content)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Error:", err)
 
 
 @click.command()
-@click.option("-f", "--file", required=True, type=str, help="yaml file with slice details")
+@click.option("-f", "--file", required=True, type=str, help="file with location details")
 @click.argument("id")
 def update(file, id):
     """
-    Update slice
+    Update a registered location
     """
     try:
         stream = open(file, mode="r")
@@ -175,7 +141,7 @@ def update(file, id):
     with stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/slice/" + id
+    url = "http://localhost:8000/api/location/" + id
     r = None
     try:
         r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)
@@ -198,8 +164,7 @@ cli.add_command(inspect)
 cli.add_command(add)
 cli.add_command(rm)
 cli.add_command(update)
-cli.add_command(deployment_time)
 
 
-def console_formatter(uuid, slice_name, created_at, status):
-    return "{0: <40}{1: <25}{2: <25}{3: <20}".format(uuid, slice_name, created_at, status)
+def console_formatter(uuid, _id, created_at):
+    return "{0: <40}{1: <20}{2: <25}".format(uuid, _id, created_at)

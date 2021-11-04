@@ -38,6 +38,7 @@ do
 
     case $key in
     -p | --publish)
+        PUBLISH=true
         message="katana host public IP"
         ip_list=$(hostname -I 2> /dev/null)
         if (( $? == 0 ));
@@ -45,7 +46,7 @@ do
             message="${message} (Available: $ip_list)"
         fi
         read -r -p "${message} >> " HOST_IP
-        export "DOCKER_HOST_IP=${HOST_IP}"
+        export "KATANA_HOST=${HOST_IP}"
 
         # Insert Katana's IP in swagger conf file
         sed -i "s?katanaSM?${HOST_IP}?" "${DIR}/katana-swagger/swagger.json"
@@ -126,3 +127,11 @@ command -v katana &> /dev/null || sudo cp ${DIR}/bin/katana /usr/local/bin/
 
 # Start the docker containers on the background
 docker-compose up -d ${containers}
+
+# Fix the Release number and Katana IP on swagger
+docker exec katana-swagger sh /my_swagger/fixVersion.sh
+
+if [[ "${PUBLISH}" == true ]];
+then
+    docker exec katana-swagger sh /my_swagger/fixIP.sh
+fi

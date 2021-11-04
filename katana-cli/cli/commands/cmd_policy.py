@@ -7,7 +7,7 @@ import datetime
 
 @click.group()
 def cli():
-    """Manage EMS"""
+    """Manage Policy Engine"""
     pass
 
 

@@ -26,7 +26,7 @@ class BootstrapView(FlaskView):
     def post(self):
         """
         Add a new configuration file to the SM.
-        used by: `katana bootstrap -f [yaml file]`
+        used by: `katana bootstrap -f [file]`
         """
         data_fields = ["vim", "nfvo", "ems", "wim", "function"]
         data = request.json

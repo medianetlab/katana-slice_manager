@@ -54,7 +54,7 @@ pipeline {
         // *****************************
         // *** Push Images If Master ***
         // *****************************
-        stage("push_test_deployment") {
+        stage("push_images") {
             when {
                 changeset "**/katana-**/**"
                 environment name: "GIT_BRANCH", value: "origin/master"

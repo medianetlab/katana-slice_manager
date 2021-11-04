@@ -142,7 +142,6 @@ for iter_ in range(iterations):
         logger.error("Error:", err)
         exit(1)
     slice_id = (slice_req.content).decode("utf-8")
-    logger.debug(slice_id)
     slice_url = f"{base_url}/{slice_id}"
 
     time.sleep(5)
@@ -163,7 +162,6 @@ for iter_ in range(iterations):
             logger.error("Error:", err)
             exit(1)
         slice_info = slice_req.json()
-        logger.debug(slice_info.get("status"))
         if slice_info.get("status") == "Running":
             break
         time.sleep(5)
@@ -183,7 +181,6 @@ for iter_ in range(iterations):
     # Write the csv file
     if csv_writer:
         csv_writer.writerow(creation_time)
-    logger.debug(creation_time)
 
     # Write the data to the database
     if db:

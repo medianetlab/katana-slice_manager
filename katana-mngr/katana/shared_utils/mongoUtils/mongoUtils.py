@@ -5,14 +5,15 @@ client = MongoClient("mongodb://mongo")
 db = client.katana
 
 # Initialize all collections and create indexes
-db.vim.create_index([('id', ASCENDING)], unique=True)
-db.nfvo.create_index([('id', ASCENDING)], unique=True)
-db.wim.create_index([('id', ASCENDING)], unique=True)
-db.ems.create_index([('id', ASCENDING)], unique=True)
-db.policy.create_index([('id', ASCENDING)], unique=True)
-db.nsd.create_index([('nsd-id', ASCENDING)], unique=True)
-db.vnfd.create_index([('vnfd-id', ASCENDING)], unique=True)
-db.func.create_index([('id', ASCENDING)], unique=True)
+db.vim.create_index([("id", ASCENDING)], unique=True)
+db.nfvo.create_index([("id", ASCENDING)], unique=True)
+db.wim.create_index([("id", ASCENDING)], unique=True)
+db.ems.create_index([("id", ASCENDING)], unique=True)
+db.policy.create_index([("id", ASCENDING)], unique=True)
+db.nsd.create_index([("nsd-id", ASCENDING)], unique=True)
+db.vnfd.create_index([("vnfd-id", ASCENDING)], unique=True)
+db.func.create_index([("id", ASCENDING)], unique=True)
+db.location.create_index([("id", ASCENDING)], unique=True)
 
 
 def index(collection_name):

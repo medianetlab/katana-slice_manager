@@ -16,6 +16,7 @@ from katana.api.slice_des import Base_slice_desView
 from katana.api.vim import VimView
 from katana.api.wim import WimView
 from katana.api.bootstrap import BootstrapView
+from katana.api.locations import LocationView
 
 
 def create_app():
@@ -44,5 +45,6 @@ def create_app():
     PolicyView.register(app, trailing_slash=False)
     NslistView.register(app, trailing_slash=False)
     BootstrapView.register(app, trailing_slash=False)
+    LocationView.register(app, trailing_slash=False)
 
     return app

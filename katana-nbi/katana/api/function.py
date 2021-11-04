@@ -60,7 +60,7 @@ class FunctionView(FlaskView):
         """
         Add a new supported function.
         The request must provide the network function details.
-        used by: `katana func add -f [yaml file]`
+        used by: `katana func add -f [file]`
         """
         new_uuid = str(uuid.uuid4())
         data = request.json
@@ -74,11 +74,21 @@ class FunctionView(FlaskView):
                 _ = data[field]
             except KeyError:
                 return f"Error: Required fields: {self.req_fields}", 400
+
+        # Check that the Function location is registered
+        location_id = request.json["location"].lower()
+        request.json["location"] = location_id
+        location = mongoUtils.find("location", {"id": location_id})
+        if not location:
+            return f"Location {location_id} is not registered. Please add the location first", 400
+        location["functions"].append(data["id"])
+
         try:
             new_uuid = mongoUtils.add("func", data)
         except pymongo.errors.DuplicateKeyError:
             return f"Network Function with id {data['id']} already exists", 400
-        return f"Created {new_uuid}", 201
+        mongoUtils.update("location", location["_id"], location)
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -90,6 +100,11 @@ class FunctionView(FlaskView):
             if len(result["tenants"]) > 0:
                 return f"Error: Function is used by slices {result['tenants']}"
             mongoUtils.delete("func", uuid)
+            # Update the location removing the Function
+            location = mongoUtils.find("location", {"id": result["location"].lower()})
+            if location:
+                location["functions"].remove(result["id"])
+                mongoUtils.update("location", location["_id"], location)
             return "Deleted Network Function {}".format(uuid), 200
         else:
             # if uuid is not found, return error
@@ -99,7 +114,7 @@ class FunctionView(FlaskView):
         """
         Add or update a new supported network function.
         The request must provide the service details.
-        used by: `katana function update -f [yaml file]`
+        used by: `katana function update -f [file]`
         """
         data = request.json
         data["_id"] = uuid
@@ -126,8 +141,21 @@ class FunctionView(FlaskView):
                     _ = data[field]
                 except KeyError:
                     return f"Error: Required fields: {self.req_fields}", 400
+
+            # Check that the VIM location is registered
+            location_id = request.json["location"].lower()
+            request.json["location"] = location_id
+            location = mongoUtils.find("location", {"id": location_id})
+            if not location:
+                return (
+                    f"Location {location_id} is not registered. Please add the location first",
+                    400,
+                )
+            location["functions"].append(data["id"])
+
             try:
                 new_uuid = mongoUtils.add("func", data)
             except pymongo.errors.DuplicateKeyError:
                 return f"Function with id {data['id']} already exists", 400
-            return f"Created {new_uuid}", 201
+            mongoUtils.update("location", location["_id"], location)
+            return new_uuid, 201

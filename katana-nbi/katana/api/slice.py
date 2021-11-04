@@ -42,7 +42,12 @@ class SliceView(FlaskView):
         return_data = []
         for islice in slice_data:
             return_data.append(
-                dict(_id=islice["_id"], created_at=islice["created_at"], status=islice["status"])
+                dict(
+                    _id=islice["_id"],
+                    name=islice["slice_name"],
+                    created_at=islice["created_at"],
+                    status=islice["status"],
+                )
             )
         return dumps(return_data), 200
 
@@ -71,11 +76,10 @@ class SliceView(FlaskView):
     def post(self):
         """
         Add a new slice. The request must provide the slice details.
-        used by: `katana slice add -f [yaml file]`
+        used by: `katana slice add -f [file]`
         """
         new_uuid = str(uuid.uuid4())
         request.json["_id"] = new_uuid
-
         # Get the NEST from the Slice Mapping process
         nest, error_code = slice_mapping.nest_mapping(request.json)
 
@@ -116,7 +120,7 @@ class SliceView(FlaskView):
     # def put(self, uuid):
     #     """
     #     Update the details of a specific slice.
-    #     used by: `katana slice update -f [yaml file] [uuid]`
+    #     used by: `katana slice update -f [file] [uuid]`
     #     """
     #     request.json['_id'] = uuid
     #     result = mongoUtils.update("slice", uuid, request.json)

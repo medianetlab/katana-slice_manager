@@ -37,6 +37,7 @@ NEST_KEYS_OBJ = (
     "positional_support",
     "device_velocity",
     "terminal_density",
+    "slice_name",
 )
 
 NEST_KEYS_LIST = (
@@ -102,7 +103,7 @@ def ns_details(
             new_ns["placement_loc"] = {"location": new_ns["placement"]}
         else:
             new_ns["placement_loc"] = (
-                lambda x: {"location": "Core"} if not x else {"location": edge_loc}
+                lambda x: {"location": "core"} if not x else {"location": edge_loc}
             )(new_ns["placement"])
 
         # C) ****** Get the VIM info ******
@@ -567,7 +568,7 @@ def add_slice(nest_req):
                             try:
                                 ns_info = ns_inst_info[ns["ns-id"]][connection[key]["location"]]
                             except KeyError:
-                                ns_info = ns_inst_info[ns["ns-id"]]["Core"]
+                                ns_info = ns_inst_info[ns["ns-id"]]["core"]
                             ns_data = {
                                 "name": ns["ns-name"],
                                 "location": ns["placement_loc"]["location"],
