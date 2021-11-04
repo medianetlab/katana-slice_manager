@@ -17,7 +17,7 @@ pipeline {
             steps{
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
                     echo "***** Deploying new version ${MAJOR_RELEASE} *****" 
-                    sh 'bash bin/deploy.sh -m -p --release latest --docker_reg "${katana_reg}" --docker_repo "${katana_repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --no_build'
+                    sh 'echo ${prod_server_ip} | bash bin/deploy.sh -m -p --release latest --docker_reg "${katana_reg}" --docker_repo "${katana_repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --no_build'
                 }
             }
         }

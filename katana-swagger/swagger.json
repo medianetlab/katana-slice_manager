@@ -10,11 +10,17 @@
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "2.3.1"
+    "version": "katana.version"
   },
   "servers": [
     {
-      "url": "http://katanaSM:8000/api"
+      "url": "http://{KATANA_HOST}:8000/api",
+      "variables": {
+        "KATANA_HOST": {
+          "default": "katana.host",
+          "description": "IP address or Domain Name of Katana Host"
+        }
+      }
     }
   ],
   "tags": [

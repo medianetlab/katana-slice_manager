@@ -172,7 +172,8 @@ The current implementation supports two pipelines, using the respective Jenkinsf
     - Required parameters/variables on Jenkins:
     - katana_reg: The remote Docker registry that will be used for pushing Docker Images
     - katana_repo: The remote Docker repository that will be used for pushing Docker Images
-    - test_server: The label of the Jenkins agent that will be used for running the testing Katana instance
+    - prod_server: The label of the Jenkins agent that will be used for running the stable Katana instance
+    - prod_server_ip: The IP Address of the production server that will be used for hosting the stable Katana instance
   - Required credentials on Jenkins:
     - katana-reg-creds: Username/Password for the remote Docker registry
 
