@@ -5,8 +5,6 @@ pipeline {
         }
     }
 
-    environment {}
-
     stages {
         // ******************************
         // *** Kill Katana Containers ***
