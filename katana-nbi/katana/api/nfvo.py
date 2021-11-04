@@ -111,7 +111,7 @@ class NFVOView(FlaskView):
                 mongoUtils.add("nfvo_obj", obj_json)
                 # Get information regarding VNFDs and NSDs
                 osm.bootstrapNfvo()
-                return f"Created {new_uuid}", 201
+                return new_uuid, 201
         else:
             response = dumps({"error": "This type nfvo is not supported"})
             return response, 400
@@ -200,4 +200,4 @@ class NFVOView(FlaskView):
             else:
                 response = dumps({"error": "This type nfvo is not supported"})
                 return response, 400
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201

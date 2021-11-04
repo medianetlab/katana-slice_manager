@@ -67,7 +67,7 @@ class LocationView(FlaskView):
             new_uuid = mongoUtils.add("location", request.json)
         except pymongo.errors.DuplicateKeyError:
             return (f"Location {request.json['id']} is already registered", 400)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -118,4 +118,4 @@ class LocationView(FlaskView):
             data["vims"] = []
             data["functions"] = []
             new_uuid = mongoUtils.add("location", request.json)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201

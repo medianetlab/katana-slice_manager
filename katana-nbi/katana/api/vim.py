@@ -150,7 +150,7 @@ class VimView(FlaskView):
         mongoUtils.add("vim_obj", obj_json)
         if location:
             mongoUtils.update("location", location["_id"], location)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -273,4 +273,4 @@ class VimView(FlaskView):
             mongoUtils.add("vim_obj", obj_json)
             if location:
                 mongoUtils.update("location", location["_id"], location)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201

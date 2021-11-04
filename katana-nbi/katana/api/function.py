@@ -88,7 +88,7 @@ class FunctionView(FlaskView):
         except pymongo.errors.DuplicateKeyError:
             return f"Network Function with id {data['id']} already exists", 400
         mongoUtils.update("location", location["_id"], location)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -158,4 +158,4 @@ class FunctionView(FlaskView):
             except pymongo.errors.DuplicateKeyError:
                 return f"Function with id {data['id']} already exists", 400
             mongoUtils.update("location", location["_id"], location)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201

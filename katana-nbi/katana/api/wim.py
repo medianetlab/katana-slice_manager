@@ -106,7 +106,7 @@ class WimView(FlaskView):
             with open("/targets/wim_targets.json", mode="w") as prom_file:
                 json.dump(prom, prom_file)
         mongoUtils.add("wim_obj", obj_json)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -191,4 +191,4 @@ class WimView(FlaskView):
                 with open("/targets/wim_targets.json", mode="w") as prom_file:
                     json.dump(prom, prom_file)
             mongoUtils.add("wim_obj", obj_json)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201

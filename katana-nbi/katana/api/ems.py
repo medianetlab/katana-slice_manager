@@ -94,7 +94,7 @@ class EmsView(FlaskView):
         except pymongo.errors.DuplicateKeyError:
             return f"EMS with id {ems_id} already exists", 400
         mongoUtils.add("ems_obj", obj_json)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -153,4 +153,4 @@ class EmsView(FlaskView):
             except pymongo.errors.DuplicateKeyError:
                 return f"EMS with id {ems_id} already exists", 400
             mongoUtils.add("ems_obj", obj_json)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201

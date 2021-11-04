@@ -88,7 +88,7 @@ class PolicyView(FlaskView):
         thebytes = pickle.dumps(policy)
         obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
         mongoUtils.add("policy_obj", obj_json)
-        return f"Created {new_uuid}", 201
+        return new_uuid, 201
 
     def delete(self, uuid):
         """
@@ -149,7 +149,7 @@ class PolicyView(FlaskView):
             thebytes = pickle.dumps(policy)
             obj_json = {"_id": new_uuid, "id": request.json["id"], "obj": Binary(thebytes)}
             mongoUtils.add("policy_obj", obj_json)
-            return f"Created {new_uuid}", 201
+            return new_uuid, 201
 
     @route("/neat/<slice_id>", methods=["GET"])
     def neat(self, slice_id):

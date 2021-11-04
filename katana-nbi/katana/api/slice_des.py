@@ -76,7 +76,7 @@ class Base_slice_desView(FlaskView):
             new_uuid = uuid
             data = request.json
             data["_id"] = new_uuid
-            return "Created " + str(mongoUtils.add("base_slice_des_ref", data)), 201
+            return str(mongoUtils.add("base_slice_des_ref", data)), 201
 
     def delete(self, uuid):
         """
