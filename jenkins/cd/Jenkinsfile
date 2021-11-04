@@ -10,6 +10,19 @@ pipeline {
     }
 
     stages {
+        // **************************
+        // *** Push Latest Images ***
+        // **************************
+        stage("push_images") {
+            steps{
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
+                    echo "**** Building & Pushing Images ${} ****"
+                    sh 'bash bin/build.sh --release ${MAJOR_RELEASE} --docker_reg "${katana_reg}" --docker_repo "${katana_repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
+                    sh 'bash bin/build.sh --release latest --docker_reg "${katana_reg}" --docker_repo "${katana_repo}" --docker_reg_user ${USERNAME} --docker_reg_passwd ${PASSWORD} --push'
+                }
+            }
+        }
+
         // ********************************
         // *** Deploy The Latest Images ***
         // ********************************
@@ -23,13 +36,13 @@ pipeline {
         }
     }
 
-    post{
-        failure{
-            slackSend (color: "#FF0000", message: "Failed to deploy Katana version ${MAJOR_RELEASE} on production: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-        }
+    // post{
+    //     failure{
+    //         slackSend (color: "#FF0000", message: "Failed to deploy Katana version ${MAJOR_RELEASE} on production: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    //     }
 
-        success{
-            slackSend (color: "#008000", message: "Successfully deployed Katana version ${MAJOR_RELEASE} on production : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-        }
-    }
+    //     success{
+    //         slackSend (color: "#008000", message: "Successfully deployed Katana version ${MAJOR_RELEASE} on production : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    //     }
+    // }
 }

@@ -6,8 +6,8 @@ services:
     container_name: katana-mongo
     restart: always
     volumes:
-      - "mongo-datadb:/data/db"
-      - "mongo-configdb:/data/configdb"
+      - "katana-mongo-datadb:/data/db"
+      - "katana-mongo-configdb:/data/configdb"
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.4.2
@@ -21,9 +21,9 @@ services:
         ZOOKEEPER_CLIENT_PORT: 2181
     restart: always
     volumes:
-      - zk-data:/var/lib/zookeeper/data
-      - zk-log:/var/lib/zookeeper/log
-      - zk-secrets:/etc/zookeeper/secrets
+      - katana-zk-data:/var/lib/zookeeper/data
+      - katana-zk-log:/var/lib/zookeeper/log
+      - katana-zk-secrets:/etc/zookeeper/secrets
 
   kafka:
     image: confluentinc/cp-enterprise-kafka:5.4.2
@@ -42,8 +42,8 @@ services:
       KAFKA_CREATE_TOPICS: "slice:1:1"
     restart: always
     volumes:
-      - kafka-data:/var/lib/kafka/data
-      - kafka-secrets:/etc/kafka/secrets
+      - katana-kafka-data:/var/lib/kafka/data
+      - katana-kafka-secrets:/etc/kafka/secrets
     depends_on:
       - zookeeper
 
@@ -132,7 +132,7 @@ services:
       context: .
       dockerfile: katana-prometheus/Dockerfile
     volumes:
-      - "prometheus:/prometheus"
+      - "katana-prometheus:/prometheus"
       - "katana-prom-targets:/etc/prometheus/targets"
     restart: unless-stopped
     ports: 
@@ -170,14 +170,13 @@ services:
       - katana-grafana
 
 volumes:
-  mongo-datadb: {}
-  mongo-configdb: {}
-  postgres: {}
-  zk-data: {}
-  zk-log: {}
-  zk-secrets: {}
-  kafka-data: {}
-  kafka-secrets: {}
-  prometheus: {}
+  katana-mongo-datadb: {}
+  katana-mongo-configdb: {}
+  katana-zk-data: {}
+  katana-zk-log: {}
+  katana-zk-secrets: {}
+  katana-kafka-data: {}
+  katana-kafka-secrets: {}
+  katana-prometheus: {}
   katana-prom-targets: {}
   katana-grafana-templates: {}
