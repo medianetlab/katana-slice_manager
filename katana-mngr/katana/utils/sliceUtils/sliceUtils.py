@@ -511,7 +511,10 @@ def add_slice(nest_req):
 
     # If monitoring parameter is set, send the ns_list to nfv_mon module
     if monitoring and mon_producer:
-        mon_producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
+        mon_producer.send(
+            topic="nfv_mon",
+            value={"action": "create", "ns_list": ns_inst_info, "slice_id": nest["_id"]},
+        )
         nest["slice_monitoring"]["nfv_ns_status_monitoring"] = True
 
     # *** STEP-3b: Radio Slice Configuration ***

@@ -24,7 +24,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 
-def mon_start(ns_list, ns_thread_dict, ns_status):
+def mon_start(ns_list, ns_thread_dict, ns_status, ns_slice_id):
     """
     Starts the monitoring of new network services
     """
@@ -33,10 +33,11 @@ def mon_start(ns_list, ns_thread_dict, ns_status):
         for key, value in ns.items():
             location = key.replace("-", "_")
             ns_name = value["ns-name"].replace("-", "_")
-            metric_name = "ns_" + ns_name + "_" + location
+            ns_monitoring_id = ns_id.replace("-", "_")
+            metric_name = "ns_" + ns_name + ns_monitoring_id + "_" + location
             dict_entry = ns_thread_dict.get(metric_name, {})
-            ns_status.labels(value["slice_id"], metric_name).set(1)
-            new_thread = MonThread(value, ns_status, metric_name)
+            ns_status.labels(ns_slice_id, metric_name).set(1)
+            new_thread = MonThread(value, ns_status, metric_name, ns_slice_id)
             new_thread.start()
             dict_entry[ns_id] = {"thread": new_thread, "metric": ns_status}
             ns_thread_dict[metric_name] = dict_entry
@@ -51,7 +52,8 @@ def mon_stop(ns_list, ns_thread_dict):
         for key, value in ns.items():
             location = key.replace("-", "_")
             ns_name = value["ns-name"].replace("-", "_")
-            metric_name = "ns_" + ns_name + "_" + location
+            ns_monitoring_id = ns_id.replace("-", "_")
+            metric_name = "ns_" + ns_name + ns_monitoring_id + "_" + location
             mon_thread = ns_thread_dict[metric_name][ns_id]["thread"]
             mon_thread.stop()
 
@@ -125,7 +127,8 @@ def start_exporter():
     for message in consumer:
         if message.value["action"] == "create":
             ns_list = message.value["ns_list"]
-            mon_start(ns_list, ns_thread_dict, ns_status)
+            ns_slice_id = message.value["slice_id"]
+            mon_start(ns_list, ns_thread_dict, ns_status, ns_slice_id)
         elif message.value["action"] == "delete":
             ns_list = message.value["ns_list"]
             mon_stop(ns_list, ns_thread_dict)

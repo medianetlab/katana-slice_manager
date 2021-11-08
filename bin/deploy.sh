@@ -55,12 +55,12 @@ do
     -m | --monitoring)
         containers="${containers} katana-prometheus katana-grafana katana-nfv_mon"
         # Check if katana-grafana/.env file exists - If not create it
-        if [ ! -f ./katana-grafana/.env ];
+        if [ ! -f ${DIR}/katana-grafana/.env ];
         then
-        echo "GF_SECURITY_ADMIN_PASSWORD=admin" > katana-grafana/.env
-        echo "GF_SECURITY_ADMIN_USER=admin" >> katana-grafana/.env
+        echo "GF_SECURITY_ADMIN_PASSWORD=admin" > ${DIR}/katana-grafana/.env
+        echo "GF_SECURITY_ADMIN_USER=admin" >> ${DIR}/katana-grafana/.env
         fi
-        sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' katana-mngr/.env
+        sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' ${DIR}/katana-mngr/.env
         shift
     ;;
     -r | --release)
