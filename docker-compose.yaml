@@ -16,9 +16,9 @@ services:
     ports:
       - "2181:2181"
     environment:
-        ZOO_MY_ID: 1
-        ZOO_SERVERS: server.1=zookeeper:2888:3888
-        ZOOKEEPER_CLIENT_PORT: 2181
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888
+      ZOOKEEPER_CLIENT_PORT: 2181
     restart: always
     volumes:
       - katana-zk-data:/var/lib/zookeeper/data
@@ -37,7 +37,8 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_BROKER_ID: 1
-      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHa\
+        ndler=INFO,state.change.logger=INFO"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CREATE_TOPICS: "slice:1:1"
     restart: always
@@ -53,7 +54,8 @@ services:
       context: .
       dockerfile: katana-nbi/Dockerfile
     container_name: katana-nbi
-    command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload "katana.app:create_app()"
+    command: gunicorn -b 0.0.0.0:8000 --workers 3 --access-logfile - --reload
+      "katana.app:create_app()"
     volumes:
       - "katana-prom-targets:/targets"
     ports:
@@ -79,10 +81,10 @@ services:
       dockerfile: katana-mngr/Dockerfile
     command: python3 katana/katana-mngr.py
     volumes:
-      - "katana-grafana-templates:/katana-grafana/templates" 
+      - "katana-grafana-templates:/katana-grafana/templates"
     env_file:
       - "katana-mngr/.env"
-      - "katana-grafana/.env" 
+      - "katana-grafana/.env"
     restart: always
     depends_on:
       - katana-nbi
@@ -136,9 +138,24 @@ services:
       - "katana-prom-targets:/etc/prometheus/targets"
     restart: unless-stopped
     command: >
-      --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles
-    ports: 
+      --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
+      --storage.tsdb.path=/prometheus
+      --web.console.libraries=/usr/share/prometheus/console_libraries
+      --web.console.templates=/usr/share/prometheus/consoles
+    ports:
       - "9090:9090"
+
+  katana-alertmanager:
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-alertmanager:${DOCKER_TAG}"
+    container_name: katana-alertmanager
+    build:
+      context: .
+      dockerfile: katana-alertmanager/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    depends_on:
+      - katana-prometheus
 
   katana-grafana:
     image: "${DOCKER_REG}${DOCKER_REPO}katana-grafana:${DOCKER_TAG}"
@@ -147,10 +164,10 @@ services:
       context: .
       dockerfile: katana-grafana/Dockerfile
     restart: unless-stopped
-    ports: 
+    ports:
       - "3000:3000"
     env_file: katana-grafana/.env
-    depends_on: 
+    depends_on:
       - katana-prometheus
 
   katana-nfv_mon:
@@ -160,14 +177,14 @@ services:
       context: .
       dockerfile: katana-nfv_mon/Dockerfile
     restart: unless-stopped
-    env_file: 
+    env_file:
       - "katana-grafana/.env"
       - "katana-nfv_mon/.env"
     command: >
       python katana/exporter.py
     ports:
       - "8002:8002"
-    depends_on: 
+    depends_on:
       - katana-mngr
       - katana-grafana
 

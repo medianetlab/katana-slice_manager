@@ -1,8 +1,19 @@
 global:
   evaluation_interval: 30s
   scrape_interval: 10s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - katana-alertmanager:9093
+
+# Load alerts
 rule_files:
   - /etc/prometheus/rules/alerts.yml
+
+# Define the targets
 scrape_configs:
 - job_name: SB_Components
   scheme: http
