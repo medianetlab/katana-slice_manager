@@ -156,6 +156,8 @@ services:
       - "9093:9093"
     depends_on:
       - katana-prometheus
+    volumes:
+      - katana-alertmanager:/alertmanager
 
   katana-grafana:
     image: "${DOCKER_REG}${DOCKER_REPO}katana-grafana:${DOCKER_TAG}"
@@ -199,3 +201,4 @@ volumes:
   katana-prometheus: {}
   katana-prom-targets: {}
   katana-grafana-templates: {}
+  katana-alertmanager: {}
