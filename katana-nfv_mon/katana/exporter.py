@@ -50,7 +50,6 @@ def mon_stop(ns_list, ns_thread_dict):
     for ns_id, ns in ns_list.items():
         for key, value in ns.items():
             location = key.replace("-", "_")
-            ns_name = value["ns-name"].replace("-", "_")
             ns_monitoring_id = ns_id.replace("-", "_")
             metric_name = "ns__" + ns_monitoring_id + "__" + location
             mon_thread = ns_thread_dict[metric_name][ns_id]["thread"]
@@ -72,7 +71,7 @@ def katana_mon(metric, n_slices, slice_info):
         metric.labels(slice_info["slice_id"]).set(3)
     elif slice_info["status"] == "terminating":
         metric.labels(slice_info["slice_id"]).set(10)
-    elif slice_info["status"] == "error":
+    elif slice_info["status"] == "error" or slice_info["status"] == "runtime_error":
         metric.labels(slice_info["slice_id"]).set(11)
     elif slice_info["status"] == "deleted":
         metric.labels(slice_info["slice_id"]).set(12)

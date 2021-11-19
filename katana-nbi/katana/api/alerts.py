@@ -4,6 +4,7 @@ from flask import request
 from flask_classful import FlaskView
 
 from katana.shared_utils.mongoUtils import mongoUtils
+from katana.shared_utils.kafkaUtils.kafkaUtils import create_producer
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -25,7 +26,6 @@ class AlertView(FlaskView):
         """
         Get a new alert
         """
-        logger.debug(request.json)
         alert_message = request.json
         # Check the alert type
         for ialert in alert_message["alerts"]:
@@ -39,6 +39,21 @@ class AlertView(FlaskView):
                 # Update the NEST
                 nest = mongoUtils.get("slice", slice_id)
                 nest["ns_inst_info"][ns_id][location]["status"] = "Error"
+                # Add the error to the runtime errors
+                ns_errors = nest["runtime_errors"].get("ns", [])
+                ns_errors.append(ns_id)
+                nest["runtime_errors"]["ns"] = ns_errors
+                nest["status"] = "Runtime Error"
                 mongoUtils.update("slice", slice_id, nest)
+                # Update monitoring status
+                if nest["slice_monitoring"]:
+                    mon_producer = create_producer()
+                    mon_producer.send(
+                        "nfv_mon",
+                        value={
+                            "action": "katana_mon",
+                            "slice_info": {"slice_id": nest["_id"], "status": "runtime_error"},
+                        },
+                    )
                 # TODO: Notify APEX
         return "Alert received", 200

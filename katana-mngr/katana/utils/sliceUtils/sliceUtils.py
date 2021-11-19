@@ -732,6 +732,7 @@ def add_slice(nest_req):
         )
         logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
     logger.info(f"{nest['_id']} Status: Running")
+    nest["runtime_errors"] = {}
     nest["status"] = "Running"
     nest["deployment_time"]["Slice_Deployment_Time"] = format(
         time.time() - nest["created_at"], ".4f"

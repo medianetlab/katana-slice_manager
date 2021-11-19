@@ -11,6 +11,7 @@ function build_katana_images {
 }
 
 containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli katana-swagger"
+export KATANA_MONITORING=False
 
 # Get the project directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
@@ -60,7 +61,7 @@ do
         echo "GF_SECURITY_ADMIN_PASSWORD=admin" > ${DIR}/katana-grafana/.env
         echo "GF_SECURITY_ADMIN_USER=admin" >> ${DIR}/katana-grafana/.env
         fi
-        sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' ${DIR}/katana-mngr/.env
+        export KATANA_MONITORING=True
         shift
     ;;
     -r | --release)

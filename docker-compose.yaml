@@ -62,7 +62,8 @@ services:
       - "8000:8000"
     environment:
       PYTHONWARNINGS: "ignore:Unverified HTTPS request"
-    restart: always
+      KATANA_MONITORING: ${KATANA_MONITORING}
+      restart: always
     depends_on:
       - kafka
       - mongo
@@ -82,6 +83,8 @@ services:
     command: python3 katana/katana-mngr.py
     volumes:
       - "katana-grafana-templates:/katana-grafana/templates"
+    environment:
+      KATANA_MONITORING: ${KATANA_MONITORING}
     env_file:
       - "katana-mngr/.env"
       - "katana-grafana/.env"
