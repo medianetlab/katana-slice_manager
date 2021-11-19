@@ -3,4 +3,3 @@ groups:
     rules:
       - alert: NSFailing
         expr: ns_status ==2 AND ON(slice_id) katana_status != 12
-        for: 1m

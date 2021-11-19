@@ -32,9 +32,8 @@ def mon_start(ns_list, ns_thread_dict, ns_status, ns_slice_id):
     for ns_id, ns in ns_list.items():
         for key, value in ns.items():
             location = key.replace("-", "_")
-            ns_name = value["ns-name"].replace("-", "_")
             ns_monitoring_id = ns_id.replace("-", "_")
-            metric_name = "ns_" + ns_name + ns_monitoring_id + "_" + location
+            metric_name = "ns__" + ns_monitoring_id + "__" + location
             dict_entry = ns_thread_dict.get(metric_name, {})
             ns_status.labels(ns_slice_id, metric_name).set(1)
             new_thread = MonThread(value, ns_status, metric_name, ns_slice_id)
@@ -53,7 +52,7 @@ def mon_stop(ns_list, ns_thread_dict):
             location = key.replace("-", "_")
             ns_name = value["ns-name"].replace("-", "_")
             ns_monitoring_id = ns_id.replace("-", "_")
-            metric_name = "ns_" + ns_name + ns_monitoring_id + "_" + location
+            metric_name = "ns__" + ns_monitoring_id + "__" + location
             mon_thread = ns_thread_dict[metric_name][ns_id]["thread"]
             mon_thread.stop()
 

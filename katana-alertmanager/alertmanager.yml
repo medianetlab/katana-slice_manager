@@ -4,5 +4,5 @@ route:
 receivers:
   - name: katana_rest
     webhook_configs:
-      - send_resolved: true
+      - send_resolved: false
         url: http://katana-nbi:8000/api/alert

@@ -462,6 +462,7 @@ def add_slice(nest_req):
             "ns-name": ns["ns-name"],
             "slice_id": nest["_id"],
             "vim": selected_vim,
+            "status": "Started",
         }
         # Check if this the first slice of a sharing list
         if ns["shared_function"] == 1:
