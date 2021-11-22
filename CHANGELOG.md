@@ -4,7 +4,20 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.2] - 04/14/2021
+## [2.3.3] - 22/11/2021
+
+### 2.3.3 Added
+
+- Prometheus Alertmanager
+- Prometheus alerts for NFV
+- API for receiving external alerts
+
+### 2.3.3 Changed
+
+- Fixed Monitoring - Shared Functions Bug
+- Check for running slices before stopping SM
+
+## [2.3.2] - 04/11/2021
 
 ### 2.3.2 Added
 
