@@ -257,7 +257,7 @@ def add_slice(nest_req):
 
     # ii) The extra NS of the slice
     for location in nest["coverage"]:
-        err, _ = ns_details(nest["ns_list"], location, vim_dict, total_ns_list)
+        err, _ = ns_details(nest["ns_list"], location.lower(), vim_dict, total_ns_list)
         if err:
             nest["status"] = f"Failed - {err}"
             nest["ns_inst_info"] = {}

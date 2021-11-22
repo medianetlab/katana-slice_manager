@@ -48,9 +48,6 @@ do
         fi
         read -r -p "${message} >> " HOST_IP
         export "KATANA_HOST=${HOST_IP}"
-
-        # Insert Katana's IP in swagger conf file
-        sed -i "s?katanaSM?${HOST_IP}?" "${DIR}/katana-swagger/swagger.json"
         shift
     ;;
     -m | --monitoring)
