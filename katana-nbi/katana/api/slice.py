@@ -130,3 +130,15 @@ class SliceView(FlaskView):
     #     elif result == 0:
     #         # if no object was modified, return error
     #         return "Error: No such slice: {}".format(uuid)
+
+    @route("<uuid>/errors")
+    def show_errors(self, uuid):
+        """
+        Display the runitime errors of a slice
+        """
+        data = mongoUtils.get("slice", uuid)
+        if data:
+            runtime_errors = data["runtime_errors"]
+            return dumps(runtime_errors), 200
+        else:
+            return "Slice not found", 404

@@ -118,6 +118,10 @@ def nest_mapping(req):
             )
             return "Error: referenced slice_descriptor not found", 400
 
+    # Replace the None value of the isolation with 0 - No Isolation
+    if not req_slice_des["isolation"]:
+        req_slice_des["isolation"] = 0
+
     # Create the shared value
     nest["shared"] = {
         "isolation": req_slice_des["isolation"],

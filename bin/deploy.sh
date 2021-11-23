@@ -11,6 +11,7 @@ function build_katana_images {
 }
 
 containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli katana-swagger"
+export KATANA_MONITORING=False
 
 # Get the project directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
@@ -47,20 +48,17 @@ do
         fi
         read -r -p "${message} >> " HOST_IP
         export "KATANA_HOST=${HOST_IP}"
-
-        # Insert Katana's IP in swagger conf file
-        sed -i "s?katanaSM?${HOST_IP}?" "${DIR}/katana-swagger/swagger.json"
         shift
     ;;
     -m | --monitoring)
-        containers="${containers} katana-prometheus katana-grafana katana-nfv_mon"
+        containers="${containers} katana-prometheus katana-grafana katana-nfv_mon katana-alertmanager"
         # Check if katana-grafana/.env file exists - If not create it
-        if [ ! -f ./katana-grafana/.env ];
+        if [ ! -f ${DIR}/katana-grafana/.env ];
         then
-        echo "GF_SECURITY_ADMIN_PASSWORD=admin" > katana-grafana/.env
-        echo "GF_SECURITY_ADMIN_USER=admin" >> katana-grafana/.env
+        echo "GF_SECURITY_ADMIN_PASSWORD=admin" > ${DIR}/katana-grafana/.env
+        echo "GF_SECURITY_ADMIN_USER=admin" >> ${DIR}/katana-grafana/.env
         fi
-        sed -i 's/KATANA_MONITORING=.*/KATANA_MONITORING=True/' katana-mngr/.env
+        export KATANA_MONITORING=True
         shift
     ;;
     -r | --release)

@@ -257,7 +257,7 @@ def add_slice(nest_req):
 
     # ii) The extra NS of the slice
     for location in nest["coverage"]:
-        err, _ = ns_details(nest["ns_list"], location, vim_dict, total_ns_list)
+        err, _ = ns_details(nest["ns_list"], location.lower(), vim_dict, total_ns_list)
         if err:
             nest["status"] = f"Failed - {err}"
             nest["ns_inst_info"] = {}
@@ -462,6 +462,7 @@ def add_slice(nest_req):
             "ns-name": ns["ns-name"],
             "slice_id": nest["_id"],
             "vim": selected_vim,
+            "status": "Started",
         }
         # Check if this the first slice of a sharing list
         if ns["shared_function"] == 1:
@@ -511,7 +512,10 @@ def add_slice(nest_req):
 
     # If monitoring parameter is set, send the ns_list to nfv_mon module
     if monitoring and mon_producer:
-        mon_producer.send(topic="nfv_mon", value={"action": "create", "ns_list": ns_inst_info})
+        mon_producer.send(
+            topic="nfv_mon",
+            value={"action": "create", "ns_list": ns_inst_info, "slice_id": nest["_id"]},
+        )
         nest["slice_monitoring"]["nfv_ns_status_monitoring"] = True
 
     # *** STEP-3b: Radio Slice Configuration ***
@@ -728,6 +732,7 @@ def add_slice(nest_req):
         )
         logger.info(f"Created new Grafana dashboard for slice {nest['_id']}")
     logger.info(f"{nest['_id']} Status: Running")
+    nest["runtime_errors"] = {}
     nest["status"] = "Running"
     nest["deployment_time"]["Slice_Deployment_Time"] = format(
         time.time() - nest["created_at"], ".4f"

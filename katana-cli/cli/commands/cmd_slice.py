@@ -101,6 +101,32 @@ def deployment_time(uuid):
 
 
 @click.command()
+@click.argument("uuid")
+def errors(uuid):
+    """
+    Display errors of slice
+    """
+    url = "http://localhost:8000/api/slice/{0}/errors".format(uuid)
+    r = None
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        json_data = json.loads(r.content)
+        click.echo(json.dumps(json_data, indent=2))
+        if not json_data:
+            click.echo("Error: No such slice: {}".format(uuid))
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+        click.echo(r.content)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Error:", err)
+
+
+@click.command()
 @click.option("-f", "--file", required=True, type=str, help="yaml file with slice details")
 def add(file):
     """
@@ -199,6 +225,7 @@ cli.add_command(add)
 cli.add_command(rm)
 cli.add_command(update)
 cli.add_command(deployment_time)
+cli.add_command(errors)
 
 
 def console_formatter(uuid, slice_name, created_at, status):
