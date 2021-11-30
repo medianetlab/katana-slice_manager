@@ -117,19 +117,20 @@ class SliceView(FlaskView):
             producer.send("slice", value=slice_message)
             return "Deleting {0}".format(uuid), 200
 
-    # def put(self, uuid):
-    #     """
-    #     Update the details of a specific slice.
-    #     used by: `katana slice update -f [file] [uuid]`
-    #     """
-    #     request.json['_id'] = uuid
-    #     result = mongoUtils.update("slice", uuid, request.json)
+    def put(self, uuid):
+        """
+        Update the details of a specific slice.
+        used by: `katana slice update -f [file] [uuid]`
+        """
 
-    #     if result == 1:
-    #         return uuid
-    #     elif result == 0:
-    #         # if no object was modified, return error
-    #         return "Error: No such slice: {}".format(uuid)
+        result = mongoUtils.get("slice", uuid)
+        if not result:
+            return "Error: No such slice: {}".format(uuid), 404
+        # Send the message to katana-mngr
+        producer = kafkaUtils.create_producer()
+        slice_message = {"action": "update", "slice_id": uuid, "updates": request.json}
+        producer.send("slice", value=slice_message)
+        return "Updating {0}".format(uuid), 200
 
     @route("<uuid>/errors")
     def show_errors(self, uuid):

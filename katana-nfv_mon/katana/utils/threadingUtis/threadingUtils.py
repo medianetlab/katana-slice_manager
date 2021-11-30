@@ -53,6 +53,12 @@ class MonThread(threading.Thread):
                 self.ns_status.labels(self.slice_id, self.ns_name).set(3)
             self._stop.wait(timeout=10)
 
+    def ns_stop(self):
+        """
+        Sets the status of the metric to 5 (admin stopped)
+        """
+        self.ns_status.labels(self.slice_id, self.ns_name).set(5)
+
     def stopped(self):
         """
         Checks if the thread has stopped

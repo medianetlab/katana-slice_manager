@@ -64,3 +64,8 @@ for message in consumer:
         payload = message.value["message"]
         force = message.value["force"]
         sliceUtils.delete_slice(slice_id=payload, force=force)
+    # Update slice
+    elif action == "update":
+        slice_id = message.value["slice_id"]
+        updates = message.value["updates"]
+        sliceUtils.update_slice(uuid=slice_id, updates=updates)

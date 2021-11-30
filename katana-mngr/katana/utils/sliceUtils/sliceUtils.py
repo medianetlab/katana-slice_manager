@@ -511,7 +511,10 @@ def add_slice(nest_req):
     mongoUtils.update("slice", nest["_id"], nest)
 
     # If monitoring parameter is set, send the ns_list to nfv_mon module
+    logger.debug(monitoring)
+    logger.debug(mon_producer)
     if monitoring and mon_producer:
+        logger.debug("Sending NFV MESSAGE")
         mon_producer.send(
             topic="nfv_mon",
             value={"action": "create", "ns_list": ns_inst_info, "slice_id": nest["_id"]},
@@ -618,7 +621,8 @@ def add_slice(nest_req):
             target_ems_obj = pickle.loads(mongoUtils.find("ems_obj", {"id": ems_id})["obj"])
             # Send the message
             for imessage in ems_message:
-                target_ems_obj.conf_radio(imessage)
+                logger.debug(imessage)
+                # target_ems_obj.conf_radio(imessage)
             nest["conf_comp"]["ems"].append(ems_id)
         nest["ems_data"] = ems_messages
         nest["deployment_time"]["Radio_Configuration_Time"] = format(
@@ -1021,3 +1025,61 @@ def delete_slice(slice_id, force=False):
                 pass
     except KeyError as e:
         pass
+
+
+def update_slice(uuid, updates):
+    """
+    Update the given slice with the given updates
+    """
+    # Get the slice
+    nest = mongoUtils.get("slice", uuid)
+    nest["status"] = "Updating"
+    mongoUtils.update("slice", uuid, nest)
+    # Get the domain and the action
+    if updates["domain"] == "NFV":
+        if updates["action"] == "RestartNS":
+            logger.info("Restarting Network Service")
+        elif updates["action"] == "AddNS":
+            logger.info("Adding new Network Service")
+        elif updates["action"] == "StopNS":
+            logger.info("Stopping Network Service")
+            # TODO: Check if the NS is shared
+            # Get the NS info
+            ns_id = updates["details"]["ns_id"]
+            ns_location = updates["details"]["location"]
+            try:
+                deleted_ns = nest["ns_inst_info"][ns_id][ns_location]
+            except KeyError:
+                logger.error(f"There is no NS with id {ns_id} at location {ns_location}")
+            else:
+                logger.debug(deleted_ns)
+                # Get the NFVO
+                target_nfvo_obj = pickle.loads(
+                    mongoUtils.find("nfvo_obj", {"id": deleted_ns["nfvo-id"]})["obj"]
+                )
+                # Stop the NS
+                target_nfvo_obj.deleteNs(deleted_ns["nfvo_inst_ns"])
+                logger.info(f"Deleted NS {deleted_ns['ns-name']}")
+                # Update monitoring
+                monitoring = os.getenv("KATANA_MONITORING", None)
+                logger.debug(monitoring)
+                if monitoring:
+                    logger.debug("Sending Message")
+                    mon_producer = create_producer()
+                    mon_producer.send(
+                        topic="nfv_mon",
+                        value={
+                            "action": "ns_stop",
+                            "ns_id": ns_id,
+                            "ns_location": ns_location,
+                            "slice_id": uuid,
+                        },
+                    )
+                # Update the NEST
+                nest["ns_inst_info"][ns_id][ns_location]["status"] = "Stopped"
+                nest["status"] = "Running"
+                mongoUtils.update("slice", uuid, nest)
+        else:
+            logger.warning(f"No Action {updates['action']} in NFV Domain")
+    else:
+        logger.warning(f"No Domain {updates['domain']}")

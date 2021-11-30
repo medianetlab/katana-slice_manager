@@ -55,6 +55,12 @@
                     "text": "Terminating",
                     "type": 1,
                     "value": "4"
+                },
+                {
+                    "id": 4,
+                    "text": "AdminStopped",
+                    "type": 1,
+                    "value": "5"
                 }
             ]
         },

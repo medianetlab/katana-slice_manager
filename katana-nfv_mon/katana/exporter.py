@@ -6,12 +6,15 @@ Read the collected NFV metrics and expose them to Prometheus
 """
 
 import logging
+import threading
+from time import sleep
 import requests
 import json
 import os
 
 from katana.utils.kafkaUtils.kafkaUtils import create_consumer, create_topic
 from katana.utils.threadingUtis.threadingUtils import MonThread
+from katana.utils.mongoUtils import mongoUtils
 from prometheus_client import start_http_server, Gauge
 
 # Create the logger
@@ -24,7 +27,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 
-def mon_start(ns_list, ns_thread_dict, ns_status, ns_slice_id):
+def mon_start(ns_list, ns_status, ns_slice_id):
     """
     Starts the monitoring of new network services
     """
@@ -34,15 +37,14 @@ def mon_start(ns_list, ns_thread_dict, ns_status, ns_slice_id):
             location = key.replace("-", "_")
             ns_monitoring_id = ns_id.replace("-", "_")
             metric_name = "ns__" + ns_monitoring_id + "__" + location
-            dict_entry = ns_thread_dict.get(metric_name, {})
             ns_status.labels(ns_slice_id, metric_name).set(1)
             new_thread = MonThread(value, ns_status, metric_name, ns_slice_id)
+            new_thread.name = metric_name
             new_thread.start()
-            dict_entry[ns_id] = {"thread": new_thread, "metric": ns_status}
-            ns_thread_dict[metric_name] = dict_entry
+    logger.debug("Finished NS Starting")
 
 
-def mon_stop(ns_list, ns_thread_dict):
+def mon_stop(ns_list):
     """
     Stops the monitoring os new network services
     """
@@ -52,8 +54,12 @@ def mon_stop(ns_list, ns_thread_dict):
             location = key.replace("-", "_")
             ns_monitoring_id = ns_id.replace("-", "_")
             metric_name = "ns__" + ns_monitoring_id + "__" + location
-            mon_thread = ns_thread_dict[metric_name][ns_id]["thread"]
-            mon_thread.stop()
+            # Get the thread
+            for ithread in threading.enumerate():
+                if ithread.name != metric_name:
+                    continue
+                ithread.stop()
+    logger.debug("Finished NS Stopping")
 
 
 def katana_mon(metric, n_slices, slice_info):
@@ -112,8 +118,7 @@ def start_exporter():
     katana_home = Gauge("katana_status", "Katana Slice Status", ["slice_id"])
     total_slices = Gauge("total_slices", "Number of running slices")
 
-    # Create the thread dictionary and the prometheus ns status metric
-    ns_thread_dict = {}
+    # Create the prometheus ns status metric
     ns_status = Gauge("ns_status", "Network Service Status", ["slice_id", "ns_name"])
 
     # Create the Kafka topic
@@ -123,15 +128,30 @@ def start_exporter():
     consumer = create_consumer("nfv_mon")
 
     for message in consumer:
+        logger.debug(message)
         if message.value["action"] == "create":
             ns_list = message.value["ns_list"]
             ns_slice_id = message.value["slice_id"]
-            mon_start(ns_list, ns_thread_dict, ns_status, ns_slice_id)
+            mon_start(ns_list, ns_status, ns_slice_id)
         elif message.value["action"] == "delete":
             ns_list = message.value["ns_list"]
-            mon_stop(ns_list, ns_thread_dict)
+            mon_stop(ns_list)
         elif message.value["action"] == "katana_mon":
             katana_mon(katana_home, total_slices, message.value["slice_info"])
+        elif message.value["action"] == "ns_stop":
+            ns_id = message.value["ns_id"]
+            location = message.value["ns_location"]
+            ns_monitoring_id = ns_id.replace("-", "_")
+            ns_slice_id = message.value["slice_id"]
+            metric_name = "ns__" + ns_monitoring_id + "__" + location
+            # Stop the thread
+            for ithread in threading.enumerate():
+                if ithread.name != metric_name:
+                    continue
+                ithread.stop()
+                sleep(5)
+            # Change the status of the NS to admin_stop
+            ns_status.labels(ns_slice_id, metric_name).set(5)
 
 
 if __name__ == "__main__":
