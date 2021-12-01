@@ -218,9 +218,11 @@
                 "links": [],
                 "query": "",
                 "recent": true,
-                "search": false,
+                "search": true,
                 "starred": true,
-                "tags": [],
+                "tags": [
+                    "slice"
+                ],
                 "title": "Dashboards",
                 "type": "dashlist"
             },

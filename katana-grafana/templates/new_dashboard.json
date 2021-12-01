@@ -37,7 +37,9 @@
         "panels": [],
         "schemaVersion": 25,
         "style": "dark",
-        "tags": [],
+        "tags": [
+            "slice"
+        ],
         "templating": {
             "list": []
         },
