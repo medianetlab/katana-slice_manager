@@ -66,7 +66,7 @@ def katana_mon(metric, n_slices, slice_info):
     """
     Updates the slice monitoring status
     """
-    if slice_info["status"] == "running":
+    if slice_info["status"] == "running" or slice_info["status"] == "Running":
         metric.labels(slice_info["slice_id"]).set(0)
         n_slices.inc()
     elif slice_info["status"] == "placement":

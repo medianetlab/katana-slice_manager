@@ -10,6 +10,7 @@ import requests
 
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.kafkaUtils.kafkaUtils import create_producer
+from katana.shared_utils.sliceUtils.sliceUtils import check_runtime_errors
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -1033,8 +1034,6 @@ def update_slice(uuid, updates):
     """
     # Get the slice
     nest = mongoUtils.get("slice", uuid)
-    nest["status"] = "Updating"
-    mongoUtils.update("slice", uuid, nest)
     # Get the domain and the action
     if updates["domain"] == "NFV":
         if updates["action"] == "RestartNS":
@@ -1077,8 +1076,14 @@ def update_slice(uuid, updates):
                     )
                 # Update the NEST
                 nest["ns_inst_info"][ns_id][ns_location]["status"] = "Stopped"
-                nest["status"] = "Running"
                 mongoUtils.update("slice", uuid, nest)
+                # Remove ns from runtime errors
+                errored_ns = nest["runtime_errors"].get("ns", [])
+                if ns_id in errored_ns:
+                    errored_ns.remove(ns_id)
+                    if not errored_ns:
+                        del nest["runtime_errors"]["ns"]
+                    check_runtime_errors(nest)
         else:
             logger.warning(f"No Action {updates['action']} in NFV Domain")
     else:
