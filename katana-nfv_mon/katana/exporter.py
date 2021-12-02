@@ -41,7 +41,6 @@ def mon_start(ns_list, ns_status, ns_slice_id):
             new_thread = MonThread(value, ns_status, metric_name, ns_slice_id)
             new_thread.name = metric_name
             new_thread.start()
-    logger.debug("Finished NS Starting")
 
 
 def mon_stop(ns_list):
@@ -59,7 +58,6 @@ def mon_stop(ns_list):
                 if ithread.name != metric_name:
                     continue
                 ithread.stop()
-    logger.debug("Finished NS Stopping")
 
 
 def katana_mon(metric, n_slices, slice_info):
@@ -128,7 +126,6 @@ def start_exporter():
     consumer = create_consumer("nfv_mon")
 
     for message in consumer:
-        logger.debug(message)
         if message.value["action"] == "create":
             ns_list = message.value["ns_list"]
             ns_slice_id = message.value["slice_id"]

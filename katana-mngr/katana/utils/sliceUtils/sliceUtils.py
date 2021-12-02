@@ -448,7 +448,12 @@ def add_slice(nest_req):
             # The ns is already instantiated and there is no need to instantiate again
             # Find the sharing list
             shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
-            ns_inst_info[ns["ns-id"]] = shared_list["ns_list"][ns["nsd-id"]]
+            ns_inst_info[ns["ns-id"]] = shared_list["nsd_list"][ns["nsd-id"]]
+            try:
+                shared_list["ns_list"].append(ns["ns-id"])
+            except KeyError:
+                shared_list["ns_list"] = [ns["ns-id"]]
+            mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
             nest["conf_comp"]["nf"].append(ns["nsd-id"])
             continue
         ns_inst_info[ns["ns-id"]] = {}
@@ -462,6 +467,7 @@ def add_slice(nest_req):
             "nfvo-id": ns["nfvo-id"],
             "ns-name": ns["ns-name"],
             "slice_id": nest["_id"],
+            "nsd-id": ns["nsd-id"],
             "vim": selected_vim,
             "status": "Started",
         }
@@ -472,7 +478,11 @@ def add_slice(nest_req):
             ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]]["sharing_list"] = ns[
                 "shared_slice_key"
             ]
-            shared_list["ns_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
+            shared_list["nsd_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
+            try:
+                shared_list["ns_list"].append(ns["ns-id"])
+            except KeyError:
+                shared_list["ns_list"] = [ns["ns-id"]]
             mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
@@ -512,10 +522,7 @@ def add_slice(nest_req):
     mongoUtils.update("slice", nest["_id"], nest)
 
     # If monitoring parameter is set, send the ns_list to nfv_mon module
-    logger.debug(monitoring)
-    logger.debug(mon_producer)
     if monitoring and mon_producer:
-        logger.debug("Sending NFV MESSAGE")
         mon_producer.send(
             topic="nfv_mon",
             value={"action": "create", "ns_list": ns_inst_info, "slice_id": nest["_id"]},
@@ -622,8 +629,7 @@ def add_slice(nest_req):
             target_ems_obj = pickle.loads(mongoUtils.find("ems_obj", {"id": ems_id})["obj"])
             # Send the message
             for imessage in ems_message:
-                logger.debug(imessage)
-                # target_ems_obj.conf_radio(imessage)
+                target_ems_obj.conf_radio(imessage)
             nest["conf_comp"]["ems"].append(ems_id)
         nest["ems_data"] = ems_messages
         nest["deployment_time"]["Radio_Configuration_Time"] = format(
@@ -832,6 +838,11 @@ def delete_slice(slice_id, force=False):
             if ns["shared_function"]:
                 # Find the shared list
                 shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
+                try:
+                    shared_list["ns_list"].remove(ns["ns-id"])
+                except ValueError:
+                    pass
+                mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
                 # If there is another running slice, don't terminate the NS
                 if len(shared_list["nest_list"]) > 1:
                     continue
@@ -1042,8 +1053,8 @@ def update_slice(uuid, updates):
             logger.info("Adding new Network Service")
         elif updates["action"] == "StopNS":
             logger.info("Stopping Network Service")
-            # TODO: Check if the NS is shared
             # Get the NS info
+            stop_ns = True
             ns_id = updates["details"]["ns_id"]
             ns_location = updates["details"]["location"]
             try:
@@ -1051,19 +1062,27 @@ def update_slice(uuid, updates):
             except KeyError:
                 logger.error(f"There is no NS with id {ns_id} at location {ns_location}")
             else:
-                logger.debug(deleted_ns)
-                # Get the NFVO
-                target_nfvo_obj = pickle.loads(
-                    mongoUtils.find("nfvo_obj", {"id": deleted_ns["nfvo-id"]})["obj"]
-                )
-                # Stop the NS
-                target_nfvo_obj.deleteNs(deleted_ns["nfvo_inst_ns"])
-                logger.info(f"Deleted NS {deleted_ns['ns-name']}")
+                # Check if the NS is shared
+                is_shared = deleted_ns.get("shared", False)
+                if is_shared:
+                    # Find the shared list
+                    shared_list = mongoUtils.get("sharing_lists", deleted_ns["sharing_list"])
+                    # If there is another running slice, don't terminate the NS
+                    if len(shared_list["ns_list"]) > 1:
+                        stop_ns = False
+                    shared_list["ns_list"].remove(ns_id)
+                    mongoUtils.update("sharing_lists", deleted_ns["sharing_list"], shared_list)
+                if stop_ns:
+                    # Get the NFVO
+                    target_nfvo_obj = pickle.loads(
+                        mongoUtils.find("nfvo_obj", {"id": deleted_ns["nfvo-id"]})["obj"]
+                    )
+                    # Stop the NS
+                    target_nfvo_obj.deleteNs(deleted_ns["nfvo_inst_ns"])
+                    logger.info(f"Deleted NS {deleted_ns['ns-name']}")
                 # Update monitoring
                 monitoring = os.getenv("KATANA_MONITORING", None)
-                logger.debug(monitoring)
                 if monitoring:
-                    logger.debug("Sending Message")
                     mon_producer = create_producer()
                     mon_producer.send(
                         topic="nfv_mon",
