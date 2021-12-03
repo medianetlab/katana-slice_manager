@@ -60,13 +60,14 @@ def mon_stop(ns_list):
                 ithread.stop()
 
 
-def katana_mon(metric, n_slices, slice_info):
+def katana_mon(metric, n_slices, slice_info, increment):
     """
     Updates the slice monitoring status
     """
     if slice_info["status"] == "running" or slice_info["status"] == "Running":
         metric.labels(slice_info["slice_id"]).set(0)
-        n_slices.inc()
+        if increment:
+            n_slices.inc()
     elif slice_info["status"] == "placement":
         metric.labels(slice_info["slice_id"]).set(1)
     elif slice_info["status"] == "provisioning":
@@ -134,7 +135,8 @@ def start_exporter():
             ns_list = message.value["ns_list"]
             mon_stop(ns_list)
         elif message.value["action"] == "katana_mon":
-            katana_mon(katana_home, total_slices, message.value["slice_info"])
+            increment = message.value.get("increment", False)
+            katana_mon(katana_home, total_slices, message.value["slice_info"], increment)
         elif message.value["action"] == "ns_stop":
             ns_id = message.value["ns_id"]
             location = message.value["ns_location"]

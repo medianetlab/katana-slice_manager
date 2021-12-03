@@ -727,6 +727,7 @@ def add_slice(nest_req):
             value={
                 "action": "katana_mon",
                 "slice_info": {"slice_id": nest["_id"], "status": "running"},
+                "increment": True,
             },
         )
 
@@ -1045,6 +1046,8 @@ def update_slice(nest_id, updates):
     """
     # Get the slice
     nest = mongoUtils.get("slice", nest_id)
+    # Check if monitoring is enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
     # Get the domain and the action
     if updates["domain"] == "NFV":
         if updates["action"] == "RestartNS":
@@ -1228,6 +1231,18 @@ def update_slice(nest_id, updates):
                 vnf_list.append(target_nfvo_obj.getIPs(vnfr))
             nest["ns_inst_info"][new_ns["ns-id"]][new_ns["location"]]["vnfr"] = vnf_list
             mongoUtils.update("slice", nest_id, nest)
+            # Start the monitoring of the new NS
+            # If monitoring parameter is set, send the ns_list to nfv_mon module
+            if monitoring:
+                mon_producer = create_producer()
+                mon_producer.send(
+                    topic="nfv_mon",
+                    value={
+                        "action": "create",
+                        "ns_list": {new_ns["ns-id"]: nest["ns_inst_info"][new_ns["ns-id"]]},
+                        "slice_id": nest["_id"],
+                    },
+                )
         # ***** Stop NS *****
         elif updates["action"] == "StopNS":
             logger.info("Stopping Network Service")
@@ -1259,7 +1274,6 @@ def update_slice(nest_id, updates):
                     target_nfvo_obj.deleteNs(deleted_ns["nfvo_inst_ns"])
                     logger.info(f"Deleted NS {deleted_ns['ns-name']}")
                 # Update monitoring
-                monitoring = os.getenv("KATANA_MONITORING", None)
                 if monitoring:
                     mon_producer = create_producer()
                     mon_producer.send(
