@@ -68,4 +68,4 @@ for message in consumer:
     elif action == "update":
         slice_id = message.value["slice_id"]
         updates = message.value["updates"]
-        sliceUtils.update_slice(uuid=slice_id, updates=updates)
+        sliceUtils.update_slice(nest_id=slice_id, updates=updates)

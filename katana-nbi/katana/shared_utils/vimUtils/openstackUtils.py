@@ -209,15 +209,23 @@ class Openstack:
             except openstack.exceptions.ResourceNotFound as e:
                 logger.exception("Failed. Security group trying to delete, doesn'texist", e)
 
-    def set_quotas(self, conn, name, quotas):
+    def set_quotas(self, name, quotas):
         """
         Sets the quotas of the tenant
         """
+        conn = openstack.connect(
+            auth_url=self.auth_url,
+            project_name=self.project_name,
+            username=self.username,
+            password=self.password,
+            user_domain_name=self.user_domain_name,
+            project_domain_name=self.project_domain_name,
+        )
+        self.openstack_authorize(conn)
         kwargs = {}
         kwargs["ram"] = round((quotas["memory-mb"] + 200) / 100) * 100
         kwargs["cores"] = quotas["vcpu-count"]
         kwargs["instances"] = quotas["instances"]
-
         try:
             conn.set_compute_quotas(name_or_id=name, **kwargs)
         except (openstack.exceptions.BadRequestException, TypeError) as e:
@@ -257,7 +265,7 @@ class Openstack:
         sec_group = self.create_sec_group(conn, tenant_project_name, project)
 
         if quotas:
-            self.set_quotas(conn, project.name, quotas)
+            self.set_quotas(project.name, quotas)
         return {
             "sliceProjectName": project.name,
             "sliceUserName": user.name,
@@ -297,3 +305,4 @@ class Openstack:
         report["vcpuse_available"] = report["vcpus"] - report["vcpus_used"]
         report["compute_nodes"] = compute_nodes
         return report
+
