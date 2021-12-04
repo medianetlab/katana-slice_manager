@@ -1050,8 +1050,96 @@ def update_slice(nest_id, updates):
     monitoring = os.getenv("KATANA_MONITORING", None)
     # Get the domain and the action
     if updates["domain"] == "NFV":
+        # ***** Restart NS *****
         if updates["action"] == "RestartNS":
             logger.info("Restarting Network Service")
+            # Get the NS details
+            try:
+                ns_id = updates["details"]["ns_id"]
+                ns_location = updates["details"]["location"]
+            except KeyError as e:
+                logger.error(f"New ns fields are missing: {e}")
+                return
+            try:
+                restart_ns = nest["ns_inst_info"][ns_id][ns_location]
+            except KeyError:
+                logger.error(f"There is no NS with id {ns_id} at location {ns_location}")
+                return
+            ns_constraints = updates["details"].get("constraints", None)
+            # Check if the NS is shared. If it is, it cannot be restarted
+            is_shared = restart_ns.get("shared", False)
+            if is_shared:
+                logger.error("The NS is shared and cannot be restarted")
+                return
+            if not ns_constraints:
+                # Stop the NS
+                # Get the NFVO
+                target_nfvo_obj = pickle.loads(
+                    mongoUtils.find("nfvo_obj", {"id": restart_ns["nfvo-id"]})["obj"]
+                )
+                # Stop the NS
+                target_nfvo_obj.deleteNs(restart_ns["nfvo_inst_ns"])
+                while True:
+                    if target_nfvo_obj.checkNsLife(restart_ns["nfvo_inst_ns"]):
+                        break
+                time.sleep(5)
+                if monitoring:
+                    mon_producer = create_producer()
+                    mon_producer.send(
+                        topic="nfv_mon",
+                        value={
+                            "action": "ns_stop",
+                            "ns_id": ns_id,
+                            "ns_location": ns_location,
+                            "slice_id": nest_id,
+                        },
+                    )
+                # Start again the NS
+                nfvo_vim_account = nest["vim_list"][restart_ns["vim"]]["nfvo_vim_account"][
+                    restart_ns["nfvo-id"]
+                ]
+                nfvo_inst_ns_id = target_nfvo_obj.instantiateNs(
+                    restart_ns["ns-name"], restart_ns["nsd-id"], nfvo_vim_account
+                )
+                # Update the vnfr
+                insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
+                while (
+                    insr["operational-status"] != "running" or insr["config-status"] != "configured"
+                ):
+                    if insr["operational-status"] == "failed":
+                        error_message = (
+                            f"Network Service {restart_ns['nsd-id']} failed to start on NFVO."
+                        )
+                        logger.error(error_message)
+                        return
+                    time.sleep(10)
+                    insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
+                # Get the IPs of the instantiated NS
+                vnf_list = []
+                vnfr_id_list = target_nfvo_obj.getVnfrId(insr)
+                for ivnfr_id in vnfr_id_list:
+                    vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
+                    vnf_list.append(target_nfvo_obj.getIPs(vnfr))
+                nest["ns_inst_info"][ns_id][ns_location]["nfvo_inst_ns"] = nfvo_inst_ns_id
+                nest["ns_inst_info"][ns_id][ns_location]["vnfr"] = vnf_list
+                mongoUtils.update("slice", nest_id, nest)
+                if monitoring:
+                    mon_producer = create_producer()
+                    mon_producer.send(
+                        topic="nfv_mon",
+                        value={
+                            "action": "create",
+                            "ns_list": {ns_id: nest["ns_inst_info"][ns_id]},
+                            "slice_id": nest["_id"],
+                        },
+                    )
+                # Remove ns from runtime errors
+                errored_ns = nest["runtime_errors"].get("ns", [])
+                if ns_id in errored_ns:
+                    errored_ns.remove(ns_id)
+                    if not errored_ns:
+                        del nest["runtime_errors"]["ns"]
+                    check_runtime_errors(nest)
         # ***** Add NS *****
         elif updates["action"] == "AddNS":
             logger.info("Adding new Network Service")
@@ -1067,8 +1155,8 @@ def update_slice(nest_id, updates):
                 new_ns["ns-name"] = updates["details"]["ns_name"]
                 new_ns["shared_function"] = 0
                 nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
-            except KeyError:
-                logger.error("New ns fields are missing")
+            except KeyError as e:
+                logger.error(f"New ns fields are missing: {e}")
                 return
             if not nsd:
                 # Bootstrap the NFVOs to check for NSDs that are not in mongo
@@ -1248,8 +1336,12 @@ def update_slice(nest_id, updates):
             logger.info("Stopping Network Service")
             # Get the NS info
             stop_ns = True
-            ns_id = updates["details"]["ns_id"]
-            ns_location = updates["details"]["location"]
+            try:
+                ns_id = updates["details"]["ns_id"]
+                ns_location = updates["details"]["location"]
+            except KeyError as e:
+                logger.error(f"New ns fields are missing: {e}")
+                return
             try:
                 deleted_ns = nest["ns_inst_info"][ns_id][ns_location]
             except KeyError:
