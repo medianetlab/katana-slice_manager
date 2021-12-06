@@ -10,6 +10,7 @@ import requests
 
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.kafkaUtils.kafkaUtils import create_producer
+from katana.shared_utils.sliceUtils.sliceUtils import check_runtime_errors
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -447,7 +448,12 @@ def add_slice(nest_req):
             # The ns is already instantiated and there is no need to instantiate again
             # Find the sharing list
             shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
-            ns_inst_info[ns["ns-id"]] = shared_list["ns_list"][ns["nsd-id"]]
+            ns_inst_info[ns["ns-id"]] = shared_list["nsd_list"][ns["nsd-id"]]
+            try:
+                shared_list["ns_list"].append(ns["ns-id"])
+            except KeyError:
+                shared_list["ns_list"] = [ns["ns-id"]]
+            mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
             nest["conf_comp"]["nf"].append(ns["nsd-id"])
             continue
         ns_inst_info[ns["ns-id"]] = {}
@@ -461,6 +467,7 @@ def add_slice(nest_req):
             "nfvo-id": ns["nfvo-id"],
             "ns-name": ns["ns-name"],
             "slice_id": nest["_id"],
+            "nsd-id": ns["nsd-id"],
             "vim": selected_vim,
             "status": "Started",
         }
@@ -471,7 +478,11 @@ def add_slice(nest_req):
             ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]]["sharing_list"] = ns[
                 "shared_slice_key"
             ]
-            shared_list["ns_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
+            shared_list["nsd_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
+            try:
+                shared_list["ns_list"].append(ns["ns-id"])
+            except KeyError:
+                shared_list["ns_list"] = [ns["ns-id"]]
             mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
         nest["conf_comp"]["nf"].append(ns["nsd-id"])
         time.sleep(4)
@@ -716,6 +727,7 @@ def add_slice(nest_req):
             value={
                 "action": "katana_mon",
                 "slice_info": {"slice_id": nest["_id"], "status": "running"},
+                "increment": True,
             },
         )
 
@@ -827,6 +839,11 @@ def delete_slice(slice_id, force=False):
             if ns["shared_function"]:
                 # Find the shared list
                 shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
+                try:
+                    shared_list["ns_list"].remove(ns["ns-id"])
+                except ValueError:
+                    pass
+                mongoUtils.update("sharing_lists", ns["shared_slice_key"], shared_list)
                 # If there is another running slice, don't terminate the NS
                 if len(shared_list["nest_list"]) > 1:
                     continue
@@ -1021,3 +1038,471 @@ def delete_slice(slice_id, force=False):
                 pass
     except KeyError as e:
         pass
+
+
+def update_slice(nest_id, updates):
+    """
+    Update the given slice with the given updates
+    """
+    # Get the slice
+    nest = mongoUtils.get("slice", nest_id)
+    # Check if monitoring is enabled
+    monitoring = os.getenv("KATANA_MONITORING", None)
+    # Get the domain and the action
+    if updates["domain"] == "NFV":
+        # ***** Restart NS *****
+        if updates["action"] == "RestartNS":
+            logger.info("Restarting Network Service")
+            # Get the NS details
+            try:
+                ns_id = updates["details"]["ns_id"]
+                ns_location = updates["details"]["location"]
+            except KeyError as e:
+                logger.error(f"New ns fields are missing: {e}")
+                return
+            try:
+                restart_ns = nest["ns_inst_info"][ns_id][ns_location]
+            except KeyError:
+                logger.error(f"There is no NS with id {ns_id} at location {ns_location}")
+                return
+            change_vim = updates["details"].get("change_vim", False)
+            # Check if the NS is shared. If it is, it cannot be restarted
+            is_shared = restart_ns.get("shared", False)
+            if is_shared:
+                logger.error("The NS is shared and cannot be restarted")
+                return
+            # Check if the VIM must change
+            if change_vim:
+                # Find another VIM in the same location
+                get_vim = list(mongoUtils.find_all("vim", {"location": ns_location}))
+                if not get_vim:
+                    # Error handling: There is no VIM at that location
+                    error_message = f"VIM not found in location {ns_location}"
+                    logger.error(error_message)
+                    return
+                found_new_vim = False
+                for ivim in get_vim:
+                    if ivim["id"] != restart_ns["vim"]:
+                        restart_ns["vim"] = ivim["id"]
+                        found_new_vim = True
+                        break
+                if not found_new_vim:
+                    # Error handling: There is no new VIM at that location
+                    error_message = f"There is no other VIM not found in location {ns_location}"
+                    logger.error(error_message)
+                    return
+                # Get the VIM and VIM object
+                target_vim = mongoUtils.find("vim", {"id": restart_ns["vim"]})
+                target_vim_obj = pickle.loads(
+                    mongoUtils.find("vim_obj", {"id": restart_ns["vim"]})["obj"]
+                )
+                nsd = mongoUtils.find("nsd", {"nsd-id": restart_ns["nsd-id"]})
+                if not nsd:
+                    # Bootstrap the NFVOs to check for NSDs that are not in mongo
+                    # If again is not found, check if NS is optional.
+                    # If it is just remove it, else error
+                    nfvo_obj_list = list(mongoUtils.find_all("nfvo_obj"))
+                    for infvo in nfvo_obj_list:
+                        nfvo = pickle.loads(infvo["obj"])
+                        nfvo.bootstrapNfvo()
+                    nsd = mongoUtils.find("nsd", {"nsd-id": restart_ns["nsd-id"]})
+                    if not nsd:
+                        # Error handling: The ns is not optional and the nsd is not
+                        # on the NFVO - stop and return
+                        error_message = (
+                            f"NSD {restart_ns['nsd-id']} not found on any NFVO registered to SM"
+                        )
+                        logger.error(error_message)
+                        return
+                # Check if a tenant must be added to the new VIM
+                if not nest["vim_list"].get(restart_ns["vim"], None):
+                    # Create the new tenant on the VIM
+                    nest["vim_list"][restart_ns["vim"]] = {
+                        "ns_list": [restart_ns["ns-name"]],
+                        "nfvo_list": [],
+                        "shared": 0,
+                        "shared_slice_list_key": None,
+                        "resources": nsd["flavor"],
+                        "nfvo_vim_account": {},
+                    }
+                    name = f"vim_added_ns_{nest_id}"
+                    tenant_name = nest["_id"]
+                    tenant_project_name = name
+                    tenant_project_description = name
+                    tenant_project_user = name
+                    tenant_project_password = "password"
+                    # If the vim is Openstack type, set quotas
+                    quotas = (
+                        nest["vim_list"][restart_ns["vim"]]["resources"]
+                        if target_vim["type"] == "openstack" or target_vim["type"] == "Openstack"
+                        else None
+                    )
+                    ids = target_vim_obj.create_slice_prerequisites(
+                        tenant_project_name,
+                        tenant_project_description,
+                        tenant_project_user,
+                        tenant_project_password,
+                        nest["_id"],
+                        quotas=quotas,
+                    )
+                    # Register the tenant to the mongo db
+                    target_vim["tenants"][tenant_name] = name
+                    mongoUtils.update("vim", target_vim["_id"], target_vim)
+                else:
+                    # Update the required resources
+                    resources = nest["vim_list"][restart_ns["vim"]]["resources"]
+                    for key in resources:
+                        resources[key] += nsd["flavor"][key]
+                    # Get the tenant name
+                    tenant_name = target_vim["tenants"][nest_id]
+                    # Set the quotas
+                    target_vim_obj.set_quotas(
+                        tenant_name, nest["vim_list"][restart_ns["vim"]]["resources"]
+                    )
+                # Check if the new VIM tenant must be added to the NFVO
+                nfvo_id = restart_ns["nfvo-id"]
+                if nfvo_id not in nest["vim_list"][restart_ns["vim"]]["nfvo_list"]:
+                    name = f"vim_added_ns_{nest_id}"
+                    if target_vim["type"] == "openstack":
+                        # Update the config parameter for the tenant
+                        config_param = dict(security_groups=name)
+                    elif target_vim["type"] == "opennebula":
+                        config_param = target_vim["config"]
+                    else:
+                        config_param = {}
+                    target_nfvo = mongoUtils.find("nfvo", {"id": nfvo_id})
+                    target_nfvo_obj = pickle.loads(
+                        mongoUtils.find("nfvo_obj", {"id": nfvo_id})["obj"]
+                    )
+                    tenant_project_name = name
+                    vim_id = target_nfvo_obj.addVim(
+                        tenant_project_name,
+                        target_vim["password"],
+                        target_vim["type"],
+                        target_vim["auth_url"],
+                        target_vim["username"],
+                        config_param,
+                    )
+                    nest["vim_list"][restart_ns["vim"]]["nfvo_vim_account"][nfvo_id] = vim_id
+                    # Register the tenant to the mongo db
+                    target_nfvo["tenants"][nest_id] = target_nfvo["tenants"].get(nest["_id"], [])
+                    target_nfvo["tenants"][nest_id].append(vim_id)
+                    mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+                    # Stop the NS
+            # Get the NFVO
+            target_nfvo_obj = pickle.loads(
+                mongoUtils.find("nfvo_obj", {"id": restart_ns["nfvo-id"]})["obj"]
+            )
+            # Stop the NS
+            target_nfvo_obj.deleteNs(restart_ns["nfvo_inst_ns"])
+            while True:
+                if target_nfvo_obj.checkNsLife(restart_ns["nfvo_inst_ns"]):
+                    break
+            time.sleep(5)
+            if monitoring:
+                mon_producer = create_producer()
+                mon_producer.send(
+                    topic="nfv_mon",
+                    value={
+                        "action": "ns_stop",
+                        "ns_id": ns_id,
+                        "ns_location": ns_location,
+                        "slice_id": nest_id,
+                    },
+                )
+            # Start again the NS
+            nfvo_vim_account = nest["vim_list"][restart_ns["vim"]]["nfvo_vim_account"][
+                restart_ns["nfvo-id"]
+            ]
+            nfvo_inst_ns_id = target_nfvo_obj.instantiateNs(
+                restart_ns["ns-name"], restart_ns["nsd-id"], nfvo_vim_account
+            )
+            # Update the vnfr
+            insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
+            while insr["operational-status"] != "running" or insr["config-status"] != "configured":
+                if insr["operational-status"] == "failed":
+                    error_message = (
+                        f"Network Service {restart_ns['nsd-id']} failed to start on NFVO."
+                    )
+                    logger.error(error_message)
+                    return
+                time.sleep(10)
+                insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
+            # Get the IPs of the instantiated NS
+            vnf_list = []
+            vnfr_id_list = target_nfvo_obj.getVnfrId(insr)
+            for ivnfr_id in vnfr_id_list:
+                vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
+                vnf_list.append(target_nfvo_obj.getIPs(vnfr))
+            restart_ns["status"] = "Restarted"
+            nest["ns_inst_info"][ns_id][ns_location]["nfvo_inst_ns"] = nfvo_inst_ns_id
+            nest["ns_inst_info"][ns_id][ns_location]["vnfr"] = vnf_list
+            mongoUtils.update("slice", nest_id, nest)
+            if monitoring:
+                mon_producer = create_producer()
+                mon_producer.send(
+                    topic="nfv_mon",
+                    value={
+                        "action": "create",
+                        "ns_list": {ns_id: nest["ns_inst_info"][ns_id]},
+                        "slice_id": nest["_id"],
+                    },
+                )
+            # Remove ns from runtime errors
+            errored_ns = nest["runtime_errors"].get("ns", [])
+            if ns_id in errored_ns:
+                errored_ns.remove(ns_id)
+                if not errored_ns:
+                    del nest["runtime_errors"]["ns"]
+                check_runtime_errors(nest)
+        # ***** Add NS *****
+        elif updates["action"] == "AddNS":
+            logger.info("Adding new Network Service")
+            new_ns = {}
+            # Get the new NS details
+            try:
+                new_ns["nsd-id"] = updates["details"]["nsd_id"]
+                ns_location = updates["details"]["location"]
+                new_ns["location"] = ns_location.lower()
+                if ns_location not in nest["coverage"] and ns_location.lower() != "core":
+                    logger.error(f"Location {ns_location} is not included in the Slice coverage")
+                    return
+                new_ns["ns-name"] = updates["details"]["ns_name"]
+                new_ns["shared_function"] = 0
+                nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
+            except KeyError as e:
+                logger.error(f"New ns fields are missing: {e}")
+                return
+            if not nsd:
+                # Bootstrap the NFVOs to check for NSDs that are not in mongo
+                # If again is not found, check if NS is optional.
+                # If it is just remove it, else error
+                nfvo_obj_list = list(mongoUtils.find_all("nfvo_obj"))
+                for infvo in nfvo_obj_list:
+                    nfvo = pickle.loads(infvo["obj"])
+                    nfvo.bootstrapNfvo()
+                nsd = mongoUtils.find("nsd", {"nsd-id": new_ns["nsd-id"]})
+                if not nsd:
+                    # Error handling: The ns is not optional and the nsd is not
+                    # on the NFVO - stop and return
+                    error_message = f"NSD {new_ns['nsd-id']} not found on any NFVO registered to SM"
+                    logger.error(error_message)
+                    return
+            new_ns["nfvo-id"] = nsd["nfvo_id"]
+            new_ns["nsd-info"] = nsd
+            get_vim = list(mongoUtils.find_all("vim", {"location": new_ns["location"]}))
+            if not get_vim:
+                # Error handling: There is no VIM at that location
+                error_message = f"VIM not found in location {new_ns['location']}"
+                logger.error(error_message)
+                return
+            # TODO: Check the available resources and select vim
+            # Temporary use the first element
+            selected_vim_id = get_vim[0]["id"]
+            new_ns["vims"] = [selected_vim_id]
+            new_ns["placement_loc"] = {}
+            vim_dict = nest["vim_list"]
+            try:
+                vim_dict[selected_vim_id]["ns_list"].append(new_ns["ns-name"])
+                configure_vim_tenant = False
+                configure_nfvo_tenant = False
+                if new_ns["nfvo-id"] not in vim_dict[selected_vim_id]["nfvo_list"]:
+                    vim_dict[selected_vim_id]["nfvo_list"].append(new_ns["nfvo-id"])
+                    configure_nfvo_tenant = True
+            except KeyError:
+                configure_vim_tenant = True
+                configure_nfvo_tenant = True
+                vim_dict[selected_vim_id] = {
+                    "ns_list": [new_ns["ns-name"]],
+                    "nfvo_list": [new_ns["nfvo-id"]],
+                    "shared": None,
+                    "shared_slice_list_key": None,
+                }
+            resources = vim_dict[selected_vim_id].get(
+                "resources", {"memory-mb": 0, "vcpu-count": 0, "storage-gb": 0, "instances": 0}
+            )
+            for key in resources:
+                resources[key] += nsd["flavor"][key]
+            vim_dict[selected_vim_id]["resources"] = resources
+            new_ns["placement_loc"]["vim"] = selected_vim_id
+            new_ns["placement_loc"]["location"] = new_ns["location"]
+            # Create an uuid for the ns
+            new_ns["ns-id"] = str(uuid.uuid4())
+            nest["total_ns_list"].append(new_ns)
+            nest["ns_inst_info"][new_ns["ns-id"]] = {}
+            # Create the Tenants if needed
+            target_vim = mongoUtils.find("vim", {"id": selected_vim_id})
+            target_vim_obj = pickle.loads(
+                mongoUtils.find("vim_obj", {"id": selected_vim_id})["obj"]
+            )
+            if configure_vim_tenant:
+                name = f"vim_added_ns_{nest_id}"
+                tenant_name = nest["_id"]
+                tenant_project_name = name
+                tenant_project_description = name
+                tenant_project_user = name
+                tenant_project_password = "password"
+                # If the vim is Openstack type, set quotas
+                quotas = (
+                    vim_dict[selected_vim_id]["resources"]
+                    if target_vim["type"] == "openstack" or target_vim["type"] == "Openstack"
+                    else None
+                )
+                ids = target_vim_obj.create_slice_prerequisites(
+                    tenant_project_name,
+                    tenant_project_description,
+                    tenant_project_user,
+                    tenant_project_password,
+                    nest["_id"],
+                    quotas=quotas,
+                )
+                # Register the tenant to the mongo db
+                target_vim["tenants"][tenant_name] = name
+                mongoUtils.update("vim", target_vim["_id"], target_vim)
+            else:
+                tenant_name = target_vim["tenants"][nest_id]
+                target_vim_obj.set_quotas(tenant_name, vim_dict[selected_vim_id]["resources"])
+            if configure_nfvo_tenant:
+                name = f"vim_added_ns_{nest_id}"
+                if target_vim["type"] == "openstack":
+                    # Update the config parameter for the tenant
+                    config_param = dict(security_groups=name)
+                elif target_vim["type"] == "opennebula":
+                    config_param = target_vim["config"]
+                else:
+                    config_param = {}
+                for nfvo_id in vim_dict[selected_vim_id]["nfvo_list"]:
+                    target_nfvo = mongoUtils.find("nfvo", {"id": nfvo_id})
+                    target_nfvo_obj = pickle.loads(
+                        mongoUtils.find("nfvo_obj", {"id": nfvo_id})["obj"]
+                    )
+                    tenant_project_name = name
+                    vim_id = target_nfvo_obj.addVim(
+                        tenant_project_name,
+                        target_vim["password"],
+                        target_vim["type"],
+                        target_vim["auth_url"],
+                        target_vim["username"],
+                        config_param,
+                    )
+                    vim_dict[selected_vim_id]["nfvo_vim_account"] = vim_dict[selected_vim_id].get(
+                        "nfvo_vim_account", {}
+                    )
+                    vim_dict[selected_vim_id]["nfvo_vim_account"][nfvo_id] = vim_id
+                    # Register the tenant to the mongo db
+                    target_nfvo["tenants"][nest_id] = target_nfvo["tenants"].get(nest["_id"], [])
+                    target_nfvo["tenants"][nest_id].append(vim_id)
+                    mongoUtils.update("nfvo", target_nfvo["_id"], target_nfvo)
+            # Activate the NS
+            target_nfvo = mongoUtils.find("nfvo", {"id": new_ns["nfvo-id"]})
+            target_nfvo_obj = pickle.loads(
+                mongoUtils.find("nfvo_obj", {"id": new_ns["nfvo-id"]})["obj"]
+            )
+            selected_vim = new_ns["placement_loc"]["vim"]
+            nfvo_vim_account = vim_dict[selected_vim]["nfvo_vim_account"][new_ns["nfvo-id"]]
+            nfvo_inst_ns = target_nfvo_obj.instantiateNs(
+                new_ns["ns-name"], new_ns["nsd-id"], nfvo_vim_account
+            )
+            nest["ns_inst_info"][new_ns["ns-id"]][new_ns["location"]] = {
+                "nfvo_inst_ns": nfvo_inst_ns,
+                "nfvo-id": new_ns["nfvo-id"],
+                "ns-name": new_ns["ns-name"],
+                "slice_id": nest_id,
+                "nsd-id": new_ns["nsd-id"],
+                "vim": selected_vim,
+                "status": "Started",
+            }
+            nest["conf_comp"]["nf"].append(new_ns["nsd-id"])
+            time.sleep(4)
+            site = new_ns["placement_loc"]
+            nfvo_inst_ns_id = nest["ns_inst_info"][new_ns["ns-id"]][new_ns["location"]][
+                "nfvo_inst_ns"
+            ]
+            insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
+            while insr["operational-status"] != "running" or insr["config-status"] != "configured":
+                if insr["operational-status"] == "failed":
+                    error_message = f"Network Service {new_ns['nsd-id']} failed to start on NFVO."
+                    logger.error(error_message)
+                    return
+                time.sleep(10)
+                insr = target_nfvo_obj.getNsr(nfvo_inst_ns_id)
+            # Get the IPs of the instantiated NS
+            vnf_list = []
+            vnfr_id_list = target_nfvo_obj.getVnfrId(insr)
+            for ivnfr_id in vnfr_id_list:
+                vnfr = target_nfvo_obj.getVnfr(ivnfr_id)
+                vnf_list.append(target_nfvo_obj.getIPs(vnfr))
+            nest["ns_inst_info"][new_ns["ns-id"]][new_ns["location"]]["vnfr"] = vnf_list
+            mongoUtils.update("slice", nest_id, nest)
+            # Start the monitoring of the new NS
+            # If monitoring parameter is set, send the ns_list to nfv_mon module
+            if monitoring:
+                mon_producer = create_producer()
+                mon_producer.send(
+                    topic="nfv_mon",
+                    value={
+                        "action": "create",
+                        "ns_list": {new_ns["ns-id"]: nest["ns_inst_info"][new_ns["ns-id"]]},
+                        "slice_id": nest["_id"],
+                    },
+                )
+        # ***** Stop NS *****
+        elif updates["action"] == "StopNS":
+            logger.info("Stopping Network Service")
+            # Get the NS info
+            stop_ns = True
+            try:
+                ns_id = updates["details"]["ns_id"]
+                ns_location = updates["details"]["location"]
+            except KeyError as e:
+                logger.error(f"New ns fields are missing: {e}")
+                return
+            try:
+                deleted_ns = nest["ns_inst_info"][ns_id][ns_location]
+            except KeyError:
+                logger.error(f"There is no NS with id {ns_id} at location {ns_location}")
+            else:
+                # Check if the NS is shared
+                is_shared = deleted_ns.get("shared", False)
+                if is_shared:
+                    # Find the shared list
+                    shared_list = mongoUtils.get("sharing_lists", deleted_ns["sharing_list"])
+                    # If there is another running slice, don't terminate the NS
+                    if len(shared_list["ns_list"]) > 1:
+                        stop_ns = False
+                    shared_list["ns_list"].remove(ns_id)
+                    mongoUtils.update("sharing_lists", deleted_ns["sharing_list"], shared_list)
+                if stop_ns:
+                    # Get the NFVO
+                    target_nfvo_obj = pickle.loads(
+                        mongoUtils.find("nfvo_obj", {"id": deleted_ns["nfvo-id"]})["obj"]
+                    )
+                    # Stop the NS
+                    target_nfvo_obj.deleteNs(deleted_ns["nfvo_inst_ns"])
+                    logger.info(f"Deleted NS {deleted_ns['ns-name']}")
+                # Update monitoring
+                if monitoring:
+                    mon_producer = create_producer()
+                    mon_producer.send(
+                        topic="nfv_mon",
+                        value={
+                            "action": "ns_stop",
+                            "ns_id": ns_id,
+                            "ns_location": ns_location,
+                            "slice_id": nest_id,
+                        },
+                    )
+                # Update the NEST
+                nest["ns_inst_info"][ns_id][ns_location]["status"] = "Stopped"
+                mongoUtils.update("slice", nest_id, nest)
+                # Remove ns from runtime errors
+                errored_ns = nest["runtime_errors"].get("ns", [])
+                if ns_id in errored_ns:
+                    errored_ns.remove(ns_id)
+                    if not errored_ns:
+                        del nest["runtime_errors"]["ns"]
+                    check_runtime_errors(nest)
+        else:
+            logger.warning(f"No Action {updates['action']} in NFV Domain")
+    else:
+        logger.warning(f"No Domain {updates['domain']}")

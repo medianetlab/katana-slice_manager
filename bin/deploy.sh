@@ -11,7 +11,7 @@ function build_katana_images {
 }
 
 containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli katana-swagger"
-export KATANA_MONITORING=False
+export KATANA_MONITORING=""
 
 # Get the project directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
