@@ -189,7 +189,7 @@ def rm(id_list, force):
 @click.command()
 @click.option("-f", "--file", required=True, type=str, help="yaml file with slice details")
 @click.argument("id")
-def update(file, id):
+def modify(file, id):
     """
     Update slice
     """
@@ -201,10 +201,10 @@ def update(file, id):
     with stream:
         data = yaml.safe_load(stream)
 
-    url = "http://localhost:8000/api/slice/" + id
+    url = "http://localhost:8000/api/slice/" + id + "/modify"
     r = None
     try:
-        r = requests.put(url, json=json.loads(json.dumps(data)), timeout=30)
+        r = requests.post(url, json=json.loads(json.dumps(data)), timeout=30)
         r.raise_for_status()
 
         click.echo(r.content)
@@ -223,7 +223,7 @@ cli.add_command(ls)
 cli.add_command(inspect)
 cli.add_command(add)
 cli.add_command(rm)
-cli.add_command(update)
+cli.add_command(modify)
 cli.add_command(deployment_time)
 cli.add_command(errors)
 
