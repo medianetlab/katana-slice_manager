@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.4] - 06/12/2021
+
+### 2.3.4 Added
+
+- Slice D2 Operations
+  - Stop Network Service
+  - Add Network Service
+  - Restart Network Service with specific constraints
+
 ## [2.3.3] - 22/11/2021
 
 ### 2.3.3 Added
