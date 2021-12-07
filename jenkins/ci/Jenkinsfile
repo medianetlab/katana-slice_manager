@@ -56,8 +56,13 @@ pipeline {
         // *****************************
         stage("push_images") {
             when {
-                expression { return changeset "**/katana-**/**" || ${force_push_images} == true}
-                expression { return environment name: "GIT_BRANCH", value: "origin/master" || ${force_push_images} == true}
+                anyOf {
+                    allOf {
+                        changeset "**/katana-**/**"
+                        environment name: "GIT_BRANCH", value: "origin/master"
+                    }
+                    expression { return "${force_push_images}" == "true" }
+                }
             }
             steps{
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'katana-reg-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
@@ -83,6 +88,9 @@ pipeline {
     post{
         failure{
             slackSend (color: "#FF0000", message: "Katana CI Failed: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+        fixed{
+            slackSend (color: "#FF0000", message: "Katana CI Back to normal: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
     }
 }
