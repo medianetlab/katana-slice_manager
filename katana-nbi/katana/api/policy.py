@@ -3,6 +3,9 @@ from logging import handlers
 import pickle
 import time
 import uuid
+import os
+import requests
+import json
 
 from bson.binary import Binary
 from bson.json_util import dumps
@@ -151,6 +154,7 @@ class PolicyView(FlaskView):
             mongoUtils.add("policy_obj", obj_json)
             return new_uuid, 201
 
+    # NEAT Policy Engine specific Endpoints
     @route("/neat/<slice_id>", methods=["GET"])
     def neat(self, slice_id):
         """
@@ -161,3 +165,63 @@ class PolicyView(FlaskView):
             return slice_parameters, 200
         else:
             return f"Slice with id {slice_id} was not found", 404
+
+    # APEX Policy Engine specific Endpoints
+    @route("/apex/action", methods=["POST"])
+    def apex_action(self):
+        """
+        Receive feedback from the APEX policy engine
+        """
+        # Check if APEX is configured in katana
+        isapex = os.getenv("APEX", None)
+        if not isapex:
+            return "APEX Policy Engine is not configured", 400
+        apexpolicy = request.json
+        try:
+            # Check the Policy Type
+            if apexpolicy["policyType"] == "failingNS":
+                failing_ns_action = apexpolicy["policy"]["action"]
+                slice_id = apexpolicy["policy"]["slice_id"]
+                ns_id = apexpolicy["policy"]["ns_id"]
+                nsd_id = apexpolicy["policy"]["nsd_id"]
+                logger.debug(apexpolicy)
+                if failing_ns_action == "restart_ns":
+                    # Scenario 1
+                    restart_ns_message = {
+                        "domain": "NFV",
+                        "action": "RestartNS",
+                        "details": {"ns_id": ns_id, "location": nsd_id, "change_vim": False},
+                    }
+                    r_url = f"http://katana-nbi:8000/api/slice/{slice_id}/modify"
+                    r = requests.post(
+                        f"http://katana-nbi:8000/api/slice/{slice_id}/modify",
+                        json=json.loads(json.dumps(restart_ns_message)),
+                    )
+                    logger.debug(r.content)
+                    return "Restaring the NS", 200
+                elif failing_ns_action == "restart_slice":
+                    # Scenario 2
+                    restart_ns_message = {
+                        "domain": "NFV",
+                        "action": "RestartNS",
+                        "details": {"ns_id": ns_id, "location": nsd_id, "change_vim": True},
+                    }
+                    r_url = f"http://katana-nbi:8000/api/slice/{slice_id}/modify"
+                    r = requests.post(
+                        f"http://katana-nbi:8000/api/slice/{slice_id}/modify",
+                        json=json.loads(json.dumps(restart_ns_message)),
+                    )
+                    logger.debug(r.content)
+                    return "Restaring the NS", 200
+                elif failing_ns_action == "stop_slice":
+                    # Scenario 3
+                    r_url = f"http://katana-nbi:8000/api/slice/{slice_id}"
+                    r = requests.delete(r_url)
+                    logger.debug(r.content)
+                    return "Stopping Slice", 200
+                else:
+                    return f"Action {failing_ns_action} is not supported", 400
+            else:
+                return f"Policy type {apexpolicy['policyType']} is not supported", 400
+        except KeyError as err:
+            return f"Key {err} is missing", 400

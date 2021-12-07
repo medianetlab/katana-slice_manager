@@ -80,6 +80,7 @@ class SliceView(FlaskView):
         used by: `katana slice modify -f [file] [uuid]`
         """
         result = mongoUtils.get("slice", uuid)
+        logger.debug(request.json)
         if not result:
             return "Error: No such slice: {}".format(uuid), 404
         # Send the message to katana-mngr

@@ -1,10 +1,12 @@
 import logging
+import os
 from logging import handlers
 from flask import request
 from flask_classful import FlaskView
 
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.sliceUtils.sliceUtils import check_runtime_errors
+from katana.shared_utils.kafkaUtils.kafkaUtils import create_producer
 
 # Logging Parameters
 logger = logging.getLogger(__name__)
@@ -44,5 +46,20 @@ class AlertView(FlaskView):
                 ns_errors.append(ns_id)
                 nest["runtime_errors"]["ns"] = ns_errors
                 check_runtime_errors(nest)
-                # TODO: Notify APEX
+                # Notify APEX
+                isapex = os.getenv("APEX", None)
+                if isapex:
+                    apex_message = {
+                        "name": "SMAlert",
+                        "nameSpace": "sm.alert.manager.events",
+                        "version": "0.0.1",
+                        "source": "SMAlertManager",
+                        "target": "APEX",
+                        "sliceId": slice_id,
+                        "alertType": "FailingNS",
+                        "alertMessage": {"NS_ID": ns_id, "NSD_ID": location, "status": "down"},
+                    }
+                    apex_producer = create_producer()
+                    logger.debug(apex_message)
+                    apex_producer.send("apex-in-0", value=apex_message)
         return "Alert received", 200
