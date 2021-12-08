@@ -1,16 +1,15 @@
 FROM nexus3.onap.org:10003/onap/policy-apex-pdp:2.6-SNAPSHOT-latest
 WORKDIR /home/apexuser
 
-COPY policy-apex/* /policy-apex/
-RUN mkdir -p /policy-json
+COPY katana-apex/policy-apex/. ./policy-apex/
+RUN mkdir -p ./policy-json
+COPY katana-apex/policy-json/. ./policy-json/
+COPY katana-apex/logic/. ./logic/
+COPY katana-apex/config/. ./config/
+COPY katana-apex/logs/logback.xml /opt/app/policy/apex-pdp/etc/
+COPY katana-apex/tosca-template/. ./tosca-template/
 
-COPY policy-json/* /policy-json/
-COPY logic/* /logic/
-COPY config/* /config/
-COPY logs/logback.xml /opt/app/policy/apex-pdp/etc/
-COPY tosca-template/* /tosca-template/
-
-COPY scripts/* /
+COPY katana-apex/scripts/. ./
 
 EXPOSE 12345 18989 23324 8080 5000
 

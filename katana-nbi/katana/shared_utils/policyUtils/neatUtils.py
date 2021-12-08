@@ -49,8 +49,16 @@ class Policy:
         except requests.exceptions.RequestException as err:
             logger.exception("Error:", err)
 
-    def del_slice(self, data):
+    def notify(self, alert_type, slice_id, status):
         """
-        Delete a configured radio slice
+        Notify NEAT policy engine
         """
-        logger.info("Deleting Radio Slice Configuration")
+        neat_message = {
+            "slice_id": slice_id,
+            "type": alert_type,
+            "value": status,
+            "ttl": -1,
+        }
+        neat_url = self.url + "/event"
+        r = requests.put(neat_url, neat_message)
+        logger.debug(f"Notifying NEAT, message: {neat_message}")

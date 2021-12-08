@@ -20,7 +20,7 @@
 				"carrierTechnology": "KAFKA",
 				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.kafka.KafkaCarrierTechnologyParameters",
 				"parameters": {
-					"bootstrapServers": "localhost:9092",
+					"bootstrapServers": "katana-kafka:9092",
 					"groupId": "apex-group-id",
 					"enableAutoCommit": true,
 					"autoCommitTime": 1000,

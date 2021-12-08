@@ -179,12 +179,23 @@ class PolicyView(FlaskView):
         apexpolicy = request.json
         try:
             # Check the Policy Type
-            if apexpolicy["policyType"] == "failingNS":
+            if apexpolicy["policyType"] == "FailingNS":
                 failing_ns_action = apexpolicy["policy"]["action"]
                 slice_id = apexpolicy["policy"]["slice_id"]
                 ns_id = apexpolicy["policy"]["ns_id"]
                 nsd_id = apexpolicy["policy"]["nsd_id"]
                 logger.debug(apexpolicy)
+                # Notify NEAT if needed
+                notify_neat = apexpolicy["policy"]["extra_actions"].get("notify_neat", False)
+                logger.debug(notify_neat)
+                if notify_neat:
+                    neat_list = mongoUtils.find_all("policy", {"type": "neat"})
+                    logger.debug(neat_list)
+                    for ineat in neat_list:
+                        # Get the NEAT object
+                        neat_obj = pickle.loads(mongoUtils.get("policy_obj", ineat["_id"])["obj"])
+                        logger.debug(neat_obj.url)
+                        neat_obj.notify(alert_type="FailingNS", slice_id=slice_id, status=True)
                 if failing_ns_action == "restart_ns":
                     # Scenario 1
                     restart_ns_message = {
