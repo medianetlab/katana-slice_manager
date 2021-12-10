@@ -90,7 +90,7 @@ pipeline {
             slackSend (color: "#FF0000", message: "Katana CI Failed: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
         fixed{
-            slackSend (color: "#FF0000", message: "Katana CI Back to normal: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            slackSend (color: "#008000", message: "Katana CI Back to normal: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
     }
 }

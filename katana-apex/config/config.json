@@ -20,7 +20,7 @@
 				"carrierTechnology": "KAFKA",
 				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.kafka.KafkaCarrierTechnologyParameters",
 				"parameters": {
-					"bootstrapServers": "katana-kafka:9092",
+					"bootstrapServers": "katana-kafka:19092",
 					"groupId": "apex-group-id",
 					"enableAutoCommit": true,
 					"autoCommitTime": 1000,
@@ -85,7 +85,7 @@
 				"carrierTechnology": "RESTCLIENT",
 				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.restclient.RestClientCarrierTechnologyParameters",
 				"parameters": {
-					"url": "http://100.121.133.216:5000/api/slice/{sliceId}",
+					"url": "http://katana-nbi:8000/api/slice/{sliceId}",
 					"httpMethod": "PUT",
 					"httpHeaders": [
 						[
@@ -109,7 +109,7 @@
 				"carrierTechnology": "RESTCLIENT",
 				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.restclient.RestClientCarrierTechnologyParameters",
 				"parameters": {
-					"url": "http://100.121.133.216:5000/api/slice/{sliceId}/restart",
+					"url": "http://katana-nbi:8000/api/slice/{sliceId}/restart",
 					"httpMethod": "POST",
 					"httpHeaders": [
 						[
@@ -133,7 +133,7 @@
 				"carrierTechnology": "RESTCLIENT",
 				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.restclient.RestClientCarrierTechnologyParameters",
 				"parameters": {
-					"url": "http://100.121.133.216:5000/api/slice/{sliceId}",
+					"url": "http://katana-nbi:8000/api/slice/{sliceId}",
 					"httpMethod": "POST",
 					"httpHeaders": [
 						[
