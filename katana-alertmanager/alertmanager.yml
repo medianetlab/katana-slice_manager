@@ -1,5 +1,6 @@
 route:
   receiver: katana_rest
+  repeat_interval: 30s
 
 receivers:
   - name: katana_rest
