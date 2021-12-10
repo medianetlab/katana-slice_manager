@@ -1,8 +1,0 @@
-{
-  "name": "Example_Event_Input",
-  "version": "0.0.1",
-  "nameSpace": "example.apex.event",
-  "source": "external",
-  "target": "apex",
-  "input": "Hello World"
-}

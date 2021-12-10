@@ -5,7 +5,7 @@
     "source" : "SMAlertManager",
     "target" : "APEX",
     "sliceId" : "1234",
-    "alertType": "FailingNS",
+    "alertType": "failingNS",
     "alertMessage": {
         "NS_ID" : "1234",
         "NSD_ID" : "1234",

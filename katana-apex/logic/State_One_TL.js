@@ -12,10 +12,26 @@ logger.info("~~Alert Album has: " + alertAlbumSize + " elements");
 var alertAlbumData = executor.getContextAlbum("Alerts_Album").get(String(alertAlbumSize-1));
 logger.info("~~Got alert message from context with this timestamp: " + alertAlbumData.timestamp);
 
-// Do something for State
-executor.getExecutionProperties().setProperty("sliceId", alertAlbumData.sliceId);
+var policyType = alertAlbumData.alertType;
 
-executor.outFields.put("report", "Completed State One");
+var action = "restart_ns";
+var slice_id = alertAlbumData.sliceId;
+var ns_id = alertAlbumData.alertMessage.get("NS_ID");
+var nsd_id = alertAlbumData.alertMessage.get("NSD_ID");
+var restrictions = {};
+var extra_actions = {};
+
+var policy = {
+        "action": action,
+        "slice_id": slice_id,
+        "ns_id": ns_id,
+        "nsd_id": nsd_id,
+        "restrictions": restrictions,
+        "extra_actions": extra_actions
+    };
+
+executor.outFields.put("policyType", policyType);
+executor.outFields.put("policy", policy);
 
 logger.info("##END## State_One_TL");
 

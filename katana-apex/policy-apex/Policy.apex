@@ -22,14 +22,10 @@ event parameter create 		name=SMAlert			parName=alertMessage			schemaName=Object
 event create 				name=SMAlertOutput			nameSpace=sm.alert.manager.events	source="APEX"		target="SM"
 event parameter create 		name=SMAlertOutput			parName=report			schemaName=String_Type
 
-event create 				name=State_One_Event			nameSpace=sm.alert.manager.events	source="APEX"		target="SM"
-event parameter create 		name=State_One_Event			parName=report			schemaName=String_Type
+event create 				name=APEX_Wrapped_Event			nameSpace=sm.alert.manager.events	source="APEX"		target="SM"
+event parameter create 		name=APEX_Wrapped_Event			parName=policyType			schemaName=String_Type
+event parameter create 		name=APEX_Wrapped_Event			parName=policy			schemaName=Object_Type
 
-event create 				name=State_Two_Event			nameSpace=sm.alert.manager.events	source="APEX"		target="SM"
-event parameter create 		name=State_Two_Event			parName=report			schemaName=String_Type
-
-event create 				name=State_Three_Event			nameSpace=sm.alert.manager.events	source="APEX"		target="SM"
-event parameter create 		name=State_Three_Event			parName=report			schemaName=String_Type
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ##-- Albums --##
@@ -81,15 +77,15 @@ LE
 policy create							name=SM_Alert_Policy		template=FREEFORM				firstState=Trigger_State
 
 policy state create						name=SM_Alert_Policy		stateName=State_One				triggerName=SMAlertOutput				defaultTaskName=State_One_Task
-policy state output	create				name=SM_Alert_Policy		stateName=State_One				outputName=stateOne 					eventName=State_One_Event
+policy state output	create				name=SM_Alert_Policy		stateName=State_One				outputName=stateOne 					eventName=APEX_Wrapped_Event
 policy state taskref create				name=SM_Alert_Policy		stateName=State_One				taskName=State_One_Task					outputType=DIRECT				outputName=stateOne
 
 policy state create						name=SM_Alert_Policy		stateName=State_Two				triggerName=SMAlertOutput				defaultTaskName=State_Two_Task
-policy state output	create				name=SM_Alert_Policy		stateName=State_Two				outputName=stateTwo 					eventName=State_Two_Event
+policy state output	create				name=SM_Alert_Policy		stateName=State_Two				outputName=stateTwo 					eventName=APEX_Wrapped_Event
 policy state taskref create				name=SM_Alert_Policy		stateName=State_Two				taskName=State_Two_Task					outputType=DIRECT				outputName=stateTwo
 
 policy state create						name=SM_Alert_Policy		stateName=State_Three			triggerName=SMAlertOutput				defaultTaskName=State_Three_Task
-policy state output	create				name=SM_Alert_Policy		stateName=State_Three			outputName=stateThree 					eventName=State_Three_Event
+policy state output	create				name=SM_Alert_Policy		stateName=State_Three			outputName=stateThree 					eventName=APEX_Wrapped_Event
 policy state taskref create				name=SM_Alert_Policy		stateName=State_Three			taskName=State_Three_Task				outputType=DIRECT				outputName=stateThree
 
 policy state create						name=SM_Alert_Policy		stateName=Trigger_State			triggerName=SMAlert						defaultTaskName=SM_Alert_Task

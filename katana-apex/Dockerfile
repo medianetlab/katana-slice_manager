@@ -11,7 +11,7 @@ COPY katana-apex/tosca-template/. ./tosca-template/
 
 COPY katana-apex/scripts/. ./
 
-EXPOSE 12345 18989 23324 8080 5000
+EXPOSE 12345 18989 23324 8080 5000 9092
 
 RUN apexCLIToscaEditor.sh -c policy-apex/Policy.apex -ot policy-json/Policy.json -l ./test.log -ac config/config.json -t ./tosca-template/ToscaTemplate.json
 CMD ["./start.sh"]

@@ -80,36 +80,12 @@
 			"synchronousPeer": "RestServerConsumer",
 			"synchronousTimeout": 1000
 		},
-		"StateOneRestClientProducer": {
+		"APEX2SMRestClientProducer": {
 			"carrierTechnologyParameters": {
 				"carrierTechnology": "RESTCLIENT",
 				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.restclient.RestClientCarrierTechnologyParameters",
 				"parameters": {
-					"url": "http://katana-nbi:8000/api/slice/{sliceId}",
-					"httpMethod": "PUT",
-					"httpHeaders": [
-						[
-							"Keep-Alive",
-							"300"
-						],
-						[
-							"Cache-Control",
-							"no-cache"
-						]
-					]
-				}
-			},
-			"eventProtocolParameters": {
-				"eventProtocol": "JSON"
-			},
-			"eventNameFilter": "State_One_Event"
-		},
-		"StateTwoRestClientProducer": {
-			"carrierTechnologyParameters": {
-				"carrierTechnology": "RESTCLIENT",
-				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.restclient.RestClientCarrierTechnologyParameters",
-				"parameters": {
-					"url": "http://katana-nbi:8000/api/slice/{sliceId}/restart",
+					"url": "http://katana-nbi:8000/api/policy/apex/action",
 					"httpMethod": "POST",
 					"httpHeaders": [
 						[
@@ -126,31 +102,7 @@
 			"eventProtocolParameters": {
 				"eventProtocol": "JSON"
 			},
-			"eventNameFilter": "State_Two_Event"
-		},
-		"StateThreeRestClientProducer": {
-			"carrierTechnologyParameters": {
-				"carrierTechnology": "RESTCLIENT",
-				"parameterClassName": "org.onap.policy.apex.plugins.event.carrier.restclient.RestClientCarrierTechnologyParameters",
-				"parameters": {
-					"url": "http://katana-nbi:8000/api/slice/{sliceId}",
-					"httpMethod": "POST",
-					"httpHeaders": [
-						[
-							"Keep-Alive",
-							"300"
-						],
-						[
-							"Cache-Control",
-							"no-cache"
-						]
-					]
-				}
-			},
-			"eventProtocolParameters": {
-				"eventProtocol": "JSON"
-			},
-			"eventNameFilter": "State_Three_Event"
+			"eventNameFilter": "APEX_Wrapped_Event"
 		}
 	}
 }
