@@ -60,6 +60,6 @@ class AlertView(FlaskView):
                         "alertMessage": {"NS_ID": ns_id, "NSD_ID": location, "status": "down"},
                     }
                     apex_producer = create_producer()
-                    logger.debug(apex_message)
+                    logger.info(f"Sending alert to APEX {apex_message}")
                     apex_producer.send("apex-in-0", value=apex_message)
         return "Alert received", 200

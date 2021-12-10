@@ -61,4 +61,3 @@ class Policy:
         }
         neat_url = self.url + "/event"
         r = requests.put(neat_url, neat_message)
-        logger.debug(f"Notifying NEAT, message: {neat_message}")

@@ -177,6 +177,7 @@ class PolicyView(FlaskView):
         if not isapex:
             return "APEX Policy Engine is not configured", 400
         apexpolicy = request.json
+        logger.info(f"Received new APEX action: {apexpolicy}")
         try:
             # Check the Policy Type
             if apexpolicy["policyType"] == "FailingNS":
@@ -184,17 +185,13 @@ class PolicyView(FlaskView):
                 slice_id = apexpolicy["policy"]["slice_id"]
                 ns_id = apexpolicy["policy"]["ns_id"]
                 nsd_id = apexpolicy["policy"]["nsd_id"]
-                logger.debug(apexpolicy)
                 # Notify NEAT if needed
                 notify_neat = apexpolicy["policy"]["extra_actions"].get("notify_neat", False)
-                logger.debug(notify_neat)
                 if notify_neat:
                     neat_list = mongoUtils.find_all("policy", {"type": "neat"})
-                    logger.debug(neat_list)
                     for ineat in neat_list:
                         # Get the NEAT object
                         neat_obj = pickle.loads(mongoUtils.get("policy_obj", ineat["_id"])["obj"])
-                        logger.debug(neat_obj.url)
                         neat_obj.notify(alert_type="FailingNS", slice_id=slice_id, status=True)
                 if failing_ns_action == "restart_ns":
                     # Scenario 1
@@ -208,7 +205,6 @@ class PolicyView(FlaskView):
                         f"http://katana-nbi:8000/api/slice/{slice_id}/modify",
                         json=json.loads(json.dumps(restart_ns_message)),
                     )
-                    logger.debug(r.content)
                     return "Restaring the NS", 200
                 elif failing_ns_action == "restart_slice":
                     # Scenario 2
@@ -222,13 +218,11 @@ class PolicyView(FlaskView):
                         f"http://katana-nbi:8000/api/slice/{slice_id}/modify",
                         json=json.loads(json.dumps(restart_ns_message)),
                     )
-                    logger.debug(r.content)
                     return "Restaring the NS", 200
                 elif failing_ns_action == "stop_slice":
                     # Scenario 3
                     r_url = f"http://katana-nbi:8000/api/slice/{slice_id}"
                     r = requests.delete(r_url)
-                    logger.debug(r.content)
                     return "Stopping Slice", 200
                 else:
                     return f"Action {failing_ns_action} is not supported", 400
