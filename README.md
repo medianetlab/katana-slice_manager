@@ -32,7 +32,9 @@ Katana Slice Manager is based on a highly modular architecture, built as a mesh 
 - OpenAPIs supported by Swagger-io tool
 - Modular architecture for supporting different infrastructure technologies
 - Integrated CLI tool
+- Slice Day-2 operations
 - Prometheus and Grafana Monitoring modules
+- Integrated Policy Engine System
 - Slice Deployment and Configuration measurements
 - CI/CD procedures
 
@@ -69,7 +71,7 @@ Options:
 Deploy katana Slice Manager service. The script will attempt to pull the defined Docker tag from the defined Docker registry/repository. Otherwise, it will build the images using the ":test" tag.
 
 ``` bash
-bash bin/deploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>] [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [-h | --help]
+bash bin/deploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>] [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [--no-build] [--apex] [-h | --help]
 ```
 
 Options:
@@ -82,6 +84,7 @@ Options:
 - __[--docker_reg_passwd <REGISTRY_PASSWORD>] :__ Define the password for the user of the remote Docker registry
 - __[-m | --monitoring] :__ Start Katana Slice Manager Slice Monitoring module
 - __[--no_build] :__ Try to download Docker images, but do not build them
+- __[--apex] :__ Initiate the APEX Policy Engine
 - __[-h | --help] :__ Print help message and quit
 
 ### Logs

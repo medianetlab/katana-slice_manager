@@ -39,6 +39,7 @@ export DOCKER_REG_PASSWD=""
 export DOCKER_REPO=""
 export KATANA_MONITORING=""
 export KATANA_HOST=""
+export APEX=""
 
 # Check if there are any running slices
 running_slices=$(curl -s http://localhost:8000/api/slice)

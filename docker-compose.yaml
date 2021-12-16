@@ -64,6 +64,7 @@ services:
       PYTHONWARNINGS: "ignore:Unverified HTTPS request"
       KATANA_MONITORING: ${KATANA_MONITORING}
       restart: always
+      APEX: ${APEX}
     depends_on:
       - kafka
       - mongo
@@ -85,6 +86,7 @@ services:
       - "katana-grafana-templates:/katana-grafana/templates"
     environment:
       KATANA_MONITORING: ${KATANA_MONITORING}
+      APEX: ${APEX}
     env_file:
       - "katana-mngr/.env"
       - "katana-grafana/.env"
@@ -192,6 +194,16 @@ services:
     depends_on:
       - katana-mngr
       - katana-grafana
+
+  katana-apex:
+    image: "${DOCKER_REG}${DOCKER_REPO}katana-apex:${DOCKER_TAG}"
+    container_name: katana-apex
+    build:
+      context: .
+      dockerfile: katana-apex/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - katana-mngr
 
 volumes:
   katana-mongo-datadb: {}

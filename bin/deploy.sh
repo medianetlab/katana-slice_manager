@@ -12,6 +12,7 @@ function build_katana_images {
 
 containers="mongo zookeeper kafka katana-nbi katana-mngr katana-cli katana-swagger"
 export KATANA_MONITORING=""
+export APEX=""
 
 # Get the project directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
@@ -19,7 +20,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
 # Check for help option
 if [[ " $* " =~ " -h " ]] || [[ " $* " =~ " --help " ]];
 then
-     printf "Usage:\n\tdeploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>]\n\t\t  [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [--no_build] [-h | --help]\nOptions:
+     printf "Usage:\n\tdeploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>]\n\t\t  [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [--no_build] [--apex] [-h | --help]\nOptions:
 \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
 \t[-r | --release <RELEASE_NUMBER>] : Define the release that will match the Docker Tag of Katana Docker images
 \t[--docker_reg <REMOTE_DOCKER_REGISTRY>] : Define the remote Docker registry. If no docker registry is specified, Katana will try to use the public Docker hub
@@ -28,6 +29,7 @@ then
 \t[--docker_reg_passwd <REGISTRY_PASSWORD>] : Define the password for the user of the remote Docker registry
 \t[-m | --monitoring] : Start the monitoring module
 \t[--no_build] : Try to download Docker images, but do not build them
+\t[--apex] : Initiate the APEX Policy Engine
 \t[-h | --help] : Print this message and quit\n"
         exit 0
 fi
@@ -90,9 +92,14 @@ do
         export NO_BUILD=true
         shift
         ;;
+    --apex)
+        export APEX=true
+        containers="${containers} katana-apex"
+        shift
+        ;;
     *)
         printf "Wrong option %s\n--------\n" "${key}"
-        printf "Usage:\n\tdeploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>]\n\t\t  [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [--no_build] [-h | --help]\nOptions:
+        printf "Usage:\n\tdeploy.sh [-p | --publish] [-r | --release <RELEASE_NUMBER>] [--docker_reg <REMOTE_DOCKER_REGISTRY>] [--docker_repo <DOCKER_REPOSITORY>]\n\t\t  [--docker_reg_user <REGISTRY_USER>] [--docker_reg_passwd <REGISTRY_PASSWORD>] [-m | --monitoring] [--no_build] [--apex] [-h | --help]\nOptions:
 \t[-p | --publish] : Expose Kafka end Swagger-ui using katana public IP
 \t[-r | --release <RELEASE_NUMBER>] : Define the release that will match the Docker Tag of Katana Docker images (Default: :test)
 \t[--docker_reg <REMOTE_DOCKER_REGISTRY>] : Define the remote Docker registry. If no docker registry is specified, Katana will try to use the public Docker hub
@@ -101,6 +108,7 @@ do
 \t[--docker_reg_passwd <REGISTRY_PASSWORD>] : Define the password for the user of the remote Docker registry
 \t[-m | --monitoring] : Start the monitoring module
 \t[--no_build] : Try to download Docker images, but do not build them
+\t[--apex] : Initiate the APEX Policy Engine
 \t[-h | --help] : Print this message and quit\n"
         exit 1
         ;;

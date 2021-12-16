@@ -1,5 +1,5 @@
 global:
-  evaluation_interval: 30s
+  evaluation_interval: 10s
   scrape_interval: 10s
 
 # Alertmanager configuration
