@@ -3,6 +3,7 @@ import os
 from logging import handlers
 from flask import request
 from flask_classful import FlaskView
+from time import sleep
 
 from katana.shared_utils.mongoUtils import mongoUtils
 from katana.shared_utils.sliceUtils.sliceUtils import check_runtime_errors
@@ -59,6 +60,7 @@ class AlertView(FlaskView):
                         "alertType": "FailingNS",
                         "alertMessage": {"NS_ID": ns_id, "NSD_ID": location, "status": "down"},
                     }
+                    sleep(10)
                     apex_producer = create_producer()
                     logger.info(f"Sending alert to APEX {apex_message}")
                     apex_producer.send("apex-in-0", value=apex_message)

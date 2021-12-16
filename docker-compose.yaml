@@ -86,6 +86,7 @@ services:
       - "katana-grafana-templates:/katana-grafana/templates"
     environment:
       KATANA_MONITORING: ${KATANA_MONITORING}
+      APEX: ${APEX}
     env_file:
       - "katana-mngr/.env"
       - "katana-grafana/.env"

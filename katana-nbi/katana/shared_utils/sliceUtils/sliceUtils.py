@@ -1,5 +1,6 @@
 import logging
 import pickle
+import os
 from logging import handlers
 
 from katana.shared_utils.mongoUtils import mongoUtils
@@ -29,11 +30,13 @@ def check_runtime_errors(nest):
     else:
         nest_status = "Running"
         # Notify NEAT
-        neat_list = mongoUtils.find_all("policy", {"type": "neat"})
-        for ineat in neat_list:
-            # Get the NEAT object
-            neat_obj = pickle.loads(mongoUtils.get("policy_obj", ineat["_id"])["obj"])
-            neat_obj.notify(alert_type="FailingNS", slice_id=slice_id, status=False)
+        isapex = os.getenv("APEX", None)
+        if isapex:
+            neat_list = mongoUtils.find_all("policy", {"type": "neat"})
+            for ineat in neat_list:
+                # Get the NEAT object
+                neat_obj = pickle.loads(mongoUtils.get("policy_obj", ineat["_id"])["obj"])
+                neat_obj.notify(alert_type="FailingNS", slice_id=slice_id, status=False)
     nest["status"] = nest_status
     mongoUtils.update("slice", slice_id, nest)
     # Update monitoring status

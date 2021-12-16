@@ -187,6 +187,8 @@ class PolicyView(FlaskView):
                 nsd_id = apexpolicy["policy"]["nsd_id"]
                 # Notify NEAT if needed
                 notify_neat = apexpolicy["policy"]["extra_actions"].get("notify_neat", False)
+                if not notify_neat:
+                    notify_neat = apexpolicy["policy"]["extra_actions"].get("notify_NEAT", False)
                 if notify_neat:
                     neat_list = mongoUtils.find_all("policy", {"type": "neat"})
                     for ineat in neat_list:

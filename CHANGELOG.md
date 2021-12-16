@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.5] - 16/12/2021
+
+### 2.3.5 Added
+
+- APEX policy engine integration
+
 ## [2.3.4] - 06/12/2021
 
 ### 2.3.4 Added

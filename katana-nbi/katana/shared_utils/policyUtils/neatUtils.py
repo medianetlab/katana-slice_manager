@@ -60,5 +60,6 @@ class Policy:
             "ttl": -1,
         }
         neat_url = self.url + "/event"
-        r = requests.put(neat_url, neat_message)
+        neat_headers = {"Content-type": "Application/JSON"}
+        r = requests.put(neat_url, json=json.loads(json.dumps(neat_message)), headers=neat_headers)
         logger.info(f"Notifying NEAT, message: {neat_message}")
