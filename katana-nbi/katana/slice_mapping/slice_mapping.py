@@ -73,10 +73,12 @@ def nest_mapping(req):
 
     nest = {"_id": req["_id"]}
 
-    # Recreate the nest req
-
     # Check if the base_slice_des_ref or the required fields are set
-    base_slice_des_ref = req["base_slice_descriptor"].get("base_slice_des_ref", None)
+    try:
+        base_slice_des_ref = req["base_slice_descriptor"].get("base_slice_des_ref", None)
+    except KeyError:
+        logger.error("Required field base_slice_descriptor is missing")
+        return ("Error: Required field base_slice_descriptor is missing", 400)
     if not base_slice_des_ref:
         for req_key in REQ_FIELDS:
             if req_key not in req["base_slice_descriptor"]:
