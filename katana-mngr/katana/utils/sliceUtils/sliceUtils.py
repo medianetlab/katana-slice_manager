@@ -369,7 +369,7 @@ def add_slice(nest_req):
     else:
         wan_start_time = time.time()
         # Crate the data for the WIM
-        wim_data = {"_id": nest["_id"], "core_connections": [], "extra_ns": [], "slice_sla": {}}
+        wim_data = {"_id": nest["_id"], "connections": [], "slice_sla": {}}
         # i) Create the slice_sla data for the WIM
         wim_data["slice_sla"] = {
             "network_DL_throughput": nest["network_DL_throughput"],
@@ -380,37 +380,16 @@ def add_slice(nest_req):
         for connection in nest["connections"]:
             data = {}
             for key in connection:
-                key_data = {}
-                try:
-                    ns_l = connection[key]["ns_list"]
-                except KeyError:
-                    pass
-                else:
-                    key_data["ns"] = []
-                    for ns in ns_l:
-                        if ns["placement_loc"] not in key_data["ns"]:
-                            key_data["ns"].append(ns["placement_loc"])
-                try:
-                    pnf_l = connection[key]["pnf_list"]
-                except KeyError:
-                    pass
-                else:
-                    key_data["pnf"] = pnf_l
-                if key_data:
-                    data[key] = key_data
-            if data:
-                wim_data["core_connections"].append(data)
-        # iii) Add the extra Network Services
-        for ns in nest["ns_list"]:
-            if ns["placement_loc"] not in wim_data["extra_ns"]:
-                wim_data["extra_ns"].append(ns["placement_loc"])
-        # iV) Add the probes
+                data[key] = connection[key]["location"]
+            wim_data["connections"].append(data)
+        # iii) Add the probes
         wim_data["probes"] = nest["probe_list"]
         # Select WIM - Assume that there is only one registered
         wim_list = list(mongoUtils.index("wim"))
         target_wim = wim_list[0]
         target_wim_id = target_wim["id"]
         target_wim_obj = pickle.loads(mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
+        logger.debug(wim_data)
         target_wim_obj.create_slice(wim_data)
         nest["wim_data"] = wim_data
         target_wim["slices"][nest["_id"]] = nest["_id"]
