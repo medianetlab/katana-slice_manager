@@ -143,7 +143,7 @@ This will create hard links of the __shared_utils__ directory of both katana-mng
 for dest in katana-{mngr,nbi}/katana/shared_utils/; do cp -al dev_shared_utils/{PATH_TO_NEW_FILE} $dest; done
 ```
 
-It will also create a **dev** folder, where the example_config_files will be copied for providing direct access to testing configuration files.
+It will also create a __dev__ folder, where the example_config_files will be copied for providing direct access to testing configuration files.
 
 You can also check the [Wiki "For Developers"](https://github.com/medianetlab/katana-slice_manager/wiki/developers) page for more details.
 

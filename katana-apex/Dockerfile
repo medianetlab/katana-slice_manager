@@ -1,4 +1,4 @@
-FROM nexus3.onap.org:10003/onap/policy-apex-pdp:2.6-SNAPSHOT-latest
+FROM onap/policy-apex-pdp:2.6.0
 WORKDIR /home/apexuser
 
 COPY katana-apex/policy-apex/. ./policy-apex/
