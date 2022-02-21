@@ -2,7 +2,7 @@ Flask==1.1.1
 
 # API.
 flask-classful==0.14
-
+itsdangerous==2.0.1
 PyYAML==5.4
 
 # Application server for both development and production.

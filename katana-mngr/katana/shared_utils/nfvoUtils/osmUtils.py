@@ -328,4 +328,11 @@ class Osm:
                 break
             else:
                 self.getToken()
-        return True if status == 404 else False
+                self.getToken()
+
+        nsr = response.json()
+
+        if nsr["operational-status"] == "terminated":
+            self.deleteNs(nsId)
+
+        return True if status == 404 or nsr["operational-status"] == "terminated" else False
