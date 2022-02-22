@@ -389,7 +389,6 @@ def add_slice(nest_req):
         target_wim = wim_list[0]
         target_wim_id = target_wim["id"]
         target_wim_obj = pickle.loads(mongoUtils.find("wim_obj", {"id": target_wim_id})["obj"])
-        logger.debug(wim_data)
         target_wim_obj.create_slice(wim_data)
         nest["wim_data"] = wim_data
         target_wim["slices"][nest["_id"]] = nest["_id"]

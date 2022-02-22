@@ -331,8 +331,12 @@ class Osm:
                 self.getToken()
 
         nsr = response.json()
+        terminated = False
+        try:
+            if nsr["operational-status"] == "terminated":
+                self.deleteNs(nsId)
+                terminated = True
+        except KeyError:
+            terminated = True
 
-        if nsr["operational-status"] == "terminated":
-            self.deleteNs(nsId)
-
-        return True if status == 404 or nsr["operational-status"] == "terminated" else False
+        return True if (status == 404 or terminated) else False

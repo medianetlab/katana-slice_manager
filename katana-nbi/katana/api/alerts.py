@@ -41,7 +41,10 @@ class AlertView(FlaskView):
                 )
                 # Update the NEST
                 nest = mongoUtils.get("slice", slice_id)
-                nest["ns_inst_info"][ns_id][location]["status"] = "Error"
+                try:
+                    nest["ns_inst_info"][ns_id][location]["status"] = "Error"
+                except KeyError:
+                    pass
                 # Add the error to the runtime errors
                 ns_errors = nest["runtime_errors"].get("ns", [])
                 ns_errors.append(ns_id)
