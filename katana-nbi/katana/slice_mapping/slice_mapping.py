@@ -215,7 +215,8 @@ def nest_mapping(req):
                         data = {
                             "_id": found_list_key,
                             "nest_list": [nest["_id"]],
-                            "ns_list": {},
+                            "nsd_list": {},
+                            "ns_list": [],
                         }
                         mongoUtils.add("sharing_lists", data)
                     nest["shared"]["radio"] = nest["shared"].get("radio", {})
@@ -268,7 +269,8 @@ def nest_mapping(req):
                         data = {
                             "_id": found_list_key,
                             "nest_list": [nest["_id"]],
-                            "ns_list": {},
+                            "nsd_list": {},
+                            "ns_list": [],
                         }
                         mongoUtils.add("sharing_lists", data)
                     nest["shared"]["core"] = nest["shared"].get("core", {})
@@ -293,7 +295,8 @@ def nest_mapping(req):
                         data = {
                             "_id": found_list_key,
                             "nest_list": [nest["_id"]],
-                            "ns_list": {},
+                            "nsd_list": {},
+                            "ns_list": [],
                         }
                         mongoUtils.add("sharing_lists", data)
                     nest["shared"]["radio"] = nest["shared"].get("radio", {})
