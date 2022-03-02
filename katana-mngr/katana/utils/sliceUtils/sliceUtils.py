@@ -426,8 +426,8 @@ def add_slice(nest_req):
             # The ns is already instantiated and there is no need to instantiate again
             # Find the sharing list
             shared_list = mongoUtils.get("sharing_lists", ns["shared_slice_key"])
-            ns_inst_info[ns["ns-id"]] = shared_list["nsd_list"][ns["nsd-id"]]
             try:
+                ns_inst_info[ns["ns-id"]] = shared_list["nsd_list"][ns["nsd-id"]]
                 shared_list["ns_list"].append(ns["ns-id"])
             except KeyError:
                 shared_list["ns_list"] = [ns["ns-id"]]
@@ -456,8 +456,8 @@ def add_slice(nest_req):
             ns_inst_info[ns["ns-id"]][ns["placement_loc"]["location"]]["sharing_list"] = ns[
                 "shared_slice_key"
             ]
-            shared_list["nsd_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
             try:
+                shared_list["nsd_list"][ns["nsd-id"]] = ns_inst_info[ns["ns-id"]]
                 shared_list["ns_list"].append(ns["ns-id"])
             except KeyError:
                 shared_list["ns_list"] = [ns["ns-id"]]
