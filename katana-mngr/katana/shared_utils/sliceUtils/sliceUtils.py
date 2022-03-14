@@ -1,6 +1,7 @@
 import logging
 import pickle
 import os
+import time
 from logging import handlers
 
 from katana.shared_utils.mongoUtils import mongoUtils
@@ -33,6 +34,7 @@ def check_runtime_errors(nest):
         isapex = os.getenv("APEX", None)
         if isapex:
             neat_list = mongoUtils.find_all("policy", {"type": "neat"})
+            time.sleep(30)
             for ineat in neat_list:
                 # Get the NEAT object
                 neat_obj = pickle.loads(mongoUtils.get("policy_obj", ineat["_id"])["obj"])
