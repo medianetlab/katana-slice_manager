@@ -132,13 +132,16 @@ def nest_mapping(req):
 
     # Check that the location in coverage field is registered
     not_supp_loc = []
+    supp_loc = []
     for location_id in req_slice_des["coverage"]:
         if not mongoUtils.find("location", {"id": location_id.lower()}):
             not_supp_loc.append(location_id)
             logger.warning(f"Location {location_id} is not registered")
+        else:
+            supp_loc.append(location_id.lower())
 
-    for location_id in not_supp_loc:
-        req_slice_des["coverage"].remove(location_id)
+    req_slice_des["not_supported_locations"] = not_supp_loc
+    req_slice_des["coverage"] = supp_loc
 
     # *************************** Start the mapping ***************************
     # Currently supports:
