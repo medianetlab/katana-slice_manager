@@ -1240,8 +1240,8 @@ def update_slice(nest_id, updates):
             # Get the new NS details
             try:
                 new_ns["nsd-id"] = updates["details"]["nsd_id"]
-                ns_location = updates["details"]["location"]
-                new_ns["location"] = ns_location.lower()
+                ns_location = updates["details"]["location"].lower()
+                new_ns["location"] = ns_location
                 if ns_location not in nest["coverage"] and ns_location.lower() != "core":
                     logger.error(f"Location {ns_location} is not included in the Slice coverage")
                     return
@@ -1431,7 +1431,7 @@ def update_slice(nest_id, updates):
             stop_ns = True
             try:
                 ns_id = updates["details"]["ns_id"]
-                ns_location = updates["details"]["location"]
+                ns_location = updates["details"]["location"].lower()
             except KeyError as e:
                 logger.error(f"New ns fields are missing: {e}")
                 return
@@ -1457,6 +1457,9 @@ def update_slice(nest_id, updates):
                     )
                     # Stop the NS
                     target_nfvo_obj.deleteNs(deleted_ns["nfvo_inst_ns"])
+                    while True:
+                        if target_nfvo_obj.checkNsLife(deleted_ns["nfvo_inst_ns"]):
+                            break
                     logger.info(f"Deleted NS {deleted_ns['ns-name']}")
                 # Update monitoring
                 if monitoring:
