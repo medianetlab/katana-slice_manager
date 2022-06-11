@@ -1,7 +1,7 @@
 {
   "id": "minilab_vim",
   "name": "minilab_vim",
-  "auth_url": "http://10.100.128.2:5000/v3/",
+  "auth_url": "http://IP_ADDRESS:5000/v3/",
   "username": "******",
   "password": "******",
   "admin_project_name": "******",
@@ -10,6 +10,6 @@
   "version": "Queens",
   "description": "Edge VIM - IoRL/Minilab",
   "config": {
-      "security_groups": "TBD"
-  },
+    "security_groups": "TBD"
+  }
 }

@@ -1,0 +1,20 @@
+{
+  "id": "group0_demo5GGnb",
+  "name": "group0_demo5GGnb",
+  "gen": 5,
+  "func": 1,
+  "shared": {
+    "availability": false
+  },
+  "type": 0,
+  "location": "group0_edge",
+  "pnf_list": [],
+  "ns_list": [
+    {
+      "nsd-id": "896757b6-1966-4657-9ec4-1e001e726d61",
+      "ns-name": "group0_demo5GGnb",
+      "placement": 0,
+      "optional": false
+    }
+  ]
+}

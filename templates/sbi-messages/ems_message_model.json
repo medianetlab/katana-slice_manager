@@ -1,8 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-
-  "definitions":{
-    "ns_list":{
+  "definitions": {
+    "ns_list": {
       "type": "array",
       "description": "A list of the NSs on which the EMS must run D1 & D2 configuration",
       "items": {
@@ -44,7 +43,7 @@
             }
           }
         }
-      }  
+      }
     },
     "pnf_list": {
       "type": "array",
@@ -72,13 +71,13 @@
             "type": "string",
             "description": "The location of the PNF"
           },
-          "optional":{
+          "optional": {
             "type": "boolean"
           }
         }
       }
     },
-    "slice_sla":{
+    "slice_sla": {
       "type": "object",
       "description": "Slice Parameters for NEST",
       "properties": {
@@ -112,7 +111,12 @@
         },
         "group_communication_support": {
           "type": "number",
-          "enum": [0, 1, 2, 3],
+          "enum": [
+            0,
+            1,
+            2,
+            3
+          ],
           "description": "0: not available 1: Single Cell Point to Multipoint (SCPTM) 2: Broadcast/Multicast 3: Broadcast/Multicast + SC-PTM"
         },
         "number_of_terminals": {
@@ -128,7 +132,15 @@
               "description": "Describes if this attribute is provided by the network slice and contains a list of positioning methods provided by the slice.",
               "items": {
                 "type": "number",
-                "enum": [1, 2, 3, 4, 5, 6, 7],
+                "enum": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ],
                 "description": "1: CID 2: E-CID (LTE and NR) 3: OTDOA (LTE and NR) 4: RF fingerprinting 5: AECID 6: Hybrid positioning 7: NET-RTK"
               }
             },
@@ -152,7 +164,12 @@
         },
         "device_velocity": {
           "type": "number",
-          "enum": [1, 2, 3, 4],
+          "enum": [
+            1,
+            2,
+            3,
+            4
+          ],
           "description": "1: Stationary: 0 km/h 2: Pedestrian: 0 km/h to 10 km/h 3: Vehicular: 10 km/h to 120 km/h 4: High speed vehicular: 120 km/h to 500 km/h"
         },
         "terminal_density": {
@@ -162,7 +179,6 @@
       }
     }
   },
-
   "type": "object",
   "description": "Schema of the message from Katana to EMS",
   "properties": {
@@ -170,18 +186,32 @@
       "type": "object",
       "description": "The Core part of the Radio Service",
       "properties": {
-        "ns": {"$ref": "#/definitions/ns_list"},
-        "pnf": {"$ref": "#/definitions/pnf_list"}
+        "ns": {
+          "$ref": "#/definitions/ns_list"
+        },
+        "pnf": {
+          "$ref": "#/definitions/pnf_list"
+        }
       }
     },
     "radio": {
       "type": "object",
       "description": "The Radio part of the Radio Service",
       "properties": {
-        "ns": {"$ref": "#/definitions/ns_list"},
-        "pnf": {"$ref": "#/definitions/pnf_list"}
+        "ns": {
+          "$ref": "#/definitions/ns_list"
+        },
+        "pnf": {
+          "$ref": "#/definitions/pnf_list"
+        }
       }
     },
-    "slice_sla": {"$ref": "#/definitions/slice_sla"}
+    "slice_sla": {
+      "$ref": "#/definitions/slice_sla"
+    },
+    "slice_id": {
+      "type": "string",
+      "description": "The ID of the Slice"
+    }
   }
 }

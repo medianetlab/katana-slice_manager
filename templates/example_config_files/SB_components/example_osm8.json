@@ -1,0 +1,12 @@
+{
+  "id": "osm8",
+  "name": "osm8",
+  "nfvoip": "IP_ADDRESS",
+  "nfvousername": "*****",
+  "nfvopassword": "*****",
+  "tenantname": "*****",
+  "type": "OSM",
+  "version": "8",
+  "description": "OSM Release 8",
+  "config": {}
+}
