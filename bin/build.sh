@@ -15,6 +15,9 @@ then
     exit 0
 fi
 
+# Get the project directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
+
 # Check if the user and release fare defined
 while [[ $# -gt 0 ]]
 do
@@ -60,14 +63,14 @@ do
             exit 9999
         fi
         echo "Creating dev/dev_shared_utils. They are hard-linked to both common files in katana-mngr and katana-nbi directories"
-        mkdir -p dev/dev_config_files &> /dev/null && echo "Created dev folder"
-        cp -r example_config_files/* dev/dev_config_files/
+        mkdir -p "${DIR}/dev/dev_config_files" &> /dev/null && echo "Created dev folder"
+        cp -r "${DIR}/templates/example_config_files/"* "${DIR}/dev/dev_config_files/"
         echo "Creating dev/dev_config_files. They can be used for actual testing. They won't be pushed to remote repository"
-        rm -rf katana-nbi/katana/shared_utils &> /dev/null
-        rm -rf dev/dev_shared_utils &> /dev/null
-        cp -al katana-mngr/katana/shared_utils dev/dev_shared_utils &> /dev/null
-        cp -al katana-mngr/katana/shared_utils katana-nbi/katana/ &> /dev/null
-        shift
+        rm -rf "${DIR}/katana-nbi/katana/shared_utils" &> /dev/null
+        rm -rf "${DIR}/dev/dev_shared_utils" &> /dev/null
+        cp -al "${DIR}/katana-mngr/katana/shared_utils" dev/dev_shared_utils &> /dev/null
+        cp -al "${DIR}/katana-mngr/katana/shared_utils" katana-nbi/katana/ &> /dev/null
+        exit
         ;;
     *)
         printf "Wrong option %s\nUse the --help option\n--------\n" "${key}"
@@ -75,9 +78,6 @@ do
         ;;
     esac
 done
-
-# Get the project directory
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd .. && pwd )"
 
 # Check if the Docker user and passwd are set. If yes, login to docker registry
 if [[ ! -z ${DOCKER_REG_USER+x} && ! -z ${DOCKER_REG_PASSWD+x} ]]; then
