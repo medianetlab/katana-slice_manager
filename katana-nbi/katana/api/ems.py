@@ -11,7 +11,7 @@ from flask import request
 from flask_classful import FlaskView
 import pymongo
 
-from katana.shared_utils.emsUtils import amar_emsUtils, test_emsUtils
+from katana.shared_utils.emsUtils import amar_emsUtils, test_emsUtils, open5gs_emsUtils
 from katana.shared_utils.mongoUtils import mongoUtils
 
 # Logging Parameters
@@ -81,6 +81,8 @@ class EmsView(FlaskView):
                 ems = amar_emsUtils.Ems(request.json["url"])
             elif request.json["type"] == "test-ems":
                 ems = test_emsUtils.Ems(request.json["url"])
+            elif request.json["type"] == "open5gs-ems":
+                ems = open5gs_emsUtils.Ems(request.json["url"])
             else:
                 return "Error: Not supported EMS type", 400
         except KeyError:
@@ -142,6 +144,8 @@ class EmsView(FlaskView):
                     ems = amar_emsUtils.Ems(request.json["url"])
                 elif request.json["type"] == "test-ems":
                     ems = test_emsUtils.Ems(request.json["url"])
+                elif request.json["type"] == "open5gs-ems":
+                    ems = open5gs_emsUtils.Ems(request.json["url"])
                 else:
                     return "Error: Not supported EMS type", 400
             except KeyError:
