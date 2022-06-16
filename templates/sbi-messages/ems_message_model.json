@@ -191,6 +191,10 @@
         },
         "pnf": {
           "$ref": "#/definitions/pnf_list"
+        },
+        "id": {
+          "type": "string",
+          "description": "The ID of the core funciton"
         }
       }
     },
@@ -203,6 +207,10 @@
         },
         "pnf": {
           "$ref": "#/definitions/pnf_list"
+        },
+        "id": {
+          "type": "string",
+          "description": "The ID of the core funciton"
         }
       }
     },

@@ -587,6 +587,8 @@ def add_slice(nest_req):
                         for ipnf in connection[key]["pnf_list"]:
                             ipnf["shared"] = True
                             ipnf["sharing_list"] = shared_slice_list_key
+                finally:
+                    key_data["id"] = connection[key]["id"]
                 if key_data:
                     data[key] = key_data
             if data:
