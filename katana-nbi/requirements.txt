@@ -24,3 +24,6 @@ flask-cors
 
 # Kafka
 kafka-python==1.4.7
+
+# WSGI web application library
+werkzeug==2.1.2
