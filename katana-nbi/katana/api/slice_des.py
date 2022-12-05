@@ -33,9 +33,7 @@ class Base_slice_desView(FlaskView):
         slice_des_data = mongoUtils.index("base_slice_des_ref")
         return_data = []
         for islicedes in slice_des_data:
-            return_data.append(
-                dict(_id=islicedes["_id"], base_slice_des_id=islicedes["base_slice_des_id"])
-            )
+            return_data.append(dict(_id=islicedes["_id"], base_slice_des_id=islicedes["base_slice_des_id"]))
         return dumps(return_data), 200
 
     def post(self):
@@ -85,7 +83,7 @@ class Base_slice_desView(FlaskView):
         """
         result = mongoUtils.delete("base_slice_des_ref", uuid)
         if result:
-            return "Deleted Slice Descriptor {}".format(uuid), 200
+            return f"Deleted Slice Descriptor {uuid}", 200
         else:
             # if uuid is not found, return error
-            return "Error: No such Slice Descriptor: {}".format(uuid), 404
+            return f"Error: No such Slice Descriptor: {uuid}", 404

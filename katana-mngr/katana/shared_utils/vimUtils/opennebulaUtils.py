@@ -59,7 +59,7 @@ class Opennebula:
         self.project_name = project_name
         self.username = username
         self.password = password
-        conn = pyone.OneServer(self.auth_url, session="{0}:{1}".format(username, password))
+        conn = pyone.OneServer(self.auth_url, session=f"{username}:{password}")
 
     def create_project(self, conn, name, description="Katana Slice Project"):
         """
@@ -80,9 +80,7 @@ class Opennebula:
         """
         Creates the security group to be assigned to the new tenant
         """
-        sec_group = conn.create_security_group(
-            name=name, description="Katana Security Group", project_id=project.id
-        )
+        sec_group = conn.create_security_group(name=name, description="Katana Security Group", project_id=project.id)
         conn.create_security_group_rule(sec_group)
         return sec_group
 
@@ -130,9 +128,7 @@ class Opennebula:
         """
         Deletes user and project
         """
-        conn = pyone.OneServer(
-            self.auth_url, session="{0}:{1}".format(self.username, self.password)
-        )
+        conn = pyone.OneServer(self.auth_url, session=f"{self.username}:{self.password}")
         try:
             user = conn.user.info(user_id)
             group = user.get_GROUPS().ID[0]
@@ -149,9 +145,7 @@ class Opennebula:
         """
         Deletes user and project
         """
-        conn = pyone.OneServer(
-            self.auth_url, session="{0}:{1}".format(self.username, self.password)
-        )
+        conn = pyone.OneServer(self.auth_url, session=f"{self.username}:{self.password}")
         userpool = conn.userpool.info(-1, -1, -1)
         for user in userpool.USER:
             if user.get_NAME() == name:
@@ -163,19 +157,12 @@ class Opennebula:
         logger.warning("Delete user ONE: user does not exist: ", name)
 
     def create_slice_prerequisites(
-        self,
-        tenant_project_name,
-        tenant_project_description,
-        tenant_project_user,
-        tenant_project_password,
-        slice_uuid,
+        self, tenant_project_name, tenant_project_description, tenant_project_user, tenant_project_password, slice_uuid,
     ):
         """
         Creates the tenant (project, user, security_group) on the specified vim
         """
-        conn = pyone.OneServer(
-            self.auth_url, session="{0}:{1}".format(self.username, self.password)
-        )
+        conn = pyone.OneServer(self.auth_url, session=f"{self.username}:{self.password}")
         # creates the project in OpenNebula
         project = self.create_project(conn, tenant_project_name, tenant_project_description)
 
