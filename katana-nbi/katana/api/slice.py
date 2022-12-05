@@ -41,14 +41,7 @@ class SliceView(FlaskView):
         slice_data = mongoUtils.index("slice")
         return_data = []
         for islice in slice_data:
-            return_data.append(
-                dict(
-                    _id=islice["_id"],
-                    name=islice["slice_name"],
-                    created_at=islice["created_at"],
-                    status=islice["status"],
-                )
-            )
+            return_data.append(dict(_id=islice["_id"], name=islice["slice_name"], created_at=islice["created_at"], status=islice["status"],))
         return dumps(return_data), 200
 
     def get(self, uuid):
@@ -81,12 +74,12 @@ class SliceView(FlaskView):
         """
         result = mongoUtils.get("slice", uuid)
         if not result:
-            return "Error: No such slice: {}".format(uuid), 404
+            return f"Error: No such slice: {uuid}", 404
         # Send the message to katana-mngr
         producer = kafkaUtils.create_producer()
         slice_message = {"action": "update", "slice_id": uuid, "updates": request.json}
         producer.send("slice", value=slice_message)
-        return "Updating {0}".format(uuid), 200
+        return f"Updating {uuid}", 200
 
     def post(self):
         """
@@ -124,13 +117,13 @@ class SliceView(FlaskView):
             force = force if force == "true" else None
 
         if not delete_json:
-            return "Error: No such slice: {}".format(uuid), 404
+            return f"Error: No such slice: {uuid}", 404
         else:
             # Send the message to katana-mngr
             producer = kafkaUtils.create_producer()
             slice_message = {"action": "delete", "message": uuid, "force": force}
             producer.send("slice", value=slice_message)
-            return "Deleting {0}".format(uuid), 200
+            return f"Deleting {uuid}", 200
 
     @route("<uuid>/errors")
     def show_errors(self, uuid):

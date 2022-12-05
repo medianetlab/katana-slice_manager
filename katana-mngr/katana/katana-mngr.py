@@ -45,27 +45,24 @@ except pymongo.errors.DuplicateKeyError:
     pass
 
 # Check for new messages
-for message in consumer:
-    logger.info("--- New Message ---")
-    logger.info(
-        "Topic: {0} | Partition: {1} | Offset: {2}".format(
-            message.topic, message.partition, message.offset
-        )
-    )
-    # Commit the latest received message
-    consumer.commit()
-    action = message.value["action"]
-    # Add slice
-    if action == "add":
-        payload = message.value["message"]
-        sliceUtils.add_slice(payload)
-    # Delete slice
-    elif action == "delete":
-        payload = message.value["message"]
-        force = message.value["force"]
-        sliceUtils.delete_slice(slice_id=payload, force=force)
-    # Update slice
-    elif action == "update":
-        slice_id = message.value["slice_id"]
-        updates = message.value["updates"]
-        sliceUtils.update_slice(nest_id=slice_id, updates=updates)
+if consumer:
+    for message in consumer:
+        logger.info("--- New Message ---")
+        logger.info(f"Topic: {message.topic} | Partition: {message.partition} | Offset: {message.offset}")
+        # Commit the latest received message
+        consumer.commit()
+        action = message.value["action"]
+        # Add slice
+        if action == "add":
+            payload = message.value["message"]
+            sliceUtils.add_slice(payload)
+        # Delete slice
+        elif action == "delete":
+            payload = message.value["message"]
+            force = message.value["force"]
+            sliceUtils.delete_slice(slice_id=payload, force=force)
+        # Update slice
+        elif action == "update":
+            slice_id = message.value["slice_id"]
+            updates = message.value["updates"]
+            sliceUtils.update_slice(nest_id=slice_id, updates=updates)

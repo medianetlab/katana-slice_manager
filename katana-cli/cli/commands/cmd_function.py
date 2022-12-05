@@ -23,9 +23,7 @@ def ls():
         r = requests.get(url, timeout=30)
         r.raise_for_status()
         json_data = json.loads(r.content)
-        print(
-            console_formatter("DB_ID", "FUNC_ID", "GEN", "FUNC", "TYPE", "LOCATION", "CREATED AT")
-        )
+        print(console_formatter("DB_ID", "FUNC_ID", "GEN", "FUNC", "TYPE", "LOCATION", "CREATED AT"))
         for i in range(len(json_data)):
             print(
                 console_formatter(
@@ -35,9 +33,7 @@ def ls():
                     json_data[i]["func"],
                     json_data[i]["type"],
                     json_data[i]["loc"],
-                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
+                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime("%Y-%m-%d %H:%M:%S"),
                 )
             )
 
@@ -67,7 +63,7 @@ def inspect(id):
         # indent=2 "beautifies" json
         click.echo(json.dumps(json_data, indent=2))
         if not json_data:
-            click.echo("Error: No such service: {}".format(id))
+            click.echo(f"Error: No such service: {id}")
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -80,9 +76,7 @@ def inspect(id):
 
 
 @click.command()
-@click.option(
-    "-f", "--file", required=True, type=str, help="yaml file with Network Function details"
-)
+@click.option("-f", "--file", required=True, type=str, help="yaml file with Network Function details")
 def add(file):
     """
     Add new supported Network Function
@@ -137,9 +131,7 @@ def rm(id):
 
 
 @click.command()
-@click.option(
-    "-f", "--file", required=True, type=str, help="yaml file with Network Function details"
-)
+@click.option("-f", "--file", required=True, type=str, help="yaml file with Network Function details")
 @click.argument("id")
 def update(file, id):
     """
@@ -179,6 +171,4 @@ cli.add_command(update)
 
 
 def console_formatter(uuid, func_id, gen, func, _type, loc, created_at):
-    return "{0: <40}{1: <30}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}".format(
-        uuid, func_id, gen, func, _type, loc, created_at
-    )
+    return "{0: <40}{1: <30}{2: <10}{3: <10}{4: <10}{5: <10}{6: <25}".format(uuid, func_id, gen, func, _type, loc, created_at)
