@@ -28,16 +28,7 @@ def ls():
         # click.echo(json.dumps(json_data, indent=2))
         print(console_formatter("DB_ID", "VIM_ID", "TYPE", "CREATED AT"))
         for i in range(len(json_data)):
-            print(
-                console_formatter(
-                    json_data[i]["_id"],
-                    json_data[i]["vim_id"],
-                    json_data[i]["type"],
-                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
-                )
-            )
+            print(console_formatter(json_data[i]["_id"], json_data[i]["vim_id"], json_data[i]["type"], datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime("%Y-%m-%d %H:%M:%S"),))
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
@@ -64,7 +55,7 @@ def inspect(id):
         # indent=2 "beautifies" json
         click.echo(json.dumps(json_data, indent=2))
         if not json_data:
-            click.echo("Error: No such vim: {}".format(id))
+            click.echo(f"Error: No such vim: {id}")
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)
