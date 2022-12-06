@@ -105,10 +105,10 @@ class FunctionView(FlaskView):
             if location:
                 location["functions"].remove(result["id"])
                 mongoUtils.update("location", location["_id"], location)
-            return "Deleted Network Function {}".format(uuid), 200
+            return f"Deleted Network Function {uuid}", 200
         else:
             # if uuid is not found, return error
-            return "Error: No such Network Function: {}".format(uuid), 404
+            return f"Error: No such Network Function: {uuid}", 404
 
     def put(self, uuid):
         """

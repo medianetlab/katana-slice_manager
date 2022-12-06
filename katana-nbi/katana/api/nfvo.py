@@ -40,14 +40,7 @@ class NFVOView(FlaskView):
         nfvo_data = mongoUtils.index("nfvo")
         return_data = []
         for infvo in nfvo_data:
-            return_data.append(
-                dict(
-                    _id=infvo["_id"],
-                    nfvo_id=infvo["id"],
-                    created_at=infvo["created_at"],
-                    type=infvo["type"],
-                )
-            )
+            return_data.append(dict(_id=infvo["_id"], nfvo_id=infvo["id"], created_at=infvo["created_at"], type=infvo["type"],))
         return dumps(return_data), 200
 
     # @route('/all/') #/nfvo/all
@@ -93,11 +86,11 @@ class NFVOView(FlaskView):
             try:
                 osm.getToken()
             except ConnectTimeout as e:
-                logger.exception("Connection Timeout: {}".format(e))
+                logger.exception(f"Connection Timeout: {e}")
                 response = dumps({"error": "Unable to connect to NFVO"})
                 return (response, 400)
             except ConnectionError as e:
-                logger.exception("Connection Error: {}".format(e))
+                logger.exception(f"Connection Error: {e}")
                 response = dumps({"error": "Unable to connect to NFVO"})
                 return (response, 400)
             else:
@@ -124,15 +117,15 @@ class NFVOView(FlaskView):
         del_nfvo = mongoUtils.get("nfvo", uuid)
         if del_nfvo:
             if del_nfvo["tenants"]:
-                return "Cannot delete nfvo {} - In use".format(uuid), 400
+                return f"Cannot delete nfvo {uuid} - In use", 400
             mongoUtils.delete("nfvo_obj", uuid)
             mongoUtils.delete_all("nsd", {"nfvo_id": del_nfvo["id"]})
             mongoUtils.delete_all("vnfd", {"nfvoid": del_nfvo["id"]})
             mongoUtils.delete("nfvo", uuid)
-            return "Deleted NFVO {}".format(uuid), 200
+            return f"Deleted NFVO {uuid}", 200
         else:
             # if uuid is not found, return error
-            return "Error: No such nfvo: {}".format(uuid), 404
+            return f"Error: No such nfvo: {uuid}", 404
 
     def put(self, uuid):
         """
@@ -173,9 +166,7 @@ class NFVOView(FlaskView):
                 except KeyError:
                     return f"Error: Required fields: {self.req_fields}", 400
                 else:
-                    osm = osmUtils.Osm(
-                        nfvo_id, osm_ip, osm_username, osm_password, osm_project_name
-                    )
+                    osm = osmUtils.Osm(nfvo_id, osm_ip, osm_username, osm_password, osm_project_name)
                 try:
                     osm.getToken()
                 except ConnectTimeout as e:

@@ -26,16 +26,7 @@ def ls():
         json_data = json.loads(r.content)
         print(console_formatter("SLICE_ID", "SLICE_NAME", "CREATED AT", "STATUS"))
         for i in range(len(json_data)):
-            print(
-                console_formatter(
-                    json_data[i]["_id"],
-                    json_data[i]["name"],
-                    datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
-                    json_data[i]["status"],
-                )
-            )
+            print(console_formatter(json_data[i]["_id"], json_data[i]["name"], datetime.datetime.fromtimestamp(json_data[i]["created_at"]).strftime("%Y-%m-%d %H:%M:%S"), json_data[i]["status"],))
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -62,7 +53,7 @@ def inspect(uuid):
         json_data = json.loads(r.content)
         click.echo(json.dumps(json_data, indent=2))
         if not json_data:
-            click.echo("Error: No such slice: {}".format(uuid))
+            click.echo(f"Error: No such slice: {uuid}")
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
         click.echo(r.content)

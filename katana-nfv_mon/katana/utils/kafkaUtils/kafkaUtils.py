@@ -42,7 +42,7 @@ def create_consumer(topic_name, bootstrap_servers=None):
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
                 tries -= 1
-                logger.warning("Kafka not ready yet. Tries remaining: {0}".format(tries))
+                logger.warning(f"Kafka not ready yet. Tries remaining: {tries}")
                 time.sleep(5)
             else:
                 logger.error(KafkaError)
@@ -62,14 +62,11 @@ def create_producer(bootstrap_servers=None):
     exit = False
     while not exit:
         try:
-            producer = KafkaProducer(
-                bootstrap_servers=bootstrap_servers,
-                value_serializer=lambda m: json.dumps(m).encode("utf-8"),
-            )
+            producer = KafkaProducer(bootstrap_servers=bootstrap_servers, value_serializer=lambda m: json.dumps(m).encode("utf-8"),)
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
                 tries -= 1
-                logger.warning("Kafka not ready yet. Tries remaining: {0}".format(tries))
+                logger.warning(f"Kafka not ready yet. Tries remaining: {tries}")
                 time.sleep(5)
             else:
                 logger.error(KafkaError)
@@ -100,7 +97,7 @@ def create_topic(topic_name, bootstrap_servers=None):
         except errors.NoBrokersAvailable as KafkaError:
             if tries > 0:
                 tries -= 1
-                logger.warning("Kafka not ready yet. Tries remaining: {0}".format(tries))
+                logger.warning(f"Kafka not ready yet. Tries remaining: {tries}")
                 time.sleep(5)
             else:
                 logger.error(KafkaError)

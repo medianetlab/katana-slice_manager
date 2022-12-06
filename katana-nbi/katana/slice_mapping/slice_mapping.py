@@ -82,9 +82,9 @@ def nest_mapping(req):
     if not base_slice_des_ref:
         for req_key in REQ_FIELDS:
             if req_key not in req["base_slice_descriptor"]:
-                logger.error("Required field base_slice_descriptor.{} is missing".format(req_key))
+                logger.error(f"Required field base_slice_descriptor.{req_key} is missing")
                 return (
-                    "Error: Required field base_slice_descriptor.{} is missing".format(req_key),
+                    f"Error: Required field base_slice_descriptor.{req_key} is missing",
                     400,
                 )
 
@@ -104,9 +104,7 @@ def nest_mapping(req):
 
     # *** Check if there are references for slice ***
     if req_slice_des["base_slice_des_ref"]:
-        ref_slice = mongoUtils.find(
-            "base_slice_des_ref", {"base_slice_des_id": req_slice_des["base_slice_des_ref"]}
-        )
+        ref_slice = mongoUtils.find("base_slice_des_ref", {"base_slice_des_id": req_slice_des["base_slice_des_ref"]})
         if ref_slice:
             for key, value in req_slice_des.items():
                 try:
@@ -115,9 +113,7 @@ def nest_mapping(req):
                 except KeyError:
                     continue
         else:
-            logger.error(
-                "slice_descriptor {} not found".format(req_slice_des["base_slice_des_ref"])
-            )
+            logger.error("slice_descriptor {} not found".format(req_slice_des["base_slice_des_ref"]))
             return "Error: referenced slice_descriptor not found", 400
 
     # Replace the None value of the isolation with 0 - No Isolation
@@ -165,11 +161,7 @@ def nest_mapping(req):
         if not epc:
             return "Error: Not available Core Network Functions", 400
         # Check if the nest allows shareable functions, if the function is shareable
-        if (
-            req_slice_des["isolation"] != 1
-            and req_slice_des["isolation"] != 3
-            and epc["shared"]["availability"]
-        ):
+        if req_slice_des["isolation"] != 1 and req_slice_des["isolation"] != 3 and epc["shared"]["availability"]:
             found_list_key = None
             max_len = epc["shared"].get("max_shared", 0)
             for grouped_nest_key, grouped_nest_list in epc["shared"]["sharing_list"].items():
@@ -202,9 +194,7 @@ def nest_mapping(req):
                 if req_slice_des["isolation"] < 2 and enb["shared"]["availability"]:
                     found_list_key = None
                     max_len = enb["shared"].get("max_shared", 0)
-                    for grouped_nest_key, grouped_nest_list in enb["shared"][
-                        "sharing_list"
-                    ].items():
+                    for grouped_nest_key, grouped_nest_list in enb["shared"]["sharing_list"].items():
                         if len(grouped_nest_list) < max_len or not max_len:
                             found_list_key = grouped_nest_key
                             grouped_nest_list.append(nest["_id"])
@@ -249,16 +239,10 @@ def nest_mapping(req):
             else:
                 # Check if the nest allows shareable functions, if the function is shareable
                 # For the Core function
-                if (
-                    req_slice_des["isolation"] != 1
-                    and req_slice_des["isolation"] != 3
-                    and epc["shared"]["availability"]
-                ):
+                if req_slice_des["isolation"] != 1 and req_slice_des["isolation"] != 3 and epc["shared"]["availability"]:
                     found_list_key = None
                     max_len = epc["shared"].get("max_shared", 0)
-                    for grouped_nest_key, grouped_nest_list in epc["shared"][
-                        "sharing_list"
-                    ].items():
+                    for grouped_nest_key, grouped_nest_list in epc["shared"]["sharing_list"].items():
                         if len(grouped_nest_list) < max_len or not max_len:
                             found_list_key = grouped_nest_key
                             grouped_nest_list.append(nest["_id"])
@@ -282,9 +266,7 @@ def nest_mapping(req):
                 if req_slice_des["isolation"] < 2 and enb["shared"]["availability"]:
                     found_list_key = None
                     max_len = enb["shared"].get("max_shared", 0)
-                    for grouped_nest_key, grouped_nest_list in enb["shared"][
-                        "sharing_list"
-                    ].items():
+                    for grouped_nest_key, grouped_nest_list in enb["shared"]["sharing_list"].items():
                         if len(grouped_nest_list) < max_len or not max_len:
                             found_list_key = grouped_nest_key
                             grouped_nest_list.append(nest["_id"])
@@ -368,13 +350,7 @@ def nest_mapping(req):
         # Create the Probe field on Nest
         nest["probe_list"] = req_test_des["probe_list"]
 
-    if (
-        not mongoUtils.find(
-            "base_slice_des_ref",
-            {"base_slice_des_id": req["base_slice_descriptor"]["base_slice_des_id"]},
-        )
-        and req["base_slice_descriptor"]["base_slice_des_id"]
-    ):
+    if not mongoUtils.find("base_slice_des_ref", {"base_slice_des_id": req["base_slice_descriptor"]["base_slice_des_id"]},) and req["base_slice_descriptor"]["base_slice_des_id"]:
         new_uuid = str(uuid.uuid4())
         req["base_slice_descriptor"]["_id"] = new_uuid
         mongoUtils.add("base_slice_des_ref", req["base_slice_descriptor"])
