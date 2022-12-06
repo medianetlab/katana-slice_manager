@@ -114,7 +114,7 @@ pipeline {
     post{
         success{
             script {
-                if (env.BRANCH_NAME == 'master')
+                if (env.BRANCH_NAME == 'origin/master')
                     slackSend (color: "#008000", message: "Successfully deployed Katana version ${MAJOR_RELEASE} on staging environment : '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
         }

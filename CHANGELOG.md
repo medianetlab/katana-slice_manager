@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.6] - 06/12/2022
+
+### 2.3.6 Added
+
+- NEAT - APEX policy engines Integration
+
+### 2.3.6 Changed
+
+- Bug Fixes
+
 ## [2.3.5] - 16/12/2021
 
 ### 2.3.5 Added
